@@ -10,7 +10,7 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
 
   return (
     <AppShell
-      logo={<Title variant="subheading">kk ERP</Title>}
+      logo={<Title variant="heading">kk ERP</Title>}
       onLogoClick={() => router.push('/')}
       activePath={active}
       onNavigate={(p) => router.push(p)}

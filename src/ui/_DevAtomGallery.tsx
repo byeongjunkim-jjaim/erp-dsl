@@ -27,6 +27,7 @@ import { Textarea } from './Textarea';
 import { PasswordInput } from './PasswordInput';
 import { Select } from './Select';
 import { DatePicker } from './DatePicker';
+import { MultiDatePicker } from './MultiDatePicker';
 import { Checkbox } from './Checkbox';
 import { Switch } from './Switch';
 import { Radio } from './Radio';
@@ -42,6 +43,7 @@ export function DevAtomGallery() {
   const [num, setNum] = useState<number | string>(0);
   const [sel, setSel] = useState<string | null>(null);
   const [date, setDate] = useState<string | null>(null);
+  const [dates, setDates] = useState<string[]>([]);
   const [check, setCheck] = useState(false);
   const [sw, setSw] = useState(true);
   const [radio, setRadio] = useState('parcel');
@@ -155,6 +157,9 @@ export function DevAtomGallery() {
             </Grid.Col>
             <Grid.Col span={1}>
               <Stack gap="xxs"><Label>날짜</Label><DatePicker value={date} onChange={setDate} placeholder="날짜" /></Stack>
+            </Grid.Col>
+            <Grid.Col span={1}>
+              <Stack gap="xxs"><Label>여러 날짜</Label><MultiDatePicker value={dates} onChange={setDates} placeholder="여러 날짜" /></Stack>
             </Grid.Col>
             <Grid.Col span={1}>
               <Stack gap="xxs"><Label>여러 줄</Label><Textarea value="" onChange={() => {}} autosize placeholder="메모" /></Stack>

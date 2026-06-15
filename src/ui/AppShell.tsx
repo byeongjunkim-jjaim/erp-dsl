@@ -34,6 +34,15 @@ type Props = {
   children: ReactNode;
 };
 
+// 셸 치수(px). 잠정값 — 화면 검증 후 조정.
+//  HEADER_HEIGHT  : 우상단 바 높이.
+//  LOGO_BAND      : 넷바 최상단 로고 밴드 높이. 헤더보다 *크게* 잡아 로고가 상단바보다 우위.
+//  LOGO_HEIGHT    : 로고 자체(슬롯 자식 img/svg) 높이. 밴드 안에서 세로 중앙. 텍스트 로고는
+//                   글자 크기를 슬롯 내용(호출측)이 정하므로 이 값의 영향을 받지 않는다(appshell.css는 img/svg만 맞춤).
+const HEADER_HEIGHT = 72;
+const LOGO_BAND = 96;
+const LOGO_HEIGHT = 40;
+
 function groupItems(items: MenuItem[]): Array<{ group?: string; items: MenuItem[] }> {
   const out: Array<{ group?: string; items: MenuItem[] }> = [];
   for (const it of items) {
@@ -55,13 +64,16 @@ export function AppShell({
 
   return (
     <M
-      header={{ height: 72 }}
+      layout="alt"
+      header={{ height: HEADER_HEIGHT }}
       navbar={{ width: 260, breakpoint: 'sm', collapsed: { mobile: !opened } }}
       padding="lg"
     >
-      {/* 상단바(고정) — 좌측 비움, 우측 밀착 [알림][프로필]. 아래로 은은한 그림자(sm). */}
+      {/* 상단바(고정) — 좌측 비움, 우측 밀착 [알림][프로필]. 아래로 은은한 그림자(sm).
+          layout=alt: 넷바가 좌측 full-height라 넷바를 위(z=2)로 올려 우측 그림자가 상단바
+          구간에서도 끊기지 않게 한다(헤더 z=1). */}
       <M.Header
-        style={{ boxShadow: '0 1px 2px rgba(11, 26, 53, 0.08)', borderBottom: 'none', zIndex: 2 }}
+        style={{ boxShadow: '0 1px 2px rgba(11, 26, 53, 0.08)', borderBottom: 'none', zIndex: 1 }}
       >
         <MGroup h="100%" px="lg" align="center" wrap="nowrap">
           {/* 모바일 햄버거(좌) — 데스크탑에선 숨김. 우측 클러스터는 marginLeft auto로 항상 우측 밀착. */}
@@ -124,10 +136,32 @@ export function AppShell({
       </M.Header>
 
       {/* 넷바(고정) — 우측 그림자로 "떠 있는 패널"(sm, navy 토큰색). 로고(위) + 메뉴(중). */}
-      <M.Navbar p="md" style={{ boxShadow: '2px 0 8px rgba(11, 26, 53, 0.08)', borderRight: 'none', zIndex: 1 }}>
-        {/* 로고 — a형: 넷바 최상단. 메뉴보다 넉넉한 하단 여백(xl). */}
-        <M.Section style={{ paddingTop: 'var(--mantine-spacing-sm)', paddingBottom: 'var(--mantine-spacing-xl)' }}>
-          <span style={{ cursor: onLogoClick ? 'pointer' : 'default', display: 'inline-flex' }} onClick={onLogoClick}>
+      <M.Navbar p="md" style={{ boxShadow: '2px 0 8px rgba(11, 26, 53, 0.08)', borderRight: 'none', zIndex: 2 }}>
+        {/* 로고 — a형: 넷바 최상단. layout=alt라 넷바가 좌측 전체(상단 끝까지)를 차지하고,
+            로고 밴드는 헤더보다 큰 고정 높이(LOGO_BAND)로 잡아 상단바보다 우위에 둔다.
+            밴드 하단 구분선으로 "메뉴와 분리된 정체성 블록"임을 드러낸다. */}
+        <M.Section
+          style={{
+            height: LOGO_BAND,
+            display: 'flex',
+            alignItems: 'center',
+            paddingBottom: 'var(--mantine-spacing-md)',
+            marginBottom: 'var(--mantine-spacing-md)',
+            borderBottom: '1px solid var(--border-default)',
+          }}
+        >
+          {/* 슬롯 래퍼: 고정 높이로 어떤 로고든 같은 크기로 통일. 자식 img/svg는 appshell.css(.erp-logo-slot)가
+              height:100%로 맞춤 — 슬롯 자식은 인라인 style로 못 닿아 자손 셀렉터(className)가 필요하다. */}
+          <span
+            className="erp-logo-slot"
+            style={{
+              height: LOGO_HEIGHT,
+              display: 'inline-flex',
+              alignItems: 'center',
+              cursor: onLogoClick ? 'pointer' : 'default',
+            }}
+            onClick={onLogoClick}
+          >
             {logo}
           </span>
         </M.Section>

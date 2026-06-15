@@ -26,6 +26,7 @@ export { NumberInput } from './NumberInput';
 export { Textarea } from './Textarea';
 export { Select } from './Select';
 export { DatePicker } from './DatePicker';
+export { MultiDatePicker } from './MultiDatePicker';
 export { Checkbox } from './Checkbox';
 export { Switch } from './Switch';
 export { Radio } from './Radio';

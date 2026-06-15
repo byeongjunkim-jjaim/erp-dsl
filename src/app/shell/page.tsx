@@ -6,8 +6,8 @@ export default function ShellDemo() {
   const [active, setActive] = useState('/orders');
   return (
     <AppShell
-      logo={<Title variant="subheading">kk ERP</Title>}
-      logoMark={<Title variant="subheading">kk</Title>}
+      logo={<Title variant="heading">kk ERP</Title>}
+      logoMark={<Title variant="heading">kk</Title>}
       onLogoClick={() => setActive('/')}
       activePath={active}
       onNavigate={setActive}
@@ -18,6 +18,7 @@ export default function ShellDemo() {
         { label: '설정', icon: 'refresh', path: '/settings', group: '관리' },
       ]}
       profile={{ name: '김병준', role: '관리자' }}
+      notification={{ hasUnread: true, onClick: () => {} }}
     >
       <Stack gap="lg">
         <PageHeader title="AppShell 데모" description={`활성 경로: ${active}`} />

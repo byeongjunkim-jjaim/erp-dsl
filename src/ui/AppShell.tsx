@@ -13,10 +13,15 @@ import { Text } from './Text';
 import { Card } from './Card';
 import { Avatar } from './Avatar';
 import { IconButton } from './IconButton';
+import { Popover } from './Popover';
+import { Stack } from './Stack';
+import { renderAction, type Action } from './_cells';
 
 type MenuItem = { label: string; icon: IconName; path: string; group?: string };
-type Profile = { name: string; role?: string; avatarSrc?: string; onMenuClick?: () => void };
-type Notification = { hasUnread?: boolean; onClick?: () => void };
+// 프로필 더보기: menu(Action[]) 주면 Popover로 메뉴, 없으면 onMenuClick 폴백(경쟁 경로 아님).
+type Profile = { name: string; role?: string; avatarSrc?: string; onMenuClick?: () => void; menu?: Action[] };
+// 알림: content 주면 Popover로 목록, 없으면 onClick 폴백.
+type Notification = { hasUnread?: boolean; onClick?: () => void; content?: ReactNode };
 type Props = {
   logo: ReactNode;
   logoMark?: ReactNode;
@@ -43,6 +48,8 @@ export function AppShell({
   logo, logoMark, onLogoClick, menuItems, activePath, onNavigate, profile, notification, children,
 }: Props) {
   const [opened, { toggle, close }] = useDisclosure();
+  const [notifOpen, notifH] = useDisclosure();
+  const [menuOpen, menuH] = useDisclosure();
   const groups = groupItems(menuItems);
   const handleNav = (path: string) => { onNavigate(path); close(); };
 
@@ -60,22 +67,32 @@ export function AppShell({
           {/* 모바일 햄버거(좌) — 데스크탑에선 숨김. 우측 클러스터는 marginLeft auto로 항상 우측 밀착. */}
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
           <MGroup gap="sm" align="center" wrap="nowrap" style={{ marginLeft: 'auto' }}>
-            {notification && (
-              <span style={{ position: 'relative', display: 'inline-flex' }}>
-                <IconButton icon="bell" label="알림" variant="ghost" onClick={notification.onClick} />
-                {notification.hasUnread && (
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      position: 'absolute', top: 6, right: 6, width: 8, height: 8,
-                      borderRadius: 'var(--mantine-radius-full)',
-                      background: 'var(--mantine-color-danger-6)',
-                      border: '2px solid var(--bg-primary)',
-                    }}
-                  />
-                )}
-              </span>
-            )}
+            {notification && (() => {
+              const bell = (
+                <span style={{ position: 'relative', display: 'inline-flex' }}>
+                  <IconButton icon="bell" label="알림" variant="ghost"
+                    onClick={notification.content ? undefined : notification.onClick} />
+                  {notification.hasUnread && (
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute', top: 6, right: 6, width: 8, height: 8,
+                        borderRadius: 'var(--mantine-radius-full)',
+                        background: 'var(--mantine-color-danger-6)',
+                        border: '2px solid var(--bg-primary)',
+                      }}
+                    />
+                  )}
+                </span>
+              );
+              // content 있으면 Popover로 목록, 없으면 bell 단독(onClick 폴백).
+              return notification.content ? (
+                <Popover opened={notifOpen} onChange={(o) => (o ? notifH.open() : notifH.close())}
+                  position="bottom" width="md" content={notification.content}>
+                  {bell}
+                </Popover>
+              ) : bell;
+            })()}
             {profile && (
               <Card variant="outlined" padding="sm">
                 <MGroup gap="sm" align="center" wrap="nowrap">
@@ -84,7 +101,21 @@ export function AppShell({
                     <Text variant="body-strong">{profile.name}</Text>
                     {profile.role && <Text variant="caption" color="secondary">{profile.role}</Text>}
                   </MStack>
-                  <IconButton icon="dots" label="프로필 메뉴" variant="ghost" onClick={profile.onMenuClick} />
+                  {profile.menu && profile.menu.length > 0 ? (
+                    <Popover opened={menuOpen} onChange={(o) => (o ? menuH.open() : menuH.close())}
+                      position="bottom" width="sm"
+                      content={
+                        <Stack gap="xxs">
+                          {profile.menu.map((a, i) => renderAction(
+                            { ...a, onClick: () => { menuH.close(); a.onClick(); } }, i,
+                          ))}
+                        </Stack>
+                      }>
+                      <IconButton icon="dots" label="프로필 메뉴" variant="ghost" />
+                    </Popover>
+                  ) : (
+                    <IconButton icon="dots" label="프로필 메뉴" variant="ghost" onClick={profile.onMenuClick} />
+                  )}
                 </MGroup>
               </Card>
             )}

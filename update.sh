@@ -42,6 +42,7 @@ rsync -av --delete \
   --exclude='node_modules' \
   --exclude='.npmrc' \
   --exclude='.gitignore' \
+  --exclude='.npmignore' \
   --exclude='package.json' \
   --exclude='update.sh' \
   "$SRC/" "$REPO/"

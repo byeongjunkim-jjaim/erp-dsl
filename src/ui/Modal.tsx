@@ -3,9 +3,14 @@
 // 헤더(제목+X)는 Mantine 내부에 위임하지 않고 우리 Group으로 직접 조립한다.
 //  → 정렬 보장이 Mantine이 아니라 우리 프리미티브에서 나온다(서드파티 내부 레이아웃 불신).
 // 푸터: actions를 variant 보고 배치 고정(primary/danger 맨 오른쪽, 순서 무관).
+//
+// 스크롤 구조(헤더·푸터 고정 + 본문만 스크롤): Mantine 본문 패딩을 끄고(padding=0)
+//  우리가 3영역(헤더/본문/푸터)을 flex 세로로 직접 조립한다. 헤더·푸터는 flex:none(고정),
+//  본문은 flex:1 + overflowY:auto(긴 내용일 때만 스크롤). 컨테이너 maxHeight=85vh로 캡.
+//  ※ 이 flex/overflow/maxHeight는 Stack 프리미티브가 노출하지 않는 표현이라 raw style이 된다
+//    (격리 구역이므로 헌법 7 위반 아님 — 단 "직접 조립" 따름정리의 적용 여부는 검토 대상).
 import { Modal as M } from '@mantine/core';
 import type { ReactNode } from 'react';
-import { Stack } from './Stack';
 import { Group } from './Group';
 import { Title } from './Title';
 import { Icon } from './Icon';
@@ -41,25 +46,34 @@ export function Modal({
       radius="md"
       shadow="md"
       withCloseButton={false}  /* 기본 헤더 끔 — 우리가 직접 조립 */
-      padding="md"
+      padding={0}              /* 본문 패딩 끔 — 패딩 주인을 우리 3영역으로 이관 */
     >
-      <Stack gap="md">
-        {/* 우리 Group으로 헤더 조립 → 제목·X 세로정렬은 우리 보장 */}
-        <Group justify="between" align="center">
-          <Title variant="heading">{title}</Title>
-          <span role="button" aria-label="닫기" onClick={onClose} style={{ display: 'inline-flex', cursor: 'pointer' }}>
-            <Icon name="x" color="secondary" />
-          </span>
-        </Group>
-
-        <div>{children}</div>
-
-        {ordered.length > 0 && (
-          <Group justify="end" gap="xs">
-            {ordered.map((a, i) => renderAction(a, i))}
+      {/* 3영역 flex 세로 컨테이너 — maxHeight로 캡, 넘치면 본문만 스크롤 */}
+      <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '85vh' }}>
+        {/* 헤더(고정) — 우리 Group으로 조립. flex:none이라 스크롤 안 됨. */}
+        <div style={{ flex: 'none', padding: 'var(--mantine-spacing-md)', borderBottom: `var(--border-width) solid var(--border-default)` }}>
+          <Group justify="between" align="center">
+            <Title variant="heading">{title}</Title>
+            <span role="button" aria-label="닫기" onClick={onClose} style={{ display: 'inline-flex', cursor: 'pointer' }}>
+              <Icon name="x" color="secondary" />
+            </span>
           </Group>
+        </div>
+
+        {/* 본문(스크롤) — flex:1 + overflowY:auto. 짧으면 안 늘고 스크롤도 없음. */}
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--mantine-spacing-md)' }}>
+          {children}
+        </div>
+
+        {/* 푸터(고정) — actions 있을 때만. flex:none. */}
+        {ordered.length > 0 && (
+          <div style={{ flex: 'none', padding: 'var(--mantine-spacing-md)', borderTop: `var(--border-width) solid var(--border-default)` }}>
+            <Group justify="end" gap="xs">
+              {ordered.map((a, i) => renderAction(a, i))}
+            </Group>
+          </div>
         )}
-      </Stack>
+      </div>
     </M>
   );
 }

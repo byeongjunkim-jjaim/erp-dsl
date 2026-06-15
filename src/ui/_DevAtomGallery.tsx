@@ -14,6 +14,8 @@ import { Badge } from './Badge';
 import { Chip } from './Chip';
 import { Avatar } from './Avatar';
 import { Tooltip } from './Tooltip';
+import { Popover } from './Popover';
+import { Image } from './Image';
 import { Spinner } from './Spinner';
 import { Icon } from './Icon';
 import { Button } from './Button';
@@ -46,6 +48,7 @@ export function DevAtomGallery() {
   const [seg, setSeg] = useState('parcel');
   const [tab, setTab] = useState('parcel');
   const [chip, setChip] = useState(true);
+  const [pop, setPop] = useState(false);
 
   return (
     <Stack gap="xl">
@@ -86,6 +89,28 @@ export function DevAtomGallery() {
               <Icon name="search" color="secondary" />
               <Icon name="trash" color="danger" />
               <Icon name="calendar" />
+            </Group>
+          </Group>
+          <Group gap="lg" align="center">
+            <Popover
+              opened={pop}
+              onChange={setPop}
+              position="bottom"
+              width="md"
+              content={
+                <Stack gap="xs">
+                  <Text variant="body-strong">플로팅 패널</Text>
+                  <Text variant="caption" color="secondary">content는 부품 슬롯(Modal children 동형).</Text>
+                  <Button variant="secondary" size="sm">패널 안 버튼</Button>
+                </Stack>
+              }
+            >
+              <Button variant="secondary">Popover 열기</Button>
+            </Popover>
+            <Group gap="md" align="end">
+              <Stack gap="xxs" align="center"><Image src="https://picsum.photos/id/1062/400/300" alt="cover sm" size="sm" /><Text variant="caption" color="secondary">sm·cover</Text></Stack>
+              <Stack gap="xxs" align="center"><Image src="https://picsum.photos/id/1080/400/300" alt="contain md" size="md" fit="contain" radius="md" /><Text variant="caption" color="secondary">md·contain</Text></Stack>
+              <Stack gap="xxs" align="center"><Image src="/nope.jpg" alt="fallback" fallbackSrc="https://picsum.photos/id/20/400/300" size="sm" radius="full" /><Text variant="caption" color="secondary">fallback·full</Text></Stack>
             </Group>
           </Group>
         </Stack>

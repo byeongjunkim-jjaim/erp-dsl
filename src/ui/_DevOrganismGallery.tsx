@@ -111,7 +111,14 @@ export function DevOrganismGallery() {
       >
         <DescriptionList
           columns={1}
-          items={[{ label: '안내', value: '본문엔 도메인 폼이 온다(Modal은 모름). 푸터는 primary가 자동으로 오른쪽 끝.', type: 'text' }]}
+          items={[
+            { label: '안내', value: '본문엔 도메인 폼이 온다(Modal은 모름). 푸터는 primary가 자동으로 오른쪽 끝.', type: 'text' },
+            ...Array.from({ length: 18 }, (_, i) => ({
+              label: `항목 ${i + 1}`,
+              value: `긴 내용 스크롤 검증용 — 헤더(제목)와 푸터(취소·생성)는 고정되고 이 본문만 스크롤되는지 확인. 행 ${i + 1}.`,
+              type: 'text' as const,
+            })),
+          ]}
         />
       </Modal>
     </Stack>

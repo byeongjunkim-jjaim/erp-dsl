@@ -8,7 +8,7 @@ import { Group } from './Group';
 import { Icon, type IconName } from './Icon';
 import { IconButton } from './IconButton';
 
-export type CellType = 'text' | 'badge' | 'number' | 'currency' | 'date' | 'actions';
+export type CellType = 'text' | 'badge' | 'number' | 'currency' | 'date' | 'boolean' | 'actions';
 export type ActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 // 행위 중심 액션은 좌측 아이콘(icon) 또는 아이콘 전용(iconOnly). 중립 액션(취소·이동)은 둘 다 생략 → 텍스트.
 export type Action = {
@@ -72,6 +72,11 @@ export function renderCell(
       const color = opts?.badgeColors?.[v] ?? 'neutral';
       return <Badge color={color}>{v}</Badge>;
     }
+    case 'boolean':
+      // true → check 아이콘(primary), false → 엷은 대시(비활성 색). 빈 칸 대신 명시적 false 표시.
+      return value
+        ? <Icon name="check" color="primary" />
+        : <span style={{ color: 'var(--text-disabled)' }}>—</span>;
     case 'actions': {
       const acts = (value as Action[] | undefined) ?? [];
       return (

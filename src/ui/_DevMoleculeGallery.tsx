@@ -16,6 +16,9 @@ import { InputGroup } from './InputGroup';
 import { FileUploader, type FileItem } from './FileUploader';
 import { Pagination } from './Pagination';
 import { Callout } from './Callout';
+import { StatusRow } from './StatusRow';
+import { SummaryCard } from './SummaryCard';
+import { TotalRow } from './TotalRow';
 import { TextInput } from './TextInput';
 import { NumberInput } from './NumberInput';
 import { Select } from './Select';
@@ -124,6 +127,41 @@ export function DevMoleculeGallery() {
             <Callout tone="warning">이미 등록된 연락처와 중복됩니다. 확인 후 진행하세요.</Callout>
             <Callout tone="danger" title="처리 불가">필수 항목이 누락되어 저장할 수 없습니다.</Callout>
             <Callout tone="neutral">이 구획은 계약 후 실제 필드로 교체됩니다.</Callout>
+          </Stack>
+        </Stack>
+      </Card>
+
+      <Card variant="outlined" padding="lg">
+        <Stack gap="md">
+          <Title variant="subheading">StatusRow — 상태 + 행동 한 줄(액션 0/1/2 = 배열 길이)</Title>
+          <Stack gap="sm">
+            <StatusRow label="발주 승인" icon="file-text" status={{ label: '대기', tone: 'warning' }}
+              actions={[{ label: '승인', variant: 'primary', onClick: () => {} }, { label: '반려', variant: 'danger', onClick: () => {} }]} />
+            <StatusRow label="배송 상태" icon="truck" status={{ label: '진행', tone: 'info' }}
+              actions={[{ label: '추적', variant: 'secondary', onClick: () => {} }]} />
+            <StatusRow label="정산" icon="coin" status={{ label: '완료', tone: 'success' }} />
+          </Stack>
+        </Stack>
+      </Card>
+
+      <Card variant="outlined" padding="lg">
+        <Stack gap="md">
+          <Title variant="subheading">SummaryCard — KPI 타일(틴트 아이콘 · 건수 · 금액, 값 유무로 조립)</Title>
+          <Grid columns={3} gap="md">
+            <Grid.Col span={1}><SummaryCard label="승인 대기" icon="clock" tone="warning" count={12} amount={4820000} /></Grid.Col>
+            <Grid.Col span={1}><SummaryCard label="확정" icon="check-circle" tone="success" count={48} amount={31500000} /></Grid.Col>
+            <Grid.Col span={1}><SummaryCard label="반려" icon="x-circle" tone="danger" count={3} /></Grid.Col>
+          </Grid>
+        </Stack>
+      </Card>
+
+      <Card variant="outlined" padding="lg">
+        <Stack gap="md">
+          <Title variant="subheading">TotalRow — 리스트 하단 합계(구분선 포함, 자기완결)</Title>
+          <Stack gap="xs">
+            <Group justify="between" align="center"><Text variant="body">자재비</Text><Text variant="body">₩ 1,200,000</Text></Group>
+            <Group justify="between" align="center"><Text variant="body">시공비</Text><Text variant="body">₩ 800,000</Text></Group>
+            <TotalRow amount={2000000} />
           </Stack>
         </Stack>
       </Card>

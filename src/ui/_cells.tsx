@@ -43,11 +43,12 @@ function fmtDate(v: unknown): string {
 // 한국 소비자 기준(잠정 — 다국어화 시 locale은 토큰/설정으로 분리).
 const NUM = new Intl.NumberFormat('ko-KR');
 const KRW = new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 });
-function fmtNumber(v: unknown): string {
+// 통화·숫자 포맷의 단일 진실 공급원 — 셀뿐 아니라 분자(SummaryCard·TotalRow)도 이걸 재사용한다.
+export function fmtNumber(v: unknown): string {
   const n = typeof v === 'number' ? v : Number(v);
   return v == null || v === '' || Number.isNaN(n) ? '' : NUM.format(n); // 천 단위 ,
 }
-function fmtCurrency(v: unknown): string {
+export function fmtCurrency(v: unknown): string {
   const n = typeof v === 'number' ? v : Number(v);
   return v == null || v === '' || Number.isNaN(n) ? '' : KRW.format(n); // ₩ + 천 단위 ,
 }

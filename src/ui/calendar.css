@@ -1,0 +1,50 @@
+/* Calendar 유기체 — 7열 월 그리드. 우리 Grid 프리미티브는 columns가 12의 약수(1·2·3·4·6·12)만이라
+   7열을 표현할 수 없다 → 격리 구역(src/ui) 내 raw CSS grid로 짠다(Modal raw flex와 동일한 명시 예외).
+   색·간격은 전부 토큰(역할 변수 / mantine 토큰 var)만 — raw hex 없음. px(min-height 등)는 격리 구역 허용·잠정. */
+.erp-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border: 1px solid var(--border-default);
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+}
+.erp-cal-head {
+  text-align: center;
+  padding: var(--mantine-spacing-xs) 0;
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+}
+.erp-cal-cell {
+  min-height: 96px;
+  padding: var(--mantine-spacing-xs);
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xxs);
+  text-align: left;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+.erp-cal-cell.is-clickable { cursor: pointer; }
+.erp-cal-cell.is-clickable:hover { background: var(--bg-secondary); }
+.erp-cal-cell.is-other { background: var(--bg-tertiary); }
+.erp-cal-today {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  border-radius: var(--mantine-radius-full);
+  border: 1px solid var(--border-focus);
+}
+.erp-cal-event { display: block; max-width: 100%; }
+.erp-cal-event.is-clickable { cursor: pointer; }
+
+/* 좁은 화면 폴백 — 그리드 숨기고 다가오는 이벤트 리스트(반응형 분기 캡슐화) */
+.erp-cal-list { display: none; }
+@media (max-width: 640px) {
+  .erp-cal-grid { display: none; }
+  .erp-cal-list { display: flex; flex-direction: column; }
+}

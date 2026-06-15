@@ -49,6 +49,9 @@ export { InputGroup } from './InputGroup';
 export { FileUploader, type FileItem } from './FileUploader';
 export { Pagination } from './Pagination';
 export { Callout } from './Callout';
+export { StatusRow } from './StatusRow';
+export { SummaryCard } from './SummaryCard';
+export { TotalRow } from './TotalRow';
 
 // 유기체 6
 export { Modal } from './Modal';
@@ -57,6 +60,8 @@ export { EmptyState } from './EmptyState';
 export { PageHeader } from './PageHeader';
 export { DescriptionList } from './DescriptionList';
 export { AppShell } from './AppShell';
+export { Timeline } from './Timeline';
+export { Calendar } from './Calendar';
 export { IconButton } from './IconButton';
 
 // 템플릿 + 폼 조립 (스키마 구동)

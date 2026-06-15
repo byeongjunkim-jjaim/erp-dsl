@@ -9,6 +9,8 @@ import { PageHeader } from './PageHeader';
 import { DataTable } from './DataTable';
 import { DescriptionList } from './DescriptionList';
 import { EmptyState } from './EmptyState';
+import { Timeline } from './Timeline';
+import { Calendar } from './Calendar';
 import { Modal } from './Modal';
 import type { Action, BadgeColor } from './_cells';
 
@@ -30,6 +32,7 @@ export function DevOrganismGallery() {
   const [sort, setSort] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState(false);
+  const [calMonth, setCalMonth] = useState('2026-06');
 
   return (
     <Stack gap="xl">
@@ -39,6 +42,7 @@ export function DevOrganismGallery() {
         <PageHeader
           title="발주 목록"
           description="도메인은 데이터로만 — PageHeader는 '발주'가 뭔지 모른다"
+          status={{ label: '진행 중', tone: 'info' }}
           actions={[{ label: '발주 생성', variant: 'primary', onClick: () => setModal(true) }]}
         />
       </Card>
@@ -96,6 +100,40 @@ export function DevOrganismGallery() {
         <Stack gap="md">
           <Title variant="subheading">Modal — 본문은 도메인, 껍데기는 모름 · 푸터 actions 자동 배치</Title>
           <Button variant="primary" onClick={() => setModal(true)}>모달 열기</Button>
+        </Stack>
+      </Card>
+
+      <Card variant="outlined" padding="lg">
+        <Stack gap="md">
+          <Title variant="subheading">Timeline — 시간순 이벤트(날짜 구분 · 아바타 · 구분배지 · 말풍선)</Title>
+          <Timeline
+            events={[
+              { id: '1', timestamp: '2026-05-02T09:30:00', actor: { name: '김병준' }, category: { label: '등록', tone: 'info' }, title: '발주서 생성', body: 'PO-1001 초안이 등록되었습니다.' },
+              { id: '2', timestamp: '2026-05-02T14:05:00', actor: { name: '이서연' }, category: { label: '승인', tone: 'success' }, title: '1차 승인' },
+              { id: '3', timestamp: '2026-05-03T11:20:00', actor: { name: '박' }, body: '납기일을 6/20으로 조정 요청.' },
+            ]}
+          />
+        </Stack>
+      </Card>
+
+      <Card variant="outlined" padding="lg">
+        <Stack gap="md">
+          <Title variant="subheading">Calendar — 월 그리드(월요일 시작 · 셀당 배지 최대 3 + "+N" · 셀/배지 클릭)</Title>
+          <Calendar
+            month={calMonth}
+            onMonthChange={setCalMonth}
+            events={[
+              { id: 'e1', date: '2026-06-03', label: 'A현장 착공', tone: 'info' },
+              { id: 'e2', date: '2026-06-03', label: 'B현장 실측', tone: 'success' },
+              { id: 'e3', date: '2026-06-12', label: '자재 입고', tone: 'warning' },
+              { id: 'e4', date: '2026-06-18', label: 'C현장', tone: 'info' },
+              { id: 'e5', date: '2026-06-18', label: 'D현장', tone: 'success' },
+              { id: 'e6', date: '2026-06-18', label: 'E현장', tone: 'warning' },
+              { id: 'e7', date: '2026-06-18', label: 'F현장', tone: 'danger' },
+            ]}
+            onSelectDate={() => {}}
+            onSelectEvent={() => {}}
+          />
         </Stack>
       </Card>
 

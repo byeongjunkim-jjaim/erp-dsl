@@ -46,3 +46,4 @@ import { buildZodSchema, type FieldSpec } from '@byeongjunkim-jjaim/erp-dsl/sche
 
 - 소비 앱은 이 패키지를 **수정하지 않는다.** 카탈로그 확장은 본 라이브러리 레포에서 사람이 큐레이션으로만(헌법 4).
 - Mantine 직접 import 금지 — 이 패키지의 배럴만 사용(헌법 7).
+# erp-dsl

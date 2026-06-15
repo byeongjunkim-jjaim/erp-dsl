@@ -24,3 +24,5 @@ postcss.config.cjs
 .next/
 *.tar.gz
 .DS_Store
+
+echo ".npmrc" >> .gitignore

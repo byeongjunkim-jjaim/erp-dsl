@@ -33,10 +33,16 @@ echo "▶ 버전: $BUMP"
 echo
 
 # --- 1. 덮어쓰기 (.git·node_modules·.npmrc·update.sh 보존) ---
+# 웹에서 받은 건 '소스 트리'다. 레포의 발행 설정(package.json)·git 설정(.gitignore)·
+# 인증(.npmrc)은 레포가 주인이므로 절대 덮어쓰지 않는다.
+# (웹 package.json이 @your-org placeholder라 덮으면 발행이 깨졌던 사고 방지)
+# 버전업은 아래 npm version이 담당하므로, 웹의 version 값도 가져오지 않는다.
 rsync -av --delete \
   --exclude='.git' \
   --exclude='node_modules' \
   --exclude='.npmrc' \
+  --exclude='.gitignore' \
+  --exclude='package.json' \
   --exclude='update.sh' \
   "$SRC/" "$REPO/"
 

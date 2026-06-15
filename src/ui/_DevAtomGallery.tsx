@@ -91,6 +91,12 @@ export function DevAtomGallery() {
               <Icon name="calendar" />
             </Group>
           </Group>
+          <Text variant="caption" color="secondary">ERP 큐레이션 확장 62종 (Tabler 원본 · kk 요구 7종 포함)</Text>
+          <Group gap="sm" wrap>
+            {(['home','dashboard','menu','settings','logout','user','users','building','store','book','database','package','box','truck','warehouse','barcode','cart','file','file-text','file-invoice','files','folder','clipboard','receipt','report','coin','won','credit-card','calculator','wallet','tag','discount','chart-bar','chart-line','phone','mail','map-pin','id-card','download','save','copy','print','send','adjustments','history','check-circle','x-circle','clock','ban','lock','lock-open','help','external-link','arrow-right','dots-vertical','paperclip','link','star','list','table','sort-asc','sort-desc'] as const).map((n) => (
+              <Icon key={n} name={n} color="secondary" />
+            ))}
+          </Group>
           <Group gap="lg" align="center">
             <Popover
               opened={pop}

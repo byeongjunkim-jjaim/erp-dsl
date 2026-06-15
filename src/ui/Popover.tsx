@@ -41,8 +41,13 @@ export function Popover({
     >
       <M.Target>
         {/* Target은 ref 가능한 단일 자식이 필요 → span으로 감싼다.
-            클릭 토글은 Mantine이 이 span에 핸들러를 주입해 처리한다(직접 onClick 달면 이중 토글). */}
-        <span style={{ display: 'inline-flex', cursor: 'pointer' }}>
+            controlled 모드에선 우리가 클릭으로 직접 토글한다(onChange). 바깥 클릭/ESC 닫기는
+            Mantine이 onChange(false)로 알린다. */}
+        <span
+          role="button"
+          onClick={() => onChange(!opened)}
+          style={{ display: 'inline-flex', cursor: 'pointer' }}
+        >
           {children}
         </span>
       </M.Target>

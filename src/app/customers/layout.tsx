@@ -21,6 +21,7 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
         { label: '설정', icon: 'refresh', path: '/settings', group: '관리' },
       ]}
       profile={{ name: '김병준', role: '관리자' }}
+      notification={{ hasUnread: true, onClick: () => {} }}
     >
       {children}
     </AppShell>

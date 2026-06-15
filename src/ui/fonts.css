@@ -1,3 +1,9 @@
-/* PretendardGOV 웹폰트 로드 — 토큰(theme.ts fontFamily="Pretendard GOV")의 실물.
-   dynamic-subset: 페이지에 쓰인 글자만 받아 빠름. CDN(jsdelivr) 의존 — 오프라인/폐쇄망이면 self-host로 교체. */
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-gov-dynamic-subset.min.css");
+/* PretendardGOV 웹폰트 — self-host(패키지 동봉). 사내망/오프라인에서도 CDN 없이 동작.
+   단일 가변 woff2 하나가 전 weight(45~920) 커버. theme.ts fontFamily가 이 이름을 가리킨다. */
+@font-face {
+  font-family: 'Pretendard GOV Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 45 920;
+  src: url('./fonts/PretendardGOVVariable.woff2') format('woff2-variations');
+}

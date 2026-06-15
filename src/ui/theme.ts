@@ -75,7 +75,7 @@ export const theme = createTheme({
   primaryColor: 'primary',
   primaryShade: 6, // index 6 = #1E4178 (메인 navy)
 
-  fontFamily: '"Pretendard GOV", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontFamily: '"Pretendard GOV Variable", "Pretendard GOV", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
 
   // 간격: 4px 베이스 (xxs4·xs8·sm12·md16·lg24·xl32·xxl48). 임의 px 금지.
   spacing: {

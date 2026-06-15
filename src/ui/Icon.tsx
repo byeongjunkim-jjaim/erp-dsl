@@ -7,7 +7,7 @@ import type { CSSProperties } from 'react';
 export type IconName =
   | 'check' | 'x' | 'chevron-down' | 'chevron-up' | 'chevron-left' | 'chevron-right'
   | 'search' | 'plus' | 'minus' | 'calendar' | 'upload' | 'trash' | 'refresh'
-  | 'eye' | 'eye-off' | 'alert-circle' | 'alert-triangle' | 'info' | 'dots' | 'edit' | 'arrow-left' | 'filter';
+  | 'eye' | 'eye-off' | 'alert-circle' | 'alert-triangle' | 'info' | 'dots' | 'edit' | 'arrow-left' | 'filter' | 'bell';
 
 // 24x24 viewBox, stroke=currentColor 기반(outline). path만 정의(색·정렬은 래퍼가).
 const PATHS: Record<IconName, string> = {
@@ -29,6 +29,7 @@ const PATHS: Record<IconName, string> = {
   'alert-circle': 'M12 3a9 9 0 100 18 9 9 0 000-18M12 8v5M12 16h.01',
   'alert-triangle': 'M12 4L2 20h20zM12 10v4M12 17h.01',
   'info': 'M12 3a9 9 0 100 18 9 9 0 000-18M12 11v5M12 8h.01',
+  'bell': 'M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0',
   'dots': 'M5 12h.01M12 12h.01M19 12h.01',
   'edit': 'M4 20h4L18.5 9.5a2.12 2.12 0 00-3-3L5 17v3M13.5 6.5l3 3',
   'arrow-left': 'M19 12H5M12 19l-7-7 7-7',

@@ -67,7 +67,12 @@ export function DataTable({
                   onClick={c.sortable ? () => toggleSort(c.key) : undefined}>
                   <MGroup gap={4} align="center" justify={RIGHT.has(c.type) ? 'flex-end' : 'flex-start'} wrap="nowrap">
                     <Text variant="caption" color="secondary">{c.label}</Text>
-                    {c.sortable && active && <Icon name={arrow} size="sm" color="secondary" />}
+                    {c.sortable && active && (
+                      // flex 안에선 Icon의 vertical-align 보정이 죽으므로, 같은 토큰을 transform으로 복원(헤더 한정).
+                      <span style={{ display: 'inline-flex', transform: 'translateY(calc(-1 * var(--icon-baseline-shift)))' }}>
+                        <Icon name={arrow} size="sm" color="secondary" />
+                      </span>
+                    )}
                   </MGroup>
                 </Table.Th>
               );

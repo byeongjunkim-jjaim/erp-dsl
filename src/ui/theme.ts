@@ -66,6 +66,22 @@ const semantic = {
   },
 } as const;
 
+// 타이포 6단계 {크기·굵기·행간}. body-strong = body 크기 + 굵게(강조). (단일 진실 공급원)
+// 모듈 상수로 둬서 createTheme(other)와 resolver가 같은 값을 공유한다.
+type TypographyStep =
+  | 'display' | 'heading' | 'subheading' | 'body' | 'body-strong' | 'caption';
+const typography: Record<TypographyStep, { fontSize: string; fontWeight: number; lineHeight: number }> = {
+  display:       { fontSize: '1.75rem',  fontWeight: 700, lineHeight: 1.2 },
+  heading:       { fontSize: '1.25rem',  fontWeight: 700, lineHeight: 1.3 },
+  subheading:    { fontSize: '1rem',     fontWeight: 600, lineHeight: 1.4 },
+  body:          { fontSize: '0.875rem', fontWeight: 400, lineHeight: 1.5 },
+  'body-strong': { fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.5 },
+  caption:       { fontSize: '0.75rem',  fontWeight: 400, lineHeight: 1.4 },
+};
+
+const borderWidth = '1px';            // 보더 굵기 1종
+const iconBaselineShift = '-0.125em'; // 아이콘 광학정렬 보정(폰트 크기 비례 토큰, 1/8 룰)
+
 // ─────────────────────────────────────────────────────────────
 export const theme = createTheme({
   white: '#FFFFFF',
@@ -97,20 +113,12 @@ export const theme = createTheme({
     md: '0 4px 12px rgba(11, 26, 53, 0.16)',
   },
 
-  // ── theme.other: 단일 진실 공급원의 자유 공간 ──────────────────
+  // ── theme.other: 단일 진실 공급원의 자유 공간 (위 모듈 상수를 그대로 싣는다) ──
   other: {
-    // 타이포 6단계 묶음 {크기·굵기·행간}. body-strong = body와 같은 크기 + 굵게(강조).
-    typography: {
-      display:       { fontSize: '1.75rem',  fontWeight: 700, lineHeight: 1.2 },
-      heading:       { fontSize: '1.25rem',  fontWeight: 700, lineHeight: 1.3 },
-      subheading:    { fontSize: '1rem',     fontWeight: 600, lineHeight: 1.4 },
-      body:          { fontSize: '0.875rem', fontWeight: 400, lineHeight: 1.5 },
-      'body-strong': { fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.5 },
-      caption:       { fontSize: '0.75rem',  fontWeight: 400, lineHeight: 1.4 },
-    },
+    typography,
     semantic,
-    borderWidth: '1px',          // 보더 굵기 1종
-    iconBaselineShift: '-0.125em', // 아이콘 광학정렬 보정(폰트 크기 비례 토큰, 1/8 룰)
+    borderWidth,
+    iconBaselineShift,
   },
 });
 
@@ -119,17 +127,21 @@ export const theme = createTheme({
 // 컴포넌트는 var(--text-primary) 등 "역할 이름"만 쓰고 라이트/다크를 모른다.
 // (Providers의 MantineProvider에 주입)
 // ─────────────────────────────────────────────────────────────
-export const cssVariablesResolver: CSSVariablesResolver = (t) => {
-  const s = t.other.semantic;
+// 모듈 상수(typography·semantic·borderWidth·iconBaselineShift)를 직접 읽는다.
+// t.other를 거치지 않으므로 mantine.d.ts의 module augmentation에 의존하지 않는다.
+// → 패키지 자기 tsc와 소비자 next build(augmentation 미적용) 가 동일하게 통과한다.
+//   (resolver는 어차피 이 테마 전용이라, 같은 상수를 직접 쓰는 게 단일 진실 공급원에도 맞다)
+export const cssVariablesResolver: CSSVariablesResolver = () => {
+  const s = semantic;
 
   // 타이포 6단계도 같은 통로(CSS 변수)로 흘려보낸다.
   // → Text/Title/Label 원자는 var(--typo-body-size) 식 역할 이름만 부르고
-  //   실제 크기·굵기·행간(theme.other.typography)은 모른다. (색과 동일 구조)
+  //   실제 크기·굵기·행간(typography)은 모른다. (색과 동일 구조)
   const typoVars: Record<string, string> = {};
-  for (const [step, spec] of Object.entries(t.other.typography)) {
-    typoVars[`--typo-${step}-size`] = spec.fontSize;
+  for (const [step, spec] of Object.entries(typography)) {
+    typoVars[`--typo-${step}-size`]   = spec.fontSize;
     typoVars[`--typo-${step}-weight`] = String(spec.fontWeight);
-    typoVars[`--typo-${step}-lh`] = String(spec.lineHeight);
+    typoVars[`--typo-${step}-lh`]     = String(spec.lineHeight);
   }
 
   const pick = (mode: 'light' | 'dark') => ({
@@ -146,8 +158,8 @@ export const cssVariablesResolver: CSSVariablesResolver = (t) => {
   });
   return {
     variables: {
-      '--border-width': t.other.borderWidth,
-      '--icon-baseline-shift': t.other.iconBaselineShift,
+      '--border-width':        borderWidth,
+      '--icon-baseline-shift': iconBaselineShift,
       ...typoVars,
     },
     light: pick('light'),

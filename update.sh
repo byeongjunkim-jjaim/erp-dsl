@@ -39,6 +39,7 @@ echo
 rsync -av --delete \
   --exclude='.git' \
   --exclude='node_modules' \
+  --exclude='.next' \
   --exclude='.npmrc' \
   --exclude='.gitignore' \
   --exclude='.npmignore' \

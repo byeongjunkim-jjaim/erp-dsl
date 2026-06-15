@@ -146,11 +146,11 @@ export function DevMoleculeGallery() {
 
       <Card variant="outlined" padding="lg">
         <Stack gap="md">
-          <Title variant="subheading">SummaryCard — KPI 타일(틴트 아이콘 · 건수 · 금액, 값 유무로 조립)</Title>
-          <Grid columns={3} gap="md">
-            <Grid.Col span={1}><SummaryCard label="승인 대기" icon="clock" tone="warning" count={12} amount={4820000} /></Grid.Col>
-            <Grid.Col span={1}><SummaryCard label="확정" icon="check-circle" tone="success" count={48} amount={31500000} /></Grid.Col>
-            <Grid.Col span={1}><SummaryCard label="반려" icon="x-circle" tone="danger" count={3} /></Grid.Col>
+          <Title variant="subheading">SummaryCard — KPI 타일(equalRows로 동일 높이 · 금액 없는 카드도 균일)</Title>
+          <Grid columns={3} equalRows gap="md">
+            <SummaryCard label="승인 대기" icon="clock" tone="warning" count={12} amount={4820000} />
+            <SummaryCard label="확정" icon="check-circle" tone="success" count={48} amount={31500000} />
+            <SummaryCard label="반려" icon="x-circle" tone="danger" count={3} />
           </Grid>
         </Stack>
       </Card>

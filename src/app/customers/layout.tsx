@@ -20,7 +20,14 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
         { label: '제품', icon: 'upload', path: '/products', group: '거래' },
         { label: '설정', icon: 'refresh', path: '/settings', group: '관리' },
       ]}
-      profile={{ name: '김병준', role: '관리자' }}
+      profile={{
+        name: '김병준', role: '관리자', email: 'bj.kim@kk.co.kr',
+        menu: [
+          { label: '내 프로필', icon: 'user', onClick: () => {} },
+          { label: '설정', icon: 'settings', onClick: () => {} },
+          { label: '로그아웃', icon: 'logout', variant: 'danger', onClick: () => {} },
+        ],
+      }}
       notification={{ hasUnread: true, onClick: () => {} }}
     >
       {children}

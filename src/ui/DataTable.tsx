@@ -38,6 +38,9 @@ type Props = {
 };
 
 const RIGHT = new Set<CellType>(['number', 'currency', 'actions']);
+const CENTER = new Set<CellType>(['boolean']); // boolean(체크/대시)은 가운데 — 좌측 정렬이면 number 열과 섞여 깨져 보임.
+const textAlignOf = (t: CellType): 'right' | 'center' | 'left' => (RIGHT.has(t) ? 'right' : CENTER.has(t) ? 'center' : 'left');
+const justifyOf = (t: CellType): 'flex-end' | 'center' | 'flex-start' => (RIGHT.has(t) ? 'flex-end' : CENTER.has(t) ? 'center' : 'flex-start');
 
 export function DataTable({
   columns, rows, status = 'ready', sort, onSortChange,
@@ -63,9 +66,9 @@ export function DataTable({
               const active = sort?.key === c.key;
               const arrow: IconName = active && sort?.direction === 'desc' ? 'chevron-down' : 'chevron-up';
               return (
-                <Table.Th key={c.key} style={{ textAlign: RIGHT.has(c.type) ? 'right' : 'left', cursor: c.sortable ? 'pointer' : 'default', paddingBlock: 'var(--mantine-spacing-xs)', verticalAlign: 'middle', lineHeight: 1 }}
+                <Table.Th key={c.key} style={{ textAlign: textAlignOf(c.type), cursor: c.sortable ? 'pointer' : 'default', paddingBlock: 'var(--mantine-spacing-xs)', verticalAlign: 'middle', lineHeight: 1 }}
                   onClick={c.sortable ? () => toggleSort(c.key) : undefined}>
-                  <MGroup gap={4} align="center" justify={RIGHT.has(c.type) ? 'flex-end' : 'flex-start'} wrap="nowrap">
+                  <MGroup gap={4} align="center" justify={justifyOf(c.type)} wrap="nowrap">
                     <Text variant="caption" color="secondary">{c.label}</Text>
                     {c.sortable && active && (
                       // flex 안에선 Icon의 vertical-align 보정이 죽으므로, 같은 토큰을 transform으로 복원(헤더 한정).
@@ -83,7 +86,7 @@ export function DataTable({
           {rows.map((row, ri) => (
             <Table.Tr key={ri} onClick={onRowClick ? () => onRowClick(row) : undefined} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
               {columns.map((c) => (
-                <Table.Td key={c.key} style={{ textAlign: RIGHT.has(c.type) ? 'right' : 'left', verticalAlign: 'middle' }}
+                <Table.Td key={c.key} style={{ textAlign: textAlignOf(c.type), verticalAlign: 'middle' }}
                   onClick={c.type === 'actions' ? (e) => e.stopPropagation() : undefined}>
                   {renderCell(c.type, row[c.key], { badgeColors: c.badgeColors })}
                 </Table.Td>

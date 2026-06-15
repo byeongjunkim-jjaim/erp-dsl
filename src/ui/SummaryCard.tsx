@@ -22,7 +22,8 @@ type SummaryCardProps = {
 
 export function SummaryCard({ label, icon, tone = 'neutral', count, amount }: SummaryCardProps) {
   return (
-    <Card variant="elevated" padding="lg">
+    // fill: equalRows 그리드 셀 높이를 채워 KPI 타일이 균일해진다(그리드 밖에선 height:100%→auto, 무해).
+    <Card variant="elevated" padding="lg" fill>
       <Group gap="md" align="center" wrap={false}>
         {icon && (
           <span

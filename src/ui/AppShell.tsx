@@ -10,7 +10,7 @@ import { useDisclosure } from '@mantine/hooks';
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
-import { Card } from './Card';
+import { Divider } from './Divider';
 import { Avatar } from './Avatar';
 import { IconButton } from './IconButton';
 import { Popover } from './Popover';
@@ -19,7 +19,7 @@ import { renderAction, type Action } from './_cells';
 
 type MenuItem = { label: string; icon: IconName; path: string; group?: string };
 // 프로필 더보기: menu(Action[]) 주면 Popover로 메뉴, 없으면 onMenuClick 폴백(경쟁 경로 아님).
-type Profile = { name: string; role?: string; avatarSrc?: string; onMenuClick?: () => void; menu?: Action[] };
+type Profile = { name: string; role?: string; email?: string; avatarSrc?: string; onMenuClick?: () => void; menu?: Action[] };
 // 알림: content 주면 Popover로 목록, 없으면 onClick 폴백.
 type Notification = { hasUnread?: boolean; onClick?: () => void; content?: ReactNode };
 type Props = {
@@ -105,32 +105,51 @@ export function AppShell({
                 </Popover>
               ) : bell;
             })()}
-            {profile && (
-              <Card variant="outlined" padding="sm">
-                <MGroup gap="sm" align="center" wrap="nowrap">
+            {profile && (() => {
+              // 단일 트리거: 아바타 + 이름/직책 + caret 전체가 클릭 대상(테두리 카드·별도 dots 제거).
+              const inner = (
+                <>
                   <Avatar src={profile.avatarSrc} size="md">{profile.name.slice(0, 1)}</Avatar>
-                  <MStack gap={2}>
+                  <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
                     <Text variant="body-strong">{profile.name}</Text>
                     {profile.role && <Text variant="caption" color="secondary">{profile.role}</Text>}
-                  </MStack>
-                  {profile.menu && profile.menu.length > 0 ? (
-                    <Popover opened={menuOpen} onChange={(o) => (o ? menuH.open() : menuH.close())}
-                      position="bottom" width="sm"
-                      content={
-                        <Stack gap="xxs">
-                          {profile.menu.map((a, i) => renderAction(
-                            { ...a, onClick: () => { menuH.close(); a.onClick(); } }, i,
-                          ))}
-                        </Stack>
-                      }>
-                      <IconButton icon="dots" label="프로필 메뉴" variant="ghost" />
-                    </Popover>
-                  ) : (
-                    <IconButton icon="dots" label="프로필 메뉴" variant="ghost" onClick={profile.onMenuClick} />
-                  )}
-                </MGroup>
-              </Card>
-            )}
+                  </span>
+                  <Icon name="chevron-down" size="sm" color="secondary" />
+                </>
+              );
+              // menu 있으면 Popover(신원 헤더 + 구분선 + 액션), 없으면 onMenuClick 폴백(배타 경로).
+              return profile.menu && profile.menu.length > 0 ? (
+                <Popover opened={menuOpen} onChange={(o) => (o ? menuH.open() : menuH.close())}
+                  position="bottom" width="sm"
+                  content={
+                    <Stack gap="xs">
+                      <MGroup gap="sm" align="center" wrap="nowrap">
+                        <Avatar src={profile.avatarSrc} size="md">{profile.name.slice(0, 1)}</Avatar>
+                        <MStack gap={2}>
+                          <Text variant="body-strong">{profile.name}</Text>
+                          {(profile.email || profile.role) && (
+                            <Text variant="caption" color="secondary">{profile.email ?? profile.role}</Text>
+                          )}
+                        </MStack>
+                      </MGroup>
+                      <Divider />
+                      {profile.menu.map((a, i) => renderAction(
+                        { ...a, onClick: () => { menuH.close(); a.onClick(); } }, i,
+                      ))}
+                    </Stack>
+                  }>
+                  <span className="erp-profile-trigger">{inner}</span>
+                </Popover>
+              ) : (
+                <span className="erp-profile-trigger" role="button" tabIndex={0}
+                  onClick={profile.onMenuClick}
+                  onKeyDown={profile.onMenuClick ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); profile.onMenuClick!(); }
+                  } : undefined}>
+                  {inner}
+                </span>
+              );
+            })()}
           </MGroup>
         </MGroup>
       </M.Header>

@@ -1,0 +1,58 @@
+{
+  "name": "@byeongjunkim-jjaim/erp-dsl",
+  "version": "0.1.0",
+  "description": "ERP No-Code 빌더 — 닫힌 부품 DSL(원자·분자·유기체·템플릿) + 스키마 층(Zod).",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byeongjunkim-jjaim/erp-dsl.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "sideEffects": [
+    "**/*.css",
+    "./src/ui/Providers.tsx"
+  ],
+  "exports": {
+    ".": "./src/ui/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "prepublishOnly": "npm run typecheck && npm run lint"
+  },
+  "peerDependencies": {
+    "@mantine/core": "^8.3.18",
+    "@mantine/dates": "^8.3.18",
+    "@mantine/hooks": "^8.3.18",
+    "@mantine/notifications": "^8.3.18",
+    "dayjs": "^1.11.21",
+    "react": ">=19",
+    "react-dom": ">=19",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@mantine/core": "^8.3.18",
+    "@mantine/dates": "^8.3.18",
+    "@mantine/hooks": "^8.3.18",
+    "@mantine/notifications": "^8.3.18",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "dayjs": "^1.11.21",
+    "eslint": "^9.39.4",
+    "next": "^16.2.9",
+    "postcss": "^8.5.15",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0",
+    "zod": "^4.4.3"
+  }
+}

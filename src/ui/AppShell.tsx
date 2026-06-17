@@ -1,21 +1,22 @@
 'use client';
-// AppShell 유기체 — ERP 공통 셸 레이아웃 규격(모든 페이지 상속).
+// AppShell 유기체 — ERP 공통 셸 레이아웃 규격(모든 페이지 상속). 셸 크롬만 소유.
+//  · 경계: AppShell은 children만 받는다 — PageHeader는 페이지 템플릿(ListPage/DetailPage/HierarchyExplorer)이 소유,
+//    셸은 비소유. "AppShell + PageHeader가 모든 화면 고정"의 책임 분담선.
 // 구조: 좌측 넷바(고정) + 우상단 바(고정) + 콘텐츠(우측 전체, bg.tertiary).
 //  · 넷바: 로고(위, 넉넉한 여백) · 메뉴(중, 그룹). 로고는 넷바 최상단 유지(a형).
-//  · 상단바: 좌측 비움(브레드크럼/검색 없음 — 넷바가 항상 전체 경로 제공). 우측 밀착으로 [알림][프로필 카드] 순.
-//  · 프로필 카드는 셸이 형식 고정(좌 avatar / 중 이름·직책 / 우 더보기), 데이터만 주입. 더보기 팝업은 보류.
-//  · 알림: bell 버튼 + 안 읽음 점. 목록 드롭다운은 보류(rule of three) — onClick만.
+//  · 상단바: 좌측 비움(브레드크럼/검색 없음 — 넷바가 항상 전체 경로 제공). 우측 밀착으로 [알림][프로필] 순.
+//  · 프로필: 셸이 형식 고정(좌 avatar / 중 이름·직책 / 우 caret). menu(Action[]) 주면 Popover 메뉴, 없으면 onMenuClick 폴백(배타 경로).
+//  · 알림: bell 버튼 + 안 읽음 점. content 주면 Popover 목록, 없으면 onClick 폴백(배타 경로).
 import { AppShell as M, Burger, NavLink, Group as MGroup, Stack as MStack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
-import { Divider } from './Divider';
 import { Avatar } from './Avatar';
 import { IconButton } from './IconButton';
 import { Popover } from './Popover';
-import { Stack } from './Stack';
-import { renderAction, type Action } from './_cells';
+import { Menu } from './Menu';
+import { type Action } from './_cells';
 
 type MenuItem = { label: string; icon: IconName; path: string; group?: string };
 // 프로필 더보기: menu(Action[]) 주면 Popover로 메뉴, 없으면 onMenuClick 폴백(경쟁 경로 아님).
@@ -24,7 +25,6 @@ type Profile = { name: string; role?: string; email?: string; avatarSrc?: string
 type Notification = { hasUnread?: boolean; onClick?: () => void; content?: ReactNode };
 type Props = {
   logo: ReactNode;
-  logoMark?: ReactNode;
   onLogoClick?: () => void;
   menuItems: MenuItem[];
   activePath: string;
@@ -34,14 +34,16 @@ type Props = {
   children: ReactNode;
 };
 
-// 셸 치수(px). 잠정값 — 화면 검증 후 조정.
-//  HEADER_HEIGHT  : 우상단 바 높이.
-//  LOGO_BAND      : 넷바 최상단 로고 밴드 높이. 헤더보다 *크게* 잡아 로고가 상단바보다 우위.
-//  LOGO_HEIGHT    : 로고 자체(슬롯 자식 img/svg) 높이. 밴드 안에서 세로 중앙. 텍스트 로고는
-//                   글자 크기를 슬롯 내용(호출측)이 정하므로 이 값의 영향을 받지 않는다(appshell.css는 img/svg만 맞춤).
-const HEADER_HEIGHT = 72;
-const LOGO_BAND = 96;
-const LOGO_HEIGHT = 40;
+// 셸 치수(px) — 시중 표준 참조로 확정.
+//  HEADER_HEIGHT    : 우상단 바 높이 64 (Material 데스크톱 toolbar 표준 56~64).
+//                     넷바 폭 260(표준 240~300)·알림/프로필 아이콘 md=36(36×36 표준)은 아래 navbar/IconButton에서.
+//  LOGO_BAND        : 넷바 최상단 정체성 블록 높이 88 — 헤더(64)보다 크게 잡아 로고를 상단바보다 우위에 둔다(의도적 비표준).
+//  LOGO_SLOT_HEIGHT : 로고 박스 높이 56(밴드를 거의 채움). 로고는 이 박스에 종횡비대로 최대 적합 —
+//                     가변 로고(가로/세로/정사각/원형)가 폭·높이 중 닿는 쪽으로 채우고 절대 찌그러지지 않는다.
+//                     단일 높이 캡 아님. 텍스트 로고는 호출측 글자 크기(영향 없음).
+const HEADER_HEIGHT = 64;
+const LOGO_BAND = 88;
+const LOGO_SLOT_HEIGHT = 56;
 
 function groupItems(items: MenuItem[]): Array<{ group?: string; items: MenuItem[] }> {
   const out: Array<{ group?: string; items: MenuItem[] }> = [];
@@ -54,11 +56,10 @@ function groupItems(items: MenuItem[]): Array<{ group?: string; items: MenuItem[
 }
 
 export function AppShell({
-  logo, logoMark, onLogoClick, menuItems, activePath, onNavigate, profile, notification, children,
+  logo, onLogoClick, menuItems, activePath, onNavigate, profile, notification, children,
 }: Props) {
   const [opened, { toggle, close }] = useDisclosure();
   const [notifOpen, notifH] = useDisclosure();
-  const [menuOpen, menuH] = useDisclosure();
   const groups = groupItems(menuItems);
   const handleNav = (path: string) => { onNavigate(path); close(); };
 
@@ -117,29 +118,23 @@ export function AppShell({
                   <Icon name="chevron-down" size="sm" color="secondary" />
                 </>
               );
-              // menu 있으면 Popover(신원 헤더 + 구분선 + 액션), 없으면 onMenuClick 폴백(배타 경로).
+              // menu 있으면 Menu 분자(신원 헤더 슬롯 + 액션), 없으면 onMenuClick 폴백(배타 경로).
               return profile.menu && profile.menu.length > 0 ? (
-                <Popover opened={menuOpen} onChange={(o) => (o ? menuH.open() : menuH.close())}
-                  position="bottom" width="sm"
-                  content={
-                    <Stack gap="xs">
-                      <MGroup gap="sm" align="center" wrap="nowrap">
-                        <Avatar src={profile.avatarSrc} size="md">{profile.name.slice(0, 1)}</Avatar>
-                        <MStack gap={2}>
-                          <Text variant="body-strong">{profile.name}</Text>
-                          {(profile.email || profile.role) && (
-                            <Text variant="caption" color="secondary">{profile.email ?? profile.role}</Text>
-                          )}
-                        </MStack>
-                      </MGroup>
-                      <Divider />
-                      {profile.menu.map((a, i) => renderAction(
-                        { ...a, onClick: () => { menuH.close(); a.onClick(); } }, i,
-                      ))}
-                    </Stack>
-                  }>
-                  <span className="erp-profile-trigger">{inner}</span>
-                </Popover>
+                <Menu
+                  trigger={<span className="erp-profile-trigger">{inner}</span>}
+                  items={profile.menu}
+                  header={
+                    <MGroup gap="sm" align="center" wrap="nowrap">
+                      <Avatar src={profile.avatarSrc} size="md">{profile.name.slice(0, 1)}</Avatar>
+                      <MStack gap={2}>
+                        <Text variant="body-strong">{profile.name}</Text>
+                        {(profile.email || profile.role) && (
+                          <Text variant="caption" color="secondary">{profile.email ?? profile.role}</Text>
+                        )}
+                      </MStack>
+                    </MGroup>
+                  }
+                />
               ) : (
                 <span className="erp-profile-trigger" role="button" tabIndex={0}
                   onClick={profile.onMenuClick}
@@ -156,26 +151,25 @@ export function AppShell({
 
       {/* 넷바(고정) — 우측 그림자로 "떠 있는 패널"(sm, navy 토큰색). 로고(위) + 메뉴(중). */}
       <M.Navbar p="md" style={{ boxShadow: '2px 0 8px rgba(11, 26, 53, 0.08)', borderRight: 'none', zIndex: 2 }}>
-        {/* 로고 — a형: 넷바 최상단. layout=alt라 넷바가 좌측 전체(상단 끝까지)를 차지하고,
-            로고 밴드는 헤더보다 큰 고정 높이(LOGO_BAND)로 잡아 상단바보다 우위에 둔다.
-            밴드 하단 구분선으로 "메뉴와 분리된 정체성 블록"임을 드러낸다. */}
+        {/* 로고 — a형: 넷바 최상단. 밴드 높이 = 헤더(LOGO_BAND)라 하단 구분선이 상단바 바닥과 한 줄로 정렬되고,
+            그 구분선이 "메뉴와 분리된 정체성 블록"을 드러낸다. */}
         <M.Section
           style={{
             height: LOGO_BAND,
             display: 'flex',
             alignItems: 'center',
-            paddingBottom: 'var(--mantine-spacing-md)',
             marginBottom: 'var(--mantine-spacing-md)',
             borderBottom: '1px solid var(--border-default)',
           }}
         >
-          {/* 슬롯 래퍼: 고정 높이로 어떤 로고든 같은 크기로 통일. 자식 img/svg는 appshell.css(.erp-logo-slot)가
-              height:100%로 맞춤 — 슬롯 자식은 인라인 style로 못 닿아 자손 셀렉터(className)가 필요하다. */}
+          {/* 슬롯 = 로고 박스(폭 전체 × LOGO_SLOT_HEIGHT). 자식 img/svg는 appshell.css가 object-fit:contain으로
+              종횡비대로 박스를 최대 채움(좌측 정렬) — 어떤 로고 형태든 공기 없이. 슬롯 자식은 인라인 style로 못 닿아 className 필요. */}
           <span
             className="erp-logo-slot"
             style={{
-              height: LOGO_HEIGHT,
-              display: 'inline-flex',
+              height: LOGO_SLOT_HEIGHT,
+              width: '100%',
+              display: 'flex',
               alignItems: 'center',
               cursor: onLogoClick ? 'pointer' : 'default',
             }}

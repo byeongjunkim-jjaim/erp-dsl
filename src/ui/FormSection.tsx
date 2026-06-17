@@ -94,10 +94,21 @@ export function FormSection({ fields, values, onChange, columns = 1, resolvers, 
   if (columns === 1) {
     return <Stack gap="md">{fields.map((f) => cell(f))}</Stack>;
   }
+  // 2열 패킹(하이브리드): ① 타입 기본 폭 — textarea/lookup은 full(2), 나머지는 half(1). ② 명시 span 우선.
+  // ③ 마지막 필드가 단독 half로 새 행을 열어 우측 반쪽이 비면 → full로 늘려 죽은 반쪽 제거.
+  const baseSpan = (f: FieldSpec): 1 | 2 => f.span ?? (f.type === 'textarea' || f.type === 'lookup' ? 2 : 1);
+  let col = 0; // 현재 행에서 채운 칸 수(0 또는 1)
+  const spans: (1 | 2)[] = fields.map((f, i) => {
+    let s = baseSpan(f);
+    const startCol = col % 2;
+    if (i === fields.length - 1 && s === 1 && startCol === 0) s = 2; // 마지막 단독 half → full
+    col = s === 2 ? 0 : startCol + 1; // full은 행을 채워 다음은 새 행
+    return s;
+  });
   return (
     <Grid columns={2} gap="md">
-      {fields.map((f) => (
-        <Grid.Col span={f.span ?? 1} key={f.name}>{cell(f)}</Grid.Col>
+      {fields.map((f, i) => (
+        <Grid.Col span={spans[i]} key={f.name}>{cell(f)}</Grid.Col>
       ))}
     </Grid>
   );

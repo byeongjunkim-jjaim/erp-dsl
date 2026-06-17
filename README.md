@@ -13,7 +13,7 @@ LLM은 화면이 아니라 **스키마(FieldSpec[])**를 생성하고, 결정적
 ```
 
 ```bash
-npm i @your-org/erp-dsl
+npm i @byeongjunkim-jjaim/erp-dsl
 # peer 의존성(소비 앱이 직접 설치)
 npm i @mantine/core @mantine/dates @mantine/hooks @mantine/notifications dayjs zod react react-dom
 ```

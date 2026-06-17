@@ -7,6 +7,7 @@ type Props = {
 export function Switch({ label, checked, onChange, disabled, value, name }: Props) {
   return (
     <M label={label} checked={checked} disabled={disabled} value={value} name={name}
-      onChange={(e) => onChange(e.currentTarget.checked)} color="primary" radius="full" withThumbIndicator={false} />
+      onChange={(e) => onChange(e.currentTarget.checked)} color="primary" radius="full" withThumbIndicator={false}
+      classNames={{ track: 'erpHitTarget' }} />
   );
 }

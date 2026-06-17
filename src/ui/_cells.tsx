@@ -1,14 +1,27 @@
 // 유기체 공유 패턴 — DataTable·DescriptionList가 "값을 어떤 표현으로 그리나"를 공유.
 // 자유 render 함수 금지(raw 구멍). 새 타입은 큐레이션 추가(헌법 4).
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/ko';
 import { Text } from './Text';
 import { Badge } from './Badge';
 import { Button } from './Button';
 import { Group } from './Group';
+import { Stack } from './Stack';
+import { Avatar } from './Avatar';
+import { Anchor } from './Anchor';
+import { Image } from './Image';
 import { Icon, type IconName } from './Icon';
 import { IconButton } from './IconButton';
 
-export type CellType = 'text' | 'badge' | 'number' | 'currency' | 'date' | 'boolean' | 'actions';
+dayjs.extend(relativeTime); // relative-time 셀용. locale은 인스턴스(.locale('ko'))로만 적용해 전역 부작용 없음.
+
+// 표/설명목록 셀이 나를 수 있는 값 타입(닫힌 집합 — 큐레이션, 헌법 4). 자유 render 금지.
+//  · user={name,src?} / tags=string[] / link={label,href} / percent=number /
+//    secondary={primary,secondary?} / relative-time=ISO / thumbnail=src
+export type CellType =
+  | 'text' | 'badge' | 'number' | 'currency' | 'date' | 'boolean' | 'actions'
+  | 'user' | 'tags' | 'link' | 'percent' | 'secondary' | 'relative-time' | 'thumbnail';
 export type ActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 // 행위 중심 액션은 좌측 아이콘(icon) 또는 아이콘 전용(iconOnly). 중립 액션(취소·이동)은 둘 다 생략 → 텍스트.
 export type Action = {
@@ -78,6 +91,43 @@ export function renderCell(
       return value
         ? <Icon name="check" color="primary" />
         : <span style={{ color: 'var(--text-disabled)' }}>—</span>;
+    case 'user': {
+      const u = (value ?? {}) as { name?: string; src?: string };
+      const nm = u.name ?? '';
+      return (
+        <Group gap="xs" align="center" wrap={false}>
+          <Avatar size="sm" src={u.src}>{nm.slice(0, 1)}</Avatar>
+          <Text variant="body">{nm}</Text>
+        </Group>
+      );
+    }
+    case 'tags': {
+      const tags = Array.isArray(value) ? (value as string[]) : [];
+      return <Group gap="xxs" wrap>{tags.map((t, i) => <Badge key={i} color="neutral">{t}</Badge>)}</Group>;
+    }
+    case 'link': {
+      const l = (value ?? {}) as { label?: string; href?: string };
+      return l.href ? <Anchor href={l.href}>{l.label ?? l.href}</Anchor> : <Text variant="body">{l.label ?? ''}</Text>;
+    }
+    case 'percent': {
+      const n = typeof value === 'number' ? value : Number(value);
+      return <Text variant="body">{Number.isNaN(n) ? '' : `${n}%`}</Text>;
+    }
+    case 'secondary': {
+      const s = (value ?? {}) as { primary?: string; secondary?: string };
+      return (
+        <Stack gap="xxs">
+          <Text variant="body">{s.primary ?? ''}</Text>
+          {s.secondary && <Text variant="caption" color="secondary">{s.secondary}</Text>}
+        </Stack>
+      );
+    }
+    case 'relative-time': {
+      const d = dayjs(value as string);
+      return <Text variant="body">{d.isValid() ? d.locale('ko').fromNow() : ''}</Text>;
+    }
+    case 'thumbnail':
+      return value ? <Image src={String(value)} alt="" size="sm" /> : <span style={{ color: 'var(--text-disabled)' }}>—</span>;
     case 'actions': {
       const acts = (value as Action[] | undefined) ?? [];
       return (

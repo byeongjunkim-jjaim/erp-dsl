@@ -1,12 +1,16 @@
 /* AppShell 로고 슬롯 — 격리 구역(src/ui) 안의 CSS.
    슬롯으로 *주입된* 로고(img/svg)는 AppShell 소유가 아니므로 래퍼의 인라인 style로는
    건드릴 수 없다. 자손 셀렉터가 필요하므로 className + CSS 규칙으로 둔다.
-   래퍼(.erp-logo-slot)는 고정 높이를 가지며(AppShell의 LOGO_HEIGHT, 인라인),
-   자식은 그 높이에 맞춰 비율을 유지한 채 줄어든다(height:100% / width:auto). */
+   래퍼(.erp-logo-slot)는 박스(폭 전체 × LOGO_SLOT_HEIGHT, 인라인)이고,
+   자식은 max-width/max-height로 그 박스 안에 종횡비를 유지한 채 *최대* 들어간다 — 가로형은 폭이, 정사각/원형은 높이가 박스에 닿는다.
+   width/height:auto라 종횡비가 강제로 늘어날 수 없어 어떤 형태도 절대 찌그러지지 않는다(object-fit 의존 없음).
+   단일 높이 캡 없음. 좌측 정렬(메뉴 항목과 좌변 일치). 박스보다 넓은 로고는 폭이 상한이라 넷바를 넘지 않는다. */
 .erp-logo-slot img,
 .erp-logo-slot svg {
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   width: auto;
+  height: auto;
   display: block;
 }
 

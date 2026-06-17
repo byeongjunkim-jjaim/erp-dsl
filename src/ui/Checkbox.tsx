@@ -7,6 +7,7 @@ type Props = {
 export function Checkbox({ label, checked, onChange, disabled, value, name }: Props) {
   return (
     <M label={label} checked={checked} disabled={disabled} value={value} name={name}
-      onChange={(e) => onChange(e.currentTarget.checked)} color="primary" />
+      onChange={(e) => onChange(e.currentTarget.checked)} color="primary"
+      classNames={{ input: 'erpHitTarget' }} />
   );
 }

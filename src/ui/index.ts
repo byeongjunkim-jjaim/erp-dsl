@@ -52,8 +52,12 @@ export { Callout } from './Callout';
 export { StatusRow } from './StatusRow';
 export { SummaryCard } from './SummaryCard';
 export { TotalRow } from './TotalRow';
+export { Menu } from './Menu';
+export { ObjectCard, type ObjectField } from './ObjectCard';
+export { SectionHeader } from './SectionHeader';
+export { Breadcrumb, type BreadcrumbItem } from './Breadcrumb';
 
-// 유기체 6
+// 유기체
 export { Modal } from './Modal';
 export { DataTable } from './DataTable';
 export { EmptyState } from './EmptyState';
@@ -63,11 +67,15 @@ export { AppShell } from './AppShell';
 export { Timeline } from './Timeline';
 export { Calendar } from './Calendar';
 export { IconButton } from './IconButton';
+export { Tree, type TreeNodeData } from './Tree';
 
 // 템플릿 + 폼 조립 (스키마 구동)
 export { FormSection } from './FormSection';
 export { ListPage } from './ListPage';
 export { DetailPage } from './DetailPage';
+export { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
+export { PageGrid } from './PageGrid';
+export { buildHierarchyFromRows, type HierarchyImport } from './hierarchyImport';
 export type { DataTableColumn, DataTableRow, DataTableSort } from './DataTable';
 
 // 유기체 공유 타입 (스키마 작성자가 쓰는 어휘)

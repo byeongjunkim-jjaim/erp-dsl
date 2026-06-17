@@ -38,7 +38,15 @@ const VARIANT: Record<ButtonVariant, { color: string; mantineVariant: string }> 
   ghost:     { color: 'neutral', mantineVariant: 'subtle' },
 };
 
-export function Button({
+// 내부 공유 베이스 — 공개 배럴(index.ts)엔 노출하지 않는다(Button만 re-export).
+// IconButton이 이걸 재사용해 "Button 원자를 아이콘 전용·정사각으로 고정한 분자"(01 §4-C)를
+// *같은 primitive·같은 variant 정책*으로 구현한다(ActionIcon 별도 primitive 쓰던 불일치 해소).
+type BaseProps = ButtonProps & {
+  iconOnly?: boolean;   // 정사각·패딩0 (아이콘 전용)
+  ariaLabel?: string;   // 텍스트 없는 아이콘 버튼의 의미 보존
+};
+
+export function ButtonBase({
   variant = 'primary',
   size = 'md',
   children,
@@ -49,7 +57,9 @@ export function Button({
   fullWidth = false,
   type = 'button',
   onClick,
-}: ButtonProps) {
+  iconOnly = false,
+  ariaLabel,
+}: BaseProps) {
   const policy = VARIANT[variant];
 
   // 이 파일 안에서는 Mantine의 열린 API를 직접 만져도 된다.
@@ -60,6 +70,7 @@ export function Button({
       variant={policy.mantineVariant}
       size={size}
       radius="sm"        // radius는 정책으로 고정. 바깥에서 못 바꾼다.
+      aria-label={ariaLabel}
       leftSection={leftIcon}
       rightSection={rightIcon}
       loading={loading}
@@ -67,8 +78,14 @@ export function Button({
       fullWidth={fullWidth}
       type={type}
       onClick={onClick}
+      px={iconOnly ? 0 : undefined}
+      styles={iconOnly ? { root: { aspectRatio: '1 / 1', paddingInline: 0 }, label: { display: 'inline-flex' } } : undefined}
     >
       {children}
     </MantineButton>
   );
+}
+
+export function Button(props: ButtonProps) {
+  return <ButtonBase {...props} />;
 }

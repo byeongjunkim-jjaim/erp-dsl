@@ -28,24 +28,44 @@ type Props = {
   multiple?: boolean;
   disabled?: boolean;
   name?: string;
+  // 제약(선언형) — 다이얼로그 필터(accept)는 OS마다 표기가 다르므로 JS에서 한 번 더 검증한다(mac/win 동일 동작).
+  accept?: string;    // 허용 확장자/MIME 목록(쉼표). 예: '.pdf,.xlsx,image/*'
+  maxSize?: number;   // 최대 바이트. 초과 시 status:'error'
+  maxCount?: number;  // 최대 개수(초과분 거부)
 };
 
-// 브라우저 File → FileItem(pending) 부여는 분자의 책임.
-function toItems(files: FileList): FileItem[] {
-  return Array.from(files).map((f) => ({
-    id: `${f.name}-${f.size}-${f.lastModified}`,
-    name: f.name,
-    status: 'pending' as const,
-  }));
+// accept 매칭 — 확장자(.pdf) / 와일드카드(image/*) / 정확 MIME(application/pdf) 모두 지원.
+function matchesAccept(file: File, accept?: string): boolean {
+  if (!accept) return true;
+  const name = file.name.toLowerCase();
+  const mime = (file.type || '').toLowerCase();
+  return accept.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean).some((spec) => {
+    if (spec.startsWith('.')) return name.endsWith(spec);
+    if (spec.endsWith('/*')) return mime.startsWith(spec.slice(0, -1));
+    return mime === spec;
+  });
 }
 
-export function FileUploader({ value, onChange, multiple, disabled, name }: Props) {
+// 브라우저 File → FileItem 부여 + 검증(분자 책임). 위반 시 status:'error'(스키마 제약의 결정적 적용).
+function toItems(files: File[], accept?: string, maxSize?: number): FileItem[] {
+  return files.map((f) => {
+    const id = `${f.name}-${f.size}-${f.lastModified}`;
+    if (!matchesAccept(f, accept)) return { id, name: f.name, status: 'error' as const, error: '지원하지 않는 형식' };
+    if (maxSize != null && f.size > maxSize) {
+      return { id, name: f.name, status: 'error' as const, error: `용량 초과 (최대 ${Math.round(maxSize / 1024 / 1024)}MB)` };
+    }
+    return { id, name: f.name, status: 'pending' as const };
+  });
+}
+
+export function FileUploader({ value, onChange, multiple, disabled, name, accept, maxSize, maxCount }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const add = (files: FileList | null) => {
     if (!files || !files.length) return;
-    const picked = toItems(files);
-    const merged = multiple ? [...value, ...picked] : picked.slice(0, 1);
+    const picked = toItems(Array.from(files), accept, maxSize);
+    let merged = multiple ? [...value, ...picked] : picked.slice(0, 1);
+    if (maxCount != null && merged.length > maxCount) merged = merged.slice(0, maxCount); // 개수 상한
     onChange(merged);
   };
   const remove = (id: string) => onChange(value.filter((f) => f.id !== id));
@@ -75,6 +95,7 @@ export function FileUploader({ value, onChange, multiple, disabled, name }: Prop
           ref={inputRef}
           type="file"
           name={name}
+          accept={accept}
           multiple={multiple}
           disabled={disabled}
           onChange={(e) => add(e.currentTarget.files)}

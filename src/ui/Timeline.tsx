@@ -12,7 +12,6 @@ import { Group } from './Group';
 import { Text } from './Text';
 import { Badge } from './Badge';
 import { Avatar } from './Avatar';
-import { Card } from './Card';
 import { EmptyState } from './EmptyState';
 import type { BadgeColor } from './_cells';
 import type { IconName } from './Icon';
@@ -74,37 +73,44 @@ export function Timeline({ events, emptyState }: TimelineProps) {
     );
   }
 
+  // 활동 피드 패턴(채팅 말풍선 아님 — 좌우 발신자 축이 없으므로 부분폭 근거 없음).
+  // 좌측 레일(아바타 + 세로 연결선) + 우측 full-폭 내용. 역시간이 아니라 시간순(누적) 유지.
   const groups = groupByDate(events);
   return (
     <Stack gap="lg">
       {groups.map((g) => (
-        <Stack gap="md" key={g.key}>
+        <Stack gap="xs" key={g.key}>
           {/* 날짜 구분 — 가운데 caption(라벨-라인 Divider 대체, 주석 ① 참조) */}
           <Group justify="center" align="center">
             <Text variant="caption" color="secondary">{g.label}</Text>
           </Group>
-          {g.items.map((ev) => (
-            <Group key={ev.id} gap="sm" align="start" wrap={false}>
-              <Avatar size="md">{ev.actor.name.slice(0, 1)}</Avatar>
-              <Stack gap="xxs">
-                {/* 헤더줄: 작성자 + 구분배지 + 시각 */}
-                <Group gap="xs" align="center">
-                  <Text variant="body-strong">{ev.actor.name}</Text>
-                  {ev.category && <Badge color={ev.category.tone}>{ev.category.label}</Badge>}
-                  <Text variant="caption" color="secondary">{fmtTime(ev.timestamp)}</Text>
-                </Group>
-                {/* 말풍선 — title·body 둘 다 없으면 생략(헤더줄만) */}
-                {(ev.title || ev.body) && (
-                  <Card variant="outlined" padding="sm">
+          <div>
+            {g.items.map((ev, idx) => {
+              const last = idx === g.items.length - 1;
+              return (
+                // raw flex — 세로 연결선은 프리미티브로 표현 못 하는 표현(Modal raw flex 따름정리 재적용, 명시 예외).
+                <div key={ev.id} style={{ display: 'flex', gap: 'var(--mantine-spacing-md)', alignItems: 'stretch' }}>
+                  {/* 좌측 레일: 아바타 + 다음 이벤트로 이어지는 연결선 */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                    <Avatar size="md">{ev.actor.name.slice(0, 1)}</Avatar>
+                    {!last && <div style={{ flex: 1, width: 2, background: 'var(--border-default)', marginTop: 4 }} />}
+                  </div>
+                  {/* 우측: full-폭 내용 */}
+                  <div style={{ flex: 1, paddingBottom: last ? 0 : 'var(--mantine-spacing-md)' }}>
                     <Stack gap="xxs">
+                      <Group gap="xs" align="center">
+                        <Text variant="body-strong">{ev.actor.name}</Text>
+                        {ev.category && <Badge color={ev.category.tone}>{ev.category.label}</Badge>}
+                        <Text variant="caption" color="secondary">{fmtTime(ev.timestamp)}</Text>
+                      </Group>
                       {ev.title && <Text variant="body-strong">{ev.title}</Text>}
-                      {ev.body && <Text variant="body">{ev.body}</Text>}
+                      {ev.body && <Text variant="body" color="secondary">{ev.body}</Text>}
                     </Stack>
-                  </Card>
-                )}
-              </Stack>
-            </Group>
-          ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </Stack>
       ))}
     </Stack>

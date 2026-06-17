@@ -1,49 +1,244 @@
-# @your-org/erp-dsl
+# @byeongjunkim-jjaim/erp-dsl
 
-ERP No-Code 빌더의 부품 DSL. 닫힌 부품 집합(원자·분자·유기체·템플릿)과 스키마 층(Zod)을 제공한다.
-LLM은 화면이 아니라 **스키마(FieldSpec[])**를 생성하고, 결정적 렌더러(부품)가 화면으로 변환한다.
+> **이 문서는 LLM(조립 컴파일러)을 위한 사용 설명서다.** 작업 전 컨텍스트에 넣는다.
+> ERP No-Code 빌더의 닫힌 부품 DSL — 원자·분자·유기체·템플릿 + 스키마 층(Zod).
+> 깊은 근거·전체 prop 표는 [`docs/`](#9-설계-문서)에 있다. 이 README는 *틀리지 않고 조립하기 위한 지도*다.
 
-## 설치 (GitHub Packages)
+---
 
-소비 레포 루트에 `.npmrc`:
+## 0. 너(LLM)의 역할 — 한 문장
+
+**자연어 요청을 「닫힌 부품의 조립 + `FieldSpec[]` 스키마」로 번역한다. 화면을 자유 생성하지 않는다.**
+
+- ✅ 자연어 → 검증되는 스키마(`FieldSpec[]`) 변환
+- ✅ 카탈로그(아래 5절)에 있는 부품만 골라 조립
+- ❌ 새 컴포넌트 발명 / 화면을 자유롭게 그리기 / 임의 값 주입
+
+근거: 도메인은 컴포넌트가 아니라 **데이터(스키마)로만** 들어온다. "발주서"는 새 부품이 아니라 `FormSection`/`ListPage`에 먹이는 `FieldSpec[]` 한 덩어리다.
+
+---
+
+## 1. 절대 규칙 (위반하면 빌드/린트가 에러를 낸다 — 추측으로 우회 금지)
+
+1. **부품을 발명하지 않는다.** 5절 카탈로그에 없는 컴포넌트는 존재하지 않는다. 없으면 사람에게 되묻는다.
+2. **열린 값 금지.** 임의 hex(`#3B82F6`)·임의 px(`13`)·임의 스타일 문자열을 넣을 길이 없다. 오직 **토큰 이름**(3절)과 **닫힌 enum**만 쓴다.
+3. **import는 단 두 경로뿐.**
+   ```ts
+   import { Button, FormSection, /* 부품 */ } from '@byeongjunkim-jjaim/erp-dsl';
+   import { buildZodSchema, type FieldSpec } from '@byeongjunkim-jjaim/erp-dsl/schema';
+   ```
+   `@mantine/*`를 직접 import하면 린트 에러(헌법 7). Mantine은 라이브러리 내부에 격리돼 있다.
+4. **`className`·`style`은 어떤 부품에도 못 넘긴다.** (토큰 우회 통로라 노출 안 함.) 색·간격·정렬은 전부 닫힌 prop으로 표현한다.
+5. **빈칸은 추측으로 메우지 않는다.** 명세가 빈 선택 슬롯은 → 기본값을 쓰거나, **빈칸을 드러내 사람에게 되묻는다.** "맞게 추측"이 아니라 "빈칸 드러내기"가 너의 일이다.
+6. **검증의 진실은 스키마 하나.** 값 제약(필수·min/max·정규식)은 부품 prop이 아니라 `FieldSpec`/`buildZodSchema`에만 둔다.
+
+---
+
+## 2. 두 진입점
+
+| 경로 | 내용 |
+|---|---|
+| `@byeongjunkim-jjaim/erp-dsl` | 부품(원자·분자·유기체·템플릿) + `Providers`·`notify` 배선 |
+| `@byeongjunkim-jjaim/erp-dsl/schema` | `FieldSpec`·`FieldType`·`buildZodSchema`·`isFilled` (데이터 세계) |
+
+---
+
+## 3. 토큰 어휘 (임의 값 대신 반드시 이 이름들만 쓴다)
 
 ```
-@your-org:registry=https://npm.pkg.github.com
+간격(gap·padding)   : xxs xs sm md lg xl xxl        (4px 베이스, 임의 px 금지)
+radius              : sm md full
+밀도(size)          : sm md lg                       (컨트롤만; 높이는 결과로 도출)
+콘텐츠 폭(maxWidth) : narrow default wide
+
+텍스트 색 역할      : primary secondary danger        (검정/흰색은 모드가 자동 결정)
+상태색(BadgeColor)  : neutral success warning danger info
+버튼 변형(variant)  : primary secondary danger ghost
+```
+
+색의 실제 hex·모드 분기는 `theme.ts`가 답한다. 너는 **역할 이름만** 부른다.
+
+---
+
+## 4. 도메인의 유일한 진입로 — `FieldSpec`
+
+자연어로 받은 "어떤 입력칸이 필요한가"를 이 데이터로 번역한다. **함수는 절대 넣지 않는다**(직렬화·생성 불가). 외부 조회는 `lookupKey` 문자열로만 가리킨다.
+
+```ts
+type FieldType = 'text' | 'number' | 'textarea' | 'select' | 'date' | 'checkbox' | 'lookup';
+
+type FieldSpec = {
+  name: string;                                   // 폼 값 키
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  placeholder?: string;
+  options?: { label: string; value: string }[];   // select 전용
+  lookupKey?: string;                              // lookup 전용: resolver 식별 문자열(함수 아님)
+  span?: 1 | 2;                                    // columns=2일 때 한 줄 전체
+  pattern?: string;                                // 정규식 검증(데이터 층의 유일한 열린 스칼라)
+  mask?: 'phone';                                  // 입력 마스킹(명명 enum, 임의 금지)
+  requiredWhen?: { field: string; filled: boolean }; // 조건부 필수(선언형)
+  disabledWhen?: { field: string; filled: boolean }; // 조건부 비활성(선언형)
+};
+```
+
+`buildZodSchema(fields)` → Zod 객체 스키마(타입·required·정규식·조건부 필수). LLM이 뱉은 값이 렌더러에 가기 전 런타임 관문이다.
+
+---
+
+## 5. 부품 카탈로그 (고를 수 있는 선택지의 전부)
+
+> 각 부품의 **닫힌 prop과 enum 값**만 적는다. 전체 prop·미노출 사유·근거는 [`docs/02_토큰과구현.md`](docs/02_토큰과구현.md).
+> 표기: `prop: 값` / 닫힌 enum은 `a|b|c`. 공통적으로 `className`·`style`은 어디에도 없다.
+
+### 의미 원자 — 표시·행동 (15)
+- **Button** `variant: primary|secondary|danger|ghost` · `size: sm|md` · `loading` `disabled` `fullWidth` `leftIcon` `rightIcon` `onClick` `type: button|submit`
+- **IconButton** `icon: IconName` · `label`(aria 필수) · `variant`(Button과 동일) · `size: sm|md`
+- **Badge** `color: neutral|success|warning|danger|info` · children=string
+- **Chip** `color`(상태색+neutral) · `selected` `onChange` `onRemove`
+- **Text** `variant: body|body-strong|caption` · `color: primary|secondary|danger`
+- **Title** `variant: display|heading|subheading`
+- **Label** `htmlFor` (타이포·색 고정)
+- **Anchor** `href`
+- **Icon** `name: IconName`(85종, `Icon.tsx` 참조) · `size: sm|md|lg` · `color`(텍스트 역할)
+- **Avatar** `src` · children=이니셜 · `size`
+- **Image** `src` `alt` `fallbackSrc` · `fit: cover|contain` · `radius: sm|md|full` · `size: sm|md|lg`
+- **Tooltip** `label` · children
+- **Popover** `content`(부품 슬롯) · `opened` `onChange` · `position: top|bottom|left|right` · `width: sm|md|lg`
+- **Spinner** `size`
+- **SegmentedControl** `options` `value` `onChange` · `size` `fullWidth`  ← 같은 대상의 뷰/모드 토글
+- **TabBar** `options` `value` `onChange`  ← 다른 구획으로 전환
+
+### 의미 원자 — 입력군 (10)
+공통: `value`/`onChange`(controlled 전용) · `name` · `size: sm|md` · `disabled` · `placeholder`. **`label`·`error`·`required`는 입력칸이 아니라 `FormField`가 소유**.
+- **TextInput** / **PasswordInput** / **NumberInput** / **Textarea**(`autosize`)
+- **Select** `options: {label,value}[]` · `value: string`(단일)
+- **Radio** `options` · `value`(단일)
+- **DatePicker** `value`(Date/ISO) · **MultiDatePicker** `value: string[]`(개별 날짜 집합)
+- **Checkbox** / **Switch** `checked`/`onChange` · 인라인 `label`은 유지
+
+### 레이아웃 원자 (3) · 배치 프리미티브 (3)
+- **Card** `variant: elevated|outlined|flat` · `padding: none|sm|md|lg`
+- **Divider** `orientation: horizontal|vertical`
+- **Container** `maxWidth: narrow|default|wide`  ← 폭의 천장은 여기 하나뿐
+- **Stack**(세로) `gap`(토큰) · `align: start|center|end|stretch` · `justify: start|center|end|between`
+- **Group**(가로) `gap` · `align: start|center|end` · `justify: …|between` · `wrap`
+- **Grid** `columns: 1|2|3|4|6|12` · `gap` · 자식 `Grid.Col span: 1~12`
+
+### 분자 (15) — 원자를 결합·일부 상태 고정
+- **FormField** — 입력 컨트롤을 children으로 받아 `label`·`withAsterisk`·`error`(메시지+빨간 테두리)를 두름. **모든 입력칸은 이걸로 감싼다.**
+- **MultiSelect** `options` `value: string[]` · **DateRangeField** `value: {start,end}`
+- **InputGroup** `leftAddon`/`rightAddon: string|<Icon>` · **FileUploader** `value: FileItem[]`
+- **Pagination** `total` `value` `onChange` · **Callout** `tone: info|warning|danger|neutral` `title?` (비휘발 인라인 안내)
+- **StatusRow** `label` `status:{label,tone}` `actions` · **SummaryCard** `label` `count?` `amount?` `tone?` (KPI 타일)
+- **TotalRow** `label?` `amount`(합계 행) · **Menu** `trigger` `items: Action[]` `header?`
+- **ObjectCard** `{title,subtitle?,badge?,thumbnail?,fields?,actions?}` · **SectionHeader** `title|titleNode` `actions?` `divider?`
+- **Breadcrumb** `items: {label,onClick?}[]`(마지막=현재)
+
+### 유기체 (9) — 화면 한 구획, 도메인은 스키마로만 주입
+- **Modal** `opened` `onClose` `title` `actions` `size: sm|md|lg` · children=본문
+- **DataTable** `columns` `rows` `status: loading|empty|ready` · controlled 정렬·페이징 · `onRowClick`
+- **EmptyState** `icon` `title` `description` `action?`
+- **PageHeader** `title` `description?` `actions?` · **DescriptionList** `items` `columns: 1|2|3`
+- **AppShell** `logo` `menuItems` `activePath` `onNavigate` `profile` `notification` · children=콘텐츠
+- **Timeline** `events: TimelineEvent[]` · **Calendar** `month` `events: CalendarEvent[]`(월 뷰 단일)
+- **Tree** `nodes` controlled 선택·펼침 · `editable`(쓰기 게이트)
+
+### 페이지 템플릿 (4) + 폼 조립 조직 (1) — `FieldSpec[]` 구동, 도메인 0줄
+- **ListPage** `schema` `rows` `status` · 정렬·페이징·`totalCount`
+- **DetailPage** `title` `info`(DescriptionList) `form?`(FormSection) — 좌 정보 / 우 폼 2분할
+- **HierarchyExplorer** 좌 Tree / 우 ObjectCard 그리드 (계층 마스터-디테일)
+- **PageGrid** 닫힌 격자(Bento): `columns` `gap` · 타일 `colSpan` `rowSpan`(고정 셀 높이)
+- **FormSection** `fields: FieldSpec[]` `values` `onChange` `columns: 1|2` `resolvers?` `errors?` — 타입→원자 매핑·FormField 감싸기를 자동 수행
+
+### 공유 어휘 타입
+- **`Action`** = `{ label; variant?; onClick; icon?: IconName; iconOnly? }` — 버튼은 이 형태로 넘기고 배치는 부품이 고정한다.
+- **`CellType`**(DataTable·DescriptionList·ObjectCard 값 표현, 14종): `text badge number currency date boolean actions user tags link percent secondary relative-time thumbnail`
+- **`notify`** (휘발 피드백): `notify.success|danger|warning|info(...)` — 스키마 밖 코드 배선. **작업 결과만**; 필드 검증은 인라인 FormField.
+
+---
+
+## 6. 조립 결정 가이드 (소프트 관습 — 강제 아님, 판단 기준)
+
+- **Group vs Grid:** 자식이 내용 크기대로 흐르면 **Group**, 비율(1:2 등)을 *지정*하면 **Grid**. 한 행만 있어도 비율 지정이면 Grid.
+- **단일 선택 부품:** 폼 제출값 → `Radio`/`Select`(선택지 ~5개 기준 Radio) · 같은 대상 뷰/모드 토글 → `SegmentedControl` · 다른 구획 전환 → `TabBar`.
+- **"이건 부품일까 스키마일까":** 정의에서 도메인(예: "발주")을 빼도 말이 되면 부품, 안 되면 스키마다. "발주항목카드"는 없다 → `DataTable` + 발주 `FieldSpec[]`.
+- **변형이 필요하면 옵션을 쌓지 말고** 사람에게 새 부품 큐레이션을 요청한다(토글 15개 = 무한 공간 부활).
+- **한 화면의 primary 행동은 하나.** PageHeader에 주 행동이 있으면 EmptyState의 action은 비운다.
+
+---
+
+## 7. 완성 예제 (조립의 논리)
+
+```tsx
+import { FormSection } from '@byeongjunkim-jjaim/erp-dsl';
+import { buildZodSchema, type FieldSpec } from '@byeongjunkim-jjaim/erp-dsl/schema';
+
+// 1) 자연어 "업체명(필수)·등급·전화" → FieldSpec[]
+const fields: FieldSpec[] = [
+  { name: 'company', label: '업체명', type: 'text', required: true },
+  { name: 'tier', label: '등급', type: 'select',
+    options: [{ label: '일반', value: 'std' }, { label: 'VIP', value: 'vip' }] },
+  { name: 'phone', label: '연락처', type: 'text', mask: 'phone',
+    pattern: '^0\\d{1,2}-?\\d{3,4}-?\\d{4}$' },
+];
+
+// 2) 검증기 도출
+const schema = buildZodSchema(fields);
+
+// 3) 렌더 — 도메인 코드 0줄, 부품은 "고객"을 모른다
+<FormSection fields={fields} columns={2} values={values} onChange={setField} errors={errors} />
+```
+
+목록/상세는 같은 원리로 `<ListPage schema={…} rows={…} />`, `<DetailPage info={…} form={…} />`에 데이터만 먹인다.
+
+---
+
+## 8. 설치·배선 (사람이 소비 앱을 세팅할 때)
+
+소스(.tsx)를 그대로 배포하므로 소비 앱이 트랜스파일한다. **패키지명을 정확히 쓴다(아래 그대로).**
+
+```ini
+# 소비 레포 루트 .npmrc
+@byeongjunkim-jjaim:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 ```
 
 ```bash
 npm i @byeongjunkim-jjaim/erp-dsl
-# peer 의존성(소비 앱이 직접 설치)
+# peer 의존성(소비 앱이 직접 설치) — React 19+, Mantine v8, zod v4
 npm i @mantine/core @mantine/dates @mantine/hooks @mantine/notifications dayjs zod react react-dom
 ```
 
-## Next.js 설정 (필수)
-
-소스(.tsx)를 그대로 배포하므로 소비 앱이 트랜스파일한다.
-
 ```ts
-// next.config.ts
-export default { transpilePackages: ['@your-org/erp-dsl'] };
+// next.config.ts — 필수
+export default { transpilePackages: ['@byeongjunkim-jjaim/erp-dsl'] };
 ```
-
-## 사용
 
 ```tsx
-import { Providers, ListPage, notify } from '@your-org/erp-dsl';
-import { buildZodSchema, type FieldSpec } from '@your-org/erp-dsl/schema';
+// 루트 레이아웃: Providers로 감싼다 (테마·토스트·폰트 자동)
+import { Providers, ColorSchemeScript, mantineHtmlProps } from '@byeongjunkim-jjaim/erp-dsl';
+// <html {...mantineHtmlProps}> … <head><ColorSchemeScript/></head> … <Providers>{children}</Providers>
 ```
 
-`Providers`를 루트 레이아웃에 감싸고(테마·토스트 마운트 포함), 부품은 `@your-org/erp-dsl`,
-스키마 타입·검증기는 `@your-org/erp-dsl/schema`에서 가져온다.
+**폰트:** `Providers`가 PretendardGOV 가변 woff2(패키지 동봉, 전 weight)를 자동 로드 — CDN 없이 사내망·오프라인 동작.
 
-## 폰트 (PretendardGOV)
+---
 
-`Providers`가 `fonts.css`를 통해 **Pretendard GOV**를 자동 로드한다 — 소비 앱이 따로 폰트를 걸 필요 없음.
-폰트는 **패키지에 동봉(self-host)** 된 단일 가변 woff2(`src/ui/fonts/PretendardGOVVariable.woff2`, 전 weight 45~920)라 **CDN 없이 사내망·오프라인에서도 동작**한다. theme의 `fontFamily="Pretendard GOV Variable"`이 이 실물을 가리킨다.
-> Next 소비 앱은 `transpilePackages` 덕에 패키지 안 CSS의 `url()` woff2를 정적 자산으로 처리한다.
+## 9. 설계 문서
 
-## 경계 (헌법)
+깊은 근거·전체 규격은 `docs/`에 있다. 판단이 막히면 여기를 본다.
+
+- [`docs/00_설계원리.md`](docs/00_설계원리.md) — 왜 이렇게 만드는가 (철학·핵심 컨셉)
+- [`docs/01_규칙과구조.md`](docs/01_규칙과구조.md) — 헌법 8조·강제 3층·계층 모델·배치/폭/공간 장부
+- [`docs/02_토큰과구현.md`](docs/02_토큰과구현.md) — 토큰 값·전체 부품 prop 규격·스키마 층·패키지/배포
+- [`docs/03_로드맵과미해결.md`](docs/03_로드맵과미해결.md) — 진행 상황·미해결 지점
+
+---
+
+## 경계 (헌법 요약)
 
 - 소비 앱은 이 패키지를 **수정하지 않는다.** 카탈로그 확장은 본 라이브러리 레포에서 사람이 큐레이션으로만(헌법 4).
-- Mantine 직접 import 금지 — 이 패키지의 배럴만 사용(헌법 7).
+- `@mantine/*` 직접 import 금지 — `@byeongjunkim-jjaim/erp-dsl` 배럴만 사용(헌법 7).
+- 강제 규칙(린트)은 특정 레포 설정이 아니라 **이 DSL의 일부**다 — 어느 프로젝트에 올라가든 따라간다.

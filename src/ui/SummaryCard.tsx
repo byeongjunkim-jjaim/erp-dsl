@@ -30,7 +30,7 @@ export function SummaryCard({ label, icon, tone = 'neutral', count, amount }: Su
             style={{
               color: `var(--mantine-color-${tone}-7)`,
               background: `var(--mantine-color-${tone}-0)`,
-              borderRadius: 'var(--mantine-radius-md)',
+              borderRadius: 'var(--mantine-radius-sm)', // 작은 아이콘 칩 — md(16px)는 과도하게 둥글어 sm(8px) 고정
               padding: 'var(--mantine-spacing-xs)',
               display: 'inline-flex',
               flexShrink: 0,

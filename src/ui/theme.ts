@@ -82,6 +82,13 @@ const typography: Record<TypographyStep, { fontSize: string; fontWeight: number;
 const borderWidth = '1px';            // 보더 굵기 1종
 const iconBaselineShift = '-0.125em'; // 아이콘 광학정렬 보정(폰트 크기 비례 토큰, 1/8 룰)
 
+// 모서리 곡률(애플식 squircle). corner-shape: superellipse(2)=squircle.
+// radius 스케일(sm/md/full)·값은 안 건드리고, 그 위에 *연속 곡률*만 얹는 단일 토큰.
+// border·box-shadow·outline·overflow가 이 모양을 네이티브로 따라간다(충돌 없음).
+// 미지원 브라우저(Safari/Firefox)는 무시 → 평범한 둥근 모서리로 graceful fallback.
+// 값은 화면 검증에서 조정(더 부드럽게=superellipse(1.8) 등). 컴포넌트엔 prop으로 안 연다(헌법 5).
+const cornerShape = 'superellipse(2)';
+
 // ─────────────────────────────────────────────────────────────
 export const theme = createTheme({
   white: '#FFFFFF',
@@ -104,7 +111,7 @@ export const theme = createTheme({
     xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.25rem', xl: '1.75rem',
   },
 
-  radius: { sm: '4px', md: '8px', full: '9999px' },
+  radius: { sm: '8px', md: '16px', full: '9999px' }, // md 키움(squircle 곡률이 보이려면 큰 반경 필요 — 8px는 안 드러남)
   defaultRadius: 'sm',
 
   // 그림자: none은 "안 줌"이라 키 없음. sm(카드)·md(모달)만.
@@ -119,6 +126,7 @@ export const theme = createTheme({
     semantic,
     borderWidth,
     iconBaselineShift,
+    cornerShape,
   },
 });
 
@@ -160,6 +168,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => {
     variables: {
       '--border-width':        borderWidth,
       '--icon-baseline-shift': iconBaselineShift,
+      '--corner-shape':        cornerShape,
       ...typoVars,
     },
     light: pick('light'),

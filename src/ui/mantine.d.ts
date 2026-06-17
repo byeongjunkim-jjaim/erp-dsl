@@ -38,6 +38,7 @@ declare module '@mantine/core' {
     };
     borderWidth: string;
     iconBaselineShift: string;
+    cornerShape: string;
   }
 
   // spacing에 추가한 xxs/xxl, radius에 추가한 full 키 인식

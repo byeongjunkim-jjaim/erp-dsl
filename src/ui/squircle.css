@@ -1,0 +1,25 @@
+/* ─────────────────────────────────────────────────────────────
+   squircle — 애플식 연속 곡률(superellipse)을 "박스" 컴포넌트에만 opt-in.
+
+   ⚠️ 왜 전역(*)이 아니라 화이트리스트인가:
+   corner-shape: squircle은 "원/알약"의 둥근 곡선까지 각지게 만들어 원을 둥근 사각형으로
+   바꾼다. 전역으로 깔고 원형을 하나씩 제외(blacklist)하면 빠뜨린 원형이 각져 버린다.
+   그래서 방향을 뒤집어 "박스에만 켠다(whitelist)" — 목록에 없는 모든 것(Avatar·Spinner·
+   Switch·Chip·Radio·알림 점 등 원형 전부)은 자동으로 round를 유지한다. 원이 깨질 길이 없다.
+
+   corner-shape는 border-radius가 있어야 작동하고, border·box-shadow·outline·overflow가
+   이 모양을 네이티브로 따라간다(테두리·그림자 충돌 없음). 미지원 브라우저(Safari/Firefox)는
+   무시 → 평범한 둥근 모서리로 graceful fallback.
+
+   값(--corner-shape)의 단일 출처는 theme.ts(역할 변수 통로). 컴포넌트엔 prop으로 안 연다(헌법 5).
+   새 박스 컴포넌트가 squircle을 받아야 하면 여기 셀렉터만 추가한다(큐레이션, 헌법 4).
+   ───────────────────────────────────────────────────────────── */
+[class*="mantine-Button-root"],          /* 버튼 · IconButton */
+[class*="mantine-Paper-root"],           /* Card 등 Paper 기반 표면 */
+[class*="mantine-Input-input"],          /* TextInput·Select·DatePicker 등 입력칸 */
+[class*="mantine-Modal-content"],        /* 모달 다이얼로그 */
+[class*="mantine-Popover-dropdown"],     /* Popover · Menu 드롭다운 */
+[class*="mantine-SegmentedControl-root"] /* 세그먼트 컨트롤 박스 */
+{
+  corner-shape: var(--corner-shape, round);
+}

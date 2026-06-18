@@ -249,7 +249,7 @@ export function Demo({ name }: { name: string }) {
     Popover: <Popover opened={pop} onChange={setPop} content={<Card variant="outlined" padding="sm"><Text variant="body">슬롯 안은 부품으로</Text></Card>}><Button variant="secondary" onClick={() => setPop((v) => !v)}>클릭</Button></Popover>,
     Spinner: <Spinner />,
     SegmentedControl: <SegmentedControl options={opts} value={seg} onChange={setSeg} />,
-    TabBar: <TabBar options={opts} value={tab} onChange={setTab} />,
+    TabBar: <TabBar options={[{ ...opts[0], count: 2 }, opts[1], opts[2]]} value={tab} onChange={setTab} />,
     TextInput: <TextInput value={txt} onChange={setTxt} placeholder="이름 입력" />,
     PasswordInput: <PasswordInput value={pw} onChange={setPw} placeholder="비밀번호" />,
     NumberInput: <NumberInput value={num} onChange={setNum} placeholder="수량" />,
@@ -308,7 +308,7 @@ export function Demo({ name }: { name: string }) {
             <Accordion
               defaultOpen={['basic']}
               items={[
-                { value: 'basic', label: <StatusRow label="기본 정보" icon="file-text" status={{ label: '필수', tone: 'info' }} />, children: <Text variant="body">상호 · 사업자번호 · 대표자</Text> },
+                { value: 'basic', label: <StatusRow label="기본 정보" icon="file-text" status={{ label: '필수', tone: 'info' }} />, children: <Text variant="body">상호 · 사업자번호 · 대표자</Text>, tone: 'attention' },
                 { value: 'owner', label: <StatusRow label="담당자" icon="user" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">이름 · 연락처 · 이메일</Text> },
                 { value: 'config', label: <StatusRow label="환경설정" icon="settings" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">여신한도 · 결제일</Text> },
               ]}

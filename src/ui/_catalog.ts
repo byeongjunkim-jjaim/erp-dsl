@@ -178,7 +178,7 @@ export const CATALOG: CatalogEntry[] = [
     ] },
   { name: 'TabBar', layer: '의미 원자', role: '다른 구획으로 전환(대상 자체가 바뀜).',
     props: [
-      { name: 'options', kind: '기능', values: '{ label, value }[]' },
+      { name: 'options', kind: '기능', values: '{ label, value, count?: number, countTone?: danger|neutral }[] (count=탭별 미처리 건수 → CountBadge)' },
       { name: 'value / onChange', kind: '기능', values: 'controlled, string(활성 키)' },
       { name: 'disabled', kind: '스타일', values: 'boolean' },
     ] },
@@ -304,12 +304,12 @@ export const CATALOG: CatalogEntry[] = [
     } },
   { name: 'Accordion', layer: '분자', role: '여러 [헤더+본문] 섹션의 펼침을 조율(하나만/여럿). Collapsible 직접 쌓기를 대체.',
     props: [
-      { name: 'items', kind: '콘텐츠', values: '{ value, label, children }[]' },
+      { name: 'items', kind: '콘텐츠', values: "{ value, label, children, tone?: 'attention' }[] (tone=행동요구 행 → 좌측 띠+틴트)" },
       { name: 'multiple', kind: '기능', values: 'boolean (여러 개 동시 펼침)' },
       { name: 'defaultOpen', kind: '값', values: 'string[] (처음 펼친 섹션 value)' },
     ],
     composition: {
-      토큰: ['radius md', '구분(separated)', 'chevron'],
+      토큰: ['radius md', '구분(separated)', 'chevron', 'attention(danger 띠·틴트)'],
       '의미 원자': ['Icon'],
     } },
   { name: 'Stat', layer: '분자', role: 'KPI 지표 타일(추세형). SummaryCard 형제: 큰 값 + 추세·델타.',
@@ -670,7 +670,7 @@ export const CATALOG: CatalogEntry[] = [
   { name: 'AppShell', layer: '유기체', role: '페이지 전체 골격(좌 넷바 + 우상단 바 + 콘텐츠).',
     props: [
       { name: 'logo / onLogoClick', kind: '콘텐츠', values: 'ReactNode, () => void' },
-      { name: 'menuItems / activePath / onNavigate', kind: '기능', values: '{ label, icon, path, group }[]' },
+      { name: 'menuItems / activePath / onNavigate', kind: '기능', values: '{ label, icon, path, group, count?: number }[] (count=미처리 건수 → CountBadge, 어느 화면에서도 보임)' },
       { name: 'profile', kind: '콘텐츠', values: '{ name, role, email, menu?: Action[] }' },
       { name: 'notification', kind: '기능', values: '{ hasUnread?, onClick?, content? }' },
       { name: 'children', kind: '콘텐츠', values: 'ReactNode (콘텐츠 영역)' },

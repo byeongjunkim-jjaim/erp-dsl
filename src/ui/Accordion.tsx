@@ -13,6 +13,9 @@ export type AccordionItem = {
   value: string;        // 섹션 식별자(열림 상태 키)
   label: ReactNode;     // 항상 보이는 헤더(요약 분자 슬롯 가능 — 단 인터랙티브 요소 금지: 헤더 전체가 토글)
   children: ReactNode;  // 접힘 대상 상세
+  // tone='attention' = "지금 네 행동이 필요한 행" — 좌측 색 띠 + 은은한 틴트로 펼치기 전에 "내 차례"가 한눈에.
+  //  행동요구 색축(CountBadge·Callout과 동일 빨강) 공유. 행동 불필요(진행중·완료)엔 안 준다(중립). 남발 금지(소수만).
+  tone?: 'attention';
 };
 
 type Props = {
@@ -27,8 +30,13 @@ export function Accordion({ items, multiple = false, defaultOpen = [] }: Props) 
     variant: 'separated' as const,
     radius: 'md' as const,
   };
+  // 행동요구 행 = 좌측 색 띠(3px) + 은은한 틴트(danger-0). separated 변형의 기본 보더 위에 덧입힌다.
+  const attn = {
+    borderLeft: '3px solid var(--mantine-color-danger-6)',
+    background: 'var(--mantine-color-danger-0)',
+  } as const;
   const body = items.map((it) => (
-    <MAccordion.Item key={it.value} value={it.value}>
+    <MAccordion.Item key={it.value} value={it.value} style={it.tone === 'attention' ? attn : undefined}>
       <MAccordion.Control>{it.label}</MAccordion.Control>
       <MAccordion.Panel>{it.children}</MAccordion.Panel>
     </MAccordion.Item>

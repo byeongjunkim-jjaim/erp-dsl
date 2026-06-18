@@ -18,6 +18,7 @@ import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
+import { CountBadge } from './CountBadge';
 import { Avatar } from './Avatar';
 import { IconButton } from './IconButton';
 import { Popover } from './Popover';
@@ -26,7 +27,7 @@ import { Stack } from './Stack';
 import { Group } from './Group';
 import { type Action } from './_cells';
 
-type MenuItem = { label: string; icon: IconName; path: string; group?: string };
+type MenuItem = { label: string; icon: IconName; path: string; group?: string; count?: number };
 // 프로필 더보기: menu(Action[]) 주면 Popover로 메뉴, 없으면 onMenuClick 폴백(경쟁 경로 아님).
 type Profile = { name: string; role?: string; email?: string; avatarSrc?: string; onMenuClick?: () => void; menu?: Action[] };
 // 알림: content 주면 Popover로 목록, 없으면 onClick 폴백.
@@ -94,9 +95,14 @@ export function AppShell({
 
   // 탭 타일(아이콘 위 라벨) — 우리 Stack/Icon/Text로 조립. 활성은 색 역할(primary) vs secondary로 구분.
   //  (브랜드 틴트 활성은 Text가 닫힌 텍스트 역할만 노출해 불가 — 필요 시 브랜드 텍스트 역할 신설은 별도 큐레이션.)
-  const tile = (icon: IconName, label: string, active: boolean) => (
+  const tile = (icon: IconName, label: string, active: boolean, count?: number) => (
     <Stack gap="xxs" align="center">
-      <Icon name={icon} size="sm" color={active ? 'primary' : 'secondary'} />
+      <span style={{ position: 'relative', display: 'inline-flex' }}>
+        <Icon name={icon} size="sm" color={active ? 'primary' : 'secondary'} />
+        {count != null && count > 0 && (
+          <span style={{ position: 'absolute', top: -7, left: '100%', marginLeft: -8 }}><CountBadge count={count} /></span>
+        )}
+      </span>
       <Text variant="caption" color={active ? 'primary' : 'secondary'}>{label}</Text>
     </Stack>
   );
@@ -241,6 +247,7 @@ export function AppShell({
                 {g.items.map((it) => (
                   <NavLink key={it.path} label={it.label}
                     leftSection={<Icon name={it.icon} size="sm" />}
+                    rightSection={it.count != null && it.count > 0 ? <CountBadge count={it.count} /> : undefined}
                     active={activePath === it.path} onClick={() => onNavigate(it.path)} />
                 ))}
               </MStack>
@@ -262,7 +269,7 @@ export function AppShell({
             return (
               <button key={it.path} type="button" className="erp-tab" data-active={active}
                 aria-current={active ? 'page' : undefined} onClick={() => onNavigate(it.path)}>
-                {tile(it.icon, it.label, active)}
+                {tile(it.icon, it.label, active, it.count)}
               </button>
             );
           })}
@@ -279,6 +286,7 @@ export function AppShell({
                         <Group gap="sm" align="center">
                           <Icon name={it.icon} size="sm" color={active ? 'primary' : 'secondary'} />
                           <Text variant="body" color={active ? 'primary' : 'secondary'}>{it.label}</Text>
+                          {it.count != null && it.count > 0 && <CountBadge count={it.count} />}
                         </Group>
                       </button>
                     );

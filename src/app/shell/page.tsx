@@ -45,7 +45,7 @@ export default function ShellDemo() {
       onNavigate={setActive}
       menuItems={[
         { label: '대시보드', icon: 'dashboard', path: '/', group: '개요' },
-        { label: '발주', icon: 'upload', path: '/orders', group: '거래' },
+        { label: '발주', icon: 'upload', path: '/orders', group: '거래', count: 3 },
         { label: '제품', icon: 'package', path: '/products', group: '거래' },
         { label: '거래처', icon: 'building', path: '/partners', group: '거래' },
         { label: '재고', icon: 'warehouse', path: '/stock', group: '관리' },

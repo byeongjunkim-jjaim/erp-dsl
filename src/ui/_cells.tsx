@@ -13,6 +13,7 @@ import { Anchor } from './Anchor';
 import { Image } from './Image';
 import { Icon, type IconName } from './Icon';
 import { IconButton } from './IconButton';
+import { Menu } from './Menu';
 
 dayjs.extend(relativeTime); // relative-time 셀용. locale은 인스턴스(.locale('ko'))로만 적용해 전역 부작용 없음.
 
@@ -20,7 +21,7 @@ dayjs.extend(relativeTime); // relative-time 셀용. locale은 인스턴스(.loc
 //  · user={name,src?} / tags=string[] / link={label,href} / percent=number /
 //    secondary={primary,secondary?} / relative-time=ISO / thumbnail=src
 export type CellType =
-  | 'text' | 'badge' | 'number' | 'currency' | 'date' | 'boolean' | 'actions'
+  | 'text' | 'badge' | 'number' | 'currency' | 'date' | 'boolean' | 'actions' | 'menu'
   | 'user' | 'tags' | 'link' | 'percent' | 'secondary' | 'relative-time' | 'thumbnail';
 export type ActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 // 행위 중심 액션은 좌측 아이콘(icon) 또는 아이콘 전용(iconOnly). 중립 액션(취소·이동)은 둘 다 생략 → 텍스트.
@@ -126,13 +127,35 @@ export function renderCell(
       const d = dayjs(value as string);
       return <Text variant="body">{d.isValid() ? d.locale('ko').fromNow() : ''}</Text>;
     }
-    case 'thumbnail':
-      return value ? <Image src={String(value)} alt="" size="sm" /> : <span style={{ color: 'var(--text-disabled)' }}>—</span>;
+    case 'thumbnail': {
+      // src 문자열 또는 { src?, icon? } — 사진 없으면 폴백 글리프(목록에서도 '얼굴' 유지), 그것도 없으면 대시.
+      const t = value == null || typeof value === 'string'
+        ? { src: value as string | undefined, icon: undefined as IconName | undefined }
+        : (value as { src?: string; icon?: IconName });
+      if (t.src) return <Image src={t.src} alt="" size="sm" />;
+      if (t.icon)
+        return (
+          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 'var(--mantine-radius-sm)', background: 'var(--bg-secondary)' }}>
+            <Icon name={t.icon} color="secondary" />
+          </span>
+        );
+      return <span style={{ color: 'var(--text-disabled)' }}>—</span>;
+    }
     case 'actions': {
       const acts = (value as Action[] | undefined) ?? [];
       return (
         <Group gap="xs" justify="end">
           {acts.map((a, i) => renderAction(a, i, 'sm'))}
+        </Group>
+      );
+    }
+    case 'menu': {
+      // 행 액션을 케밥(⋯) 하나로 수납 — 큰 버튼이 행마다 꾸역꾸역 들어가는 걸 차단(좁은 표·다행 목록용).
+      const acts = (value as Action[] | undefined) ?? [];
+      if (acts.length === 0) return null;
+      return (
+        <Group gap="xs" justify="end">
+          <Menu trigger={<IconButton icon="dots-vertical" label="더보기" variant="ghost" size="sm" />} items={acts} position="bottom" />
         </Group>
       );
     }

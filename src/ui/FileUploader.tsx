@@ -4,6 +4,9 @@
 //  · 선택/제거/재시도 → "목록이 이렇게 바뀌었으면 함"(next)을 통째로 신호만 쏜다.
 //    그 신호로 무엇이 일어나는지(실제 업로드)는 모른다 — 렌더러의 일.
 //  · 브라우저 File → FileItem(id·status:'pending') 부여는 분자의 일(표현 단위라서).
+//    단, 원본 File을 FileItem.file로 *실어 보낸다* — "업로드는 소비처의 일"인데 바이트를 안 주면
+//    소비처가 FormData를 못 만들어 실제 업로드가 물리적으로 불가능했다(controlled value가 소비처를 지나가니
+//    별도 콜백 없이 file 필드만 얹으면 충분). pending 항목만 보유(검증 실패 error엔 업로드 대상 아님).
 // status 4 enum: pending=점선/대기 · uploading=진행바 · done=체크 · error=빨강+재시도.
 // 검증(용량·확장자)은 스키마 → 위반 시 status='error'. 단일/다중은 multiple로 흡수.
 import { useRef } from 'react';
@@ -20,6 +23,7 @@ export type FileItem = {
   status: 'pending' | 'uploading' | 'done' | 'error';
   progress?: number; // 0~100
   error?: string;
+  file?: File; // 원본 바이트 — pending에 실린다. 소비처가 FormData(file)로 실제 업로드. 검증 실패엔 없음.
 };
 
 type Props = {
@@ -54,7 +58,7 @@ function toItems(files: File[], accept?: string, maxSize?: number): FileItem[] {
     if (maxSize != null && f.size > maxSize) {
       return { id, name: f.name, status: 'error' as const, error: `용량 초과 (최대 ${Math.round(maxSize / 1024 / 1024)}MB)` };
     }
-    return { id, name: f.name, status: 'pending' as const };
+    return { id, name: f.name, status: 'pending' as const, file: f };
   });
 }
 

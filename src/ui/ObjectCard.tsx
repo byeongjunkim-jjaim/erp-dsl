@@ -1,115 +1,119 @@
 'use client';
-// ObjectCard (분자) — 계층 안 "오브젝트 한 칸"의 닫힌 표현. HierarchyExplorer 우측 그리드/목록이 쓴다.
-//  · 미리보기/티저가 아니다 — 오브젝트가 그 자리에서 갖는 완결된 표현(상세로 떠넘기지 않음).
-//  · 자유 render 구멍 대신 닫힌 스키마({title, subtitle?, badge?, thumbnail?, fields?, actions?})로 결정적 렌더
-//    (DataTable·DescriptionList 셀 타입과 동형 — 헌법 정합). 도메인 무지.
-//  · 도메인 규칙(무엇이 수정 가능/컨펌 대상인가)은 카드가 모른다. 위(페이지)가 actions로 의도를,
-//    fields[].note로 "이 필드가 지금 비정상 상태(예: 변경요청중)"를 국소로 먹인다.
-//  · layout — 같은 오브젝트의 두 표현(Finder식 뷰): card(세로 갤러리) / row(가로 목록, 밀도↑). 닫힌 enum(§11-3 별개 변형).
-//    내용은 동일, 배치만 다름(데이터 무손실). 어느 뷰인지는 위(Explorer)가 정한다.
+// ObjectCard (분자) — 계층 안 "오브젝트 한 칸"의 닫힌 표현. HierarchyExplorer '카드' 뷰의 12×6 벤토가 쓴다.
+//  · 자유 render 구멍 대신 *역할 슬롯*으로 닫는다 — 평면 fields[] 자루가 아니라 각 조각에 이름(역할)을 준다.
+//    역할: media(썸네일/폴백) · title(이름, 필수) · subtitle(식별자) · status(상태 배지 1개) ·
+//          headline(핵심값 단 하나 — 도메인이 주입) · attributes(보조 라벨—값) · actions(케밥 메뉴에 N개 수납).
+//  · **단일 사진 카드**. 밀도 비교는 카드를 줄이는 게 아니라 Explorer '목록'(DataTable)이 맡는다.
+//  · 레이아웃 규약(끔찍한 여백 방지 — 전부 DSL 프리미티브·토큰으로):
+//    - Card padding=sm → media가 카드 가장자리에서 **인셋**(상·좌·우·하 여백). media radius=md로 둥근 모서리(풀블리드 금지).
+//    - media는 **flex:1로 footer 다음의 남은 높이만 차지**(고정 최소 MEDIA_MIN). footer는 절대 안 줄어(flexShrink:0) → 속성 잘림 0.
+//      (예전 MEDIA_MIN을 크게 잡아 footer를 밀어내 "재질" 등이 잘리던 버그를 역전: 데이터가 우선, media가 양보.)
+//    - 오버레이 칩 없음 — status·kebab는 이미지 위 흰 칩이 아니라 **footer 안**에 둔다(이미지 대비/흰 테두리 문제 원천 제거).
+//    - 모든 한 줄 값은 nowrap+ellipsis(라벨은 flexShrink:0) → "단/가" 같은 라벨 깨짐·헤드라인 줄바꿈 차단.
+//  · 도메인 무지: 무엇이 status인지/headline인지는 위(페이지)가 매핑. note=그 값이 지금 비정상 상태(예: 변경요청중).
 import type { ReactNode } from 'react';
 import { Card } from './Card';
 import { Stack } from './Stack';
 import { Group } from './Group';
 import { Text } from './Text';
 import { Badge } from './Badge';
-import { Divider } from './Divider';
 import { Image } from './Image';
-import { renderAction, renderCell, type Action, type BadgeColor, type CellType } from './_cells';
+import { Icon, type IconName } from './Icon';
+import { IconButton } from './IconButton';
+import { Menu } from './Menu';
+import { renderCell, type Action, type BadgeColor, type CellType } from './_cells';
 
-// 카드가 본문에 나열하는 "라벨 — 값" 한 줄. 값 표현은 셀 어휘(_cells) 재사용(통화/날짜 등 동형 포맷).
-//  · note: 그 필드에 국소된 상태 배지(예: '변경요청중'). 페이지가 워크플로에 따라 달았다 뗀다.
+// "라벨 — 값" 한 줄(headline·attributes 공용). 값 표현은 셀 어휘 재사용(통화/날짜 등 동형 포맷).
+//  · note: 그 값에 국소된 상태 배지(예: '변경요청중'). 페이지가 워크플로에 따라 달았다 뗀다.
 export type ObjectField = {
   label: string;
   value: unknown;
   type: CellType;
   note?: { label: string; tone: BadgeColor };
-  // true면 목록(brief) 뷰에도 노출되는 "핵심 값"(예: 금액·상태). 미표시 필드는 카드(detail) 뷰에서만 보인다.
-  //  → 두 뷰의 의의: 목록=요약(summary 필드만, 빠른 스캔) / 카드=상세(전체 필드). 정보량이 갈린다.
-  summary?: boolean;
 };
-
-export type ObjectCardLayout = 'card' | 'row';
 
 type Props = {
-  title: string;
-  subtitle?: string;
-  badge?: { label: string; tone: BadgeColor };
-  thumbnail?: string;        // 이미지 src
-  fields?: ObjectField[];    // 오브젝트 본문 데이터(라벨—값 행). 미리보기 아님 → 개수 캡 없음.
-  actions?: Action[];
-  onClick?: () => void;      // 카드 클릭(선택/열기) — actions는 전파 차단
-  layout?: ObjectCardLayout; // 기본 card
+  title: string;                      // 이름 — 필수
+  subtitle?: string;                  // 식별자(SKU·코드·번호)
+  status?: { label: string; tone: BadgeColor }; // 상태 배지 1개(라이프사이클)
+  thumbnail?: string;                 // media 이미지 src
+  icon?: IconName;                    // 썸네일 부재 시 폴백 글리프(기본 'package' — 도메인이 바꿀 수 있음)
+  headline?: ObjectField;             // 핵심값 단 하나(오브젝트를 한눈에 정의하는 지표)
+  attributes?: ObjectField[];         // 보조 라벨—값
+  actions?: Action[];                 // 케밥 메뉴에 N개 수납(onClick에 모달 열기 등 배선). 전파 차단.
+  onClick?: () => void;               // 카드 클릭(선택/열기)
 };
 
-export function ObjectCard({ title, subtitle, badge, thumbnail, fields, actions, onClick, layout = 'card' }: Props) {
-  const titleRow = (
-    <Group gap="xs" align="center" justify="between" wrap={false}>
-      <Text variant="body-strong">{title}</Text>
-      {badge && <Badge color={badge.tone}>{badge.label}</Badge>}
-    </Group>
-  );
-  // 액션 — 전파 차단(카드 클릭과 분리). 카드 뷰는 좁아 wrap(클리핑 차단), 목록 뷰는 폭 여유라 nowrap.
-  const actionBar = (wrap: boolean) =>
-    actions && actions.length > 0 ? (
-      <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
-        <Group gap="xs" justify="end" wrap={wrap}>{actions.map((a, i) => renderAction(a, i, 'sm'))}</Group>
-      </div>
-    ) : null;
+const MEDIA_MIN = 40; // media가 양보할 수 있는 하한 — footer(데이터)가 우선, 작은 창에서도 안 잘리게 작게. 남는 높이는 media가 채워 photo-forward.
+
+export function ObjectCard({
+  title, subtitle, status, thumbnail, icon, headline, attributes, actions, onClick,
+}: Props) {
+  // 라벨 — 값 한 줄. 라벨=flexShrink 0(안 깨짐) / 값=ellipsis / note=값 뒤 배지.
   const fieldPair = (f: ObjectField, i: number) => (
-    <Group key={i} gap="xs" align="center" wrap={false}>
-      <Text variant="caption" color="secondary">{f.label}</Text>
-      <Group gap="xs" align="center" wrap={false}>
-        {renderCell(f.type, f.value)}
+    <Group key={i} gap="xs" align="center" justify="between" wrap={false}>
+      <Text variant="caption" color="secondary"><span style={{ whiteSpace: 'nowrap' }}>{f.label}</span></Text>
+      <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <div style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{renderCell(f.type, f.value)}</div>
         {f.note && <Badge color={f.note.tone}>{f.note.label}</Badge>}
-      </Group>
+      </div>
     </Group>
   );
 
-  // 내용 높이로 둔다(fill 제거) — 그리드 alignItems:start와 합쳐 행 높이로 늘어나며 생기던 void 차단.
-  const card =
-    layout === 'row' ? (
-      // 목록(가로): [썸네일 sm] [제목·부제·필드 inline, flex] [액션]. 폭 여유라 버튼 안 잘림.
-      <Card variant="outlined" padding="md">
-        <Group gap="md" align="center" wrap={false}>
-          {thumbnail && <Image src={thumbnail} alt={title} size="sm" />}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Stack gap="xxs">
-              {titleRow}
-              {/* brief = 핵심(summary) 필드만 inline. 미표시 필드는 카드 뷰에서만. */}
-              {(() => {
-                const briefFields = (fields ?? []).filter((f) => f.summary);
-                return (subtitle || briefFields.length > 0) ? (
-                  <Group gap="md" align="center" wrap>
-                    {subtitle && <Text variant="caption" color="secondary">{subtitle}</Text>}
-                    {briefFields.map((f, i) => fieldPair(f, i))}
-                  </Group>
-                ) : null;
-              })()}
-            </Stack>
+  // media — 인셋(카드 padding) + 둥근 모서리. flex:1로 footer 다음 남은 높이만 차지. 썸네일 cover / 폴백 글리프.
+  //  케밥(⋯)은 **media 우상단 모서리**(Material 카드 오버플로 관례) — 제목 옆(리스트-행 관례) 아님. 사각 흰 칩 대신
+  //  **원형 버튼**(scrim)으로 이미지 위 대비 확보(애매한 흰 테두리 제거). 전파 차단.
+  const media = (
+    <div style={{ position: 'relative', flex: 1, minHeight: MEDIA_MIN, borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden', background: 'var(--bg-secondary)' }}>
+      {thumbnail ? (
+        <Image src={thumbnail} alt={title} fit="cover" size="fill" />
+      ) : (
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name={icon ?? 'package'} size="lg" color="secondary" />
+        </div>
+      )}
+      {actions && actions.length > 0 && (
+        <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 6, right: 6 }}>
+          <div style={{ borderRadius: '999px', background: 'var(--bg-primary)', boxShadow: 'var(--mantine-shadow-sm)', display: 'inline-flex', alignItems: 'center' }}>
+            <Menu trigger={<IconButton icon="dots-vertical" label="더보기" variant="ghost" size="sm" />} items={actions} position="bottom" />
           </div>
-          {actionBar(false)}
-        </Group>
-      </Card>
-    ) : (
-      // 상세(정석): 풀폭 배너 썸네일 위, 제목·부제, 전체 필드(라벨—값, 안 잘림), 액션. 풍부한 제품카드.
-      <Card variant="outlined" padding="md">
-        <Stack gap="sm">
-          {thumbnail && <Image src={thumbnail} alt={title} fit="cover" size="full" />}
-          <Stack gap="xxs">
-            {titleRow}
+        </div>
+      )}
+    </div>
+  );
+
+  // footer(데이터 본문, 안 줄어듦) — 제목 / 코드+상태 / headline / 속성. 케밥은 media 우상단으로 이동(제목줄은 제목만, full width).
+  const footer = (
+    <Stack gap="xxs">
+      <div style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Text variant="body-strong">{title}</Text>
+      </div>
+      {(subtitle || status) && (
+        <Group justify="between" align="center" wrap={false} gap="xs">
+          <div style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {subtitle && <Text variant="caption" color="secondary">{subtitle}</Text>}
-          </Stack>
-          {fields && fields.length > 0 && (
-            <>
-              <Divider />
-              <Stack gap="xxs">{fields.map((f, i) => fieldPair(f, i))}</Stack>
-            </>
-          )}
-          {actionBar(true)}
-        </Stack>
-      </Card>
-    );
-  const wrap = (node: ReactNode) => (onClick ? <div onClick={onClick} style={{ cursor: 'pointer' }}>{node}</div> : node);
+          </div>
+          {status && <Badge color={status.tone}>{status.label}</Badge>}
+        </Group>
+      )}
+      {headline && fieldPair(headline, -1)}
+      {/* 구분선 없이 바로 — 작은 셀에서 한 줄이라도 더 확보(데이터 안 잘림 우선). */}
+      {attributes && attributes.length > 0 && attributes.map((f, i) => fieldPair(f, i))}
+    </Stack>
+  );
+
+  const card = (
+    <Card variant="outlined" padding="sm" fill>
+      {/* media(양보) 위, footer(우선) 아래 — gap은 토큰. height:100%로 셀을 채우되 footer는 절대 안 잘림. */}
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 'var(--mantine-spacing-xxs)' }}>
+        {media}
+        {/* footer는 안 줄어듦(flexShrink:0) → media(flex:1)가 양보, 데이터는 절대 안 잘림. */}
+        <div style={{ flexShrink: 0 }}>{footer}</div>
+      </div>
+    </Card>
+  );
+
+  const wrap = (node: ReactNode) =>
+    onClick ? <div onClick={onClick} style={{ cursor: 'pointer', height: '100%' }}>{node}</div> : node;
   return wrap(card);
 }

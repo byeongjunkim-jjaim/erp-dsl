@@ -19,10 +19,11 @@ import { SectionHeader } from './SectionHeader';
 import { PageHeader } from './PageHeader';
 import { Breadcrumb } from './Breadcrumb';
 import { Tree, type TreeNodeData } from './Tree';
-import { ObjectCard, type ObjectField, type ObjectCardLayout } from './ObjectCard';
+import { ObjectCard, type ObjectField } from './ObjectCard';
+import { DataTable, type DataTableColumn, type DataTableRow } from './DataTable';
 import { InputGroup } from './InputGroup';
 import { TextInput } from './TextInput';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 import type { Action, BadgeColor } from './_cells';
 
 // 선택 노드의 조상 경로(자신 포함) — 우측 브레드크럼용.
@@ -41,9 +42,11 @@ export type HierarchyObject = {
   id: string;
   title: string;
   subtitle?: string;
-  badge?: { label: string; tone: BadgeColor };
+  status?: { label: string; tone: BadgeColor };
   thumbnail?: string;
-  fields?: ObjectField[];
+  icon?: IconName;
+  headline?: ObjectField;
+  attributes?: ObjectField[];
   actions?: Action[];
   onClick?: () => void;
 };
@@ -88,14 +91,15 @@ type Props = {
 const EXPLORER_HEIGHT = '70vh'; // 잠정 vh — 고정 높이 위젯(펼침/접힘에 카드 크기 불변). Modal 85vh 선례와 동류 명시 예외.
 const LEFT_WIDTH = 280;          // Explorer 좌측 고정폭(Unity/VSCode 관습) — 비율이 아니라 고정이라 내용 변동에도 폭 불변.
 const PANE = { overflowY: 'auto', scrollbarGutter: 'stable' } as const; // 스크롤바 자리 미리 확보 → 폭 jitter 차단.
-// 상세(카드) 뷰 배치 — 12-span 체제(토큰)에서 **각 칸 = span 3 → 4열**. span 3이 이 grid 위치의 가로 최소 footprint다.
-//  아이템 수와 무관하게 항상 4열(2개면 좌측 2칸만, 나머지 빈 채 — "아이템 수로 동적 분할" 아님).
-//  높이는 ROW_UNIT 고정이 아니라 내용 기준(alignItems:start) — 위젯 내부 grid는 가로만 분할, 그 아래 헌법 폭분배 복원.
-//  ObjectCard는 폭을 갖지 않는다 — 폭은 여기 grid가 분배(「01」 "부품은 자기 폭을 정하지 않는다").
-const GRID = { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 'var(--mantine-spacing-md)', alignItems: 'start' } as const;
-// 폴더(하위 분류) 타일 그리드 — 품목 카드와 *같은 footprint*(4열)로 통일. (이전 6열=1x1은 라벨이 줄바꿈돼 너무 좁았다.)
-//  품목·폴더가 같은 가로폭이라 폴더↔품목 전환 시 칸 크기가 안 바뀐다.
-const FOLDER_GRID = { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 'var(--mantine-spacing-md)', alignItems: 'start' } as const;
+// 우측 패널 '카드' 뷰 = 최대폭 기준 **12열 × 6행 벤토**(한 페이지 고정 footprint, 넘침은 pagination). 셀 높이는 부모 높이/6 →
+//  ObjectCard 타일이 셀을 height:100%로 채운다(가로만이 아니라 세로도 벤토가 분배 — 「01」 부품은 폭·높이 비결정).
+//  카드는 **단일 크기 4×3** → 12÷4 × 6÷3 = **페이지당 6장**(화면 무관 고정 — 타일 픽셀만 신축). 밀도가 필요한 비교는 '목록'(DataTable)이 맡는다.
+const BENTO = { display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gridTemplateRows: 'repeat(6, 1fr)', gap: 'var(--mantine-spacing-md)', height: '100%' } as const;
+const CARD_SPAN = { col: 4, row: 3 } as const; // 사진 카드 단일 footprint(검색결과 카드도 가로 span 4로 동일 폭).
+// 검색결과 그리드 — 각 결과에 경로 Breadcrumb가 붙어 셀 높이가 가변(고정 벤토 부적합). 가로 span만 주고 높이는 내용 기준.
+const SEARCH_GRID = { display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 'var(--mantine-spacing-md)', alignItems: 'start' } as const;
+// 폴더(하위 분류) 타일 그리드 — 뷰 토글이 없는 탐색 모드라 내용 높이 유지. 12열에서 span 4(상세 카드와 같은 가로폭).
+const FOLDER_GRID = { display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: 'var(--mantine-spacing-md)', alignItems: 'start' } as const;
 
 export function HierarchyExplorer(props: Props) {
   const {
@@ -106,8 +110,8 @@ export function HierarchyExplorer(props: Props) {
     searchQuery, onSearchChange, searchResults,
   } = props;
 
-  // 뷰 모드(카드/목록) — 순수 표현 토글이라 내부 상태(도메인 아님, Tree 인라인편집 상태와 동류). 기본 card.
-  const [view, setView] = useState<ObjectCardLayout>('card');
+  // 뷰 모드(카드/목록) — Finder '뷰 스위처'와 동류(우측 본문 그리는 법만 바뀜). 순수 표현 토글이라 내부 상태. 기본 card.
+  const [view, setView] = useState<'card' | 'list'>('card');
   const hasPagination = typeof page === 'number' && typeof totalPages === 'number' && !!onPageChange;
 
   // 우측 패널 탐색(폴더 타일·브레드크럼·검색결과)에서 노드로 점프 — 좌측 트리에서 그 노드가 보이도록
@@ -120,16 +124,58 @@ export function HierarchyExplorer(props: Props) {
     onSelect(id);
   };
 
-  // 컬렉션 — 뷰에 따라 카드는 auto-fill 그리드(세로 갤러리), 목록은 세로 풀폭 행 나열.
-  const collection = (children: ReactNode) =>
-    view === 'row' ? <Stack gap="sm">{children}</Stack> : <div style={GRID}>{children}</div>;
+  // 오브젝트 카드 1개 — 역할 슬롯 그대로 위임(단일 사진 카드). 폭·높이는 바깥 셀이 분배.
   const objCard = (o: HierarchyObject) => (
-    <ObjectCard key={o.id} title={o.title} subtitle={o.subtitle} badge={o.badge} thumbnail={o.thumbnail}
-      fields={o.fields} actions={o.actions} onClick={o.onClick} layout={view} />
+    <ObjectCard title={o.title} subtitle={o.subtitle} status={o.status} thumbnail={o.thumbnail}
+      icon={o.icon} headline={o.headline} attributes={o.attributes} actions={o.actions} onClick={o.onClick} />
   );
-  // 하위 분류 타일 — 폴더 아이콘(노드가 icon을 주면 그걸, 아니면 보편 folder) + 라벨. 클릭=드릴다운(onSelect).
+
+  // '목록' 뷰 — 같은 역할 슬롯을 가로 컬럼으로 펼친 DataTable(비교·스캔, Finder List 뷰). **최대한 간결(한 줄/행)**:
+  //  목록의 목적은 "컴팩트하게 컬럼으로 훑기"라 행을 절대 부풀리지 않는다 → 이미지 없음 + **코드(상세 desc)는 카드로** 보내고
+  //  목록은 품목명(한 줄) · 핵심값(headline) · 상태 · 액션(케밥)만. 이질적 attributes·코드는 카드/드릴이 보유. 행 ≈ 한 줄 → 10행/화면.
+  //  헤더는 stickyHeader로 내부 스크롤에 고정(행만 스크롤). 핵심값 헤더는 첫 headline 라벨.
+  const listView = (objs: HierarchyObject[]) => {
+    const withHeadline = objs.find((o) => o.headline)?.headline;
+    const badgeColors = objs.reduce<Record<string, BadgeColor>>((m, o) => {
+      if (o.status) m[o.status.label] = o.status.tone;
+      return m;
+    }, {});
+    const columns: DataTableColumn[] = [
+      { key: '_name', label: '품목', type: 'text' },
+    ];
+    if (withHeadline) columns.push({ key: '_metric', label: withHeadline.label, type: withHeadline.type });
+    if (objs.some((o) => o.status)) columns.push({ key: '_status', label: '상태', type: 'badge', badgeColors });
+    if (objs.some((o) => o.actions && o.actions.length > 0)) columns.push({ key: '_actions', label: '', type: 'menu' });
+    const rows: DataTableRow[] = objs.map((o) => ({
+      id: o.id,
+      _name: o.title,
+      _metric: o.headline?.value,
+      _status: o.status?.label,
+      _actions: o.actions,
+    }));
+    const clickable = objs.some((o) => o.onClick);
+    return (
+      <DataTable columns={columns} rows={rows} stickyHeader
+        onRowClick={clickable ? (row) => objs.find((o) => o.id === row.id)?.onClick?.() : undefined} />
+    );
+  };
+
+  // 잎 품목 컬렉션 — '카드'=12×6 벤토(셀당 4×3 → 6장/페이지) / '목록'=DataTable 행. 카드는 셀이 footprint를 정하고 height:100%로 채운다.
+  const browse = (objs: HierarchyObject[]) =>
+    view === 'list' ? (
+      listView(objs)
+    ) : (
+      <div style={BENTO}>
+        {objs.map((o) => (
+          <div key={o.id} style={{ gridColumn: `span ${CARD_SPAN.col}`, gridRow: `span ${CARD_SPAN.row}`, minWidth: 0, minHeight: 0 }}>
+            {objCard(o)}
+          </div>
+        ))}
+      </div>
+    );
+  // 하위 분류 타일 — 폴더 아이콘(노드가 icon을 주면 그걸, 아니면 보편 folder) + 라벨. 클릭=드릴다운. 12열 중 span 4.
   const folderTile = (c: TreeNodeData) => (
-    <div key={c.id} onClick={() => navigateTo(c.id)} style={{ cursor: 'pointer' }}>
+    <div key={c.id} onClick={() => navigateTo(c.id)} style={{ cursor: 'pointer', gridColumn: 'span 4' }}>
       <Card variant="outlined" padding="sm">
         <Group gap="sm" align="center" wrap={false}>
           <Icon name={c.icon ?? 'folder'} size="lg" color="secondary" />
@@ -146,8 +192,8 @@ export function HierarchyExplorer(props: Props) {
     const path = selectedId != null ? findPath(nodes, selectedId) : [];
     const selectedNode = path.length ? path[path.length - 1] : undefined;
     const isLeaf = selectedNode ? !(selectedNode.children && selectedNode.children.length > 0) : false;
-    // 뷰 토글은 object 카드를 보여줄 때만 의미(검색결과·잎). 폴더 타일/미선택 안내엔 card/list 개념이 없어 숨긴다.
-    const showsObjects = searching || (selectedId != null && isLeaf);
+    // 카드/목록 토글은 잎 품목을 나열할 때만 의미. 폴더 타일/미선택 안내엔 개념이 없고, 검색결과는 경로 브레드크럼이 붙어 카드로 고정.
+    const showsObjects = !searching && selectedId != null && isLeaf;
     // '+ 추가' 가능 = 잎 + 추가가능. (헤더 우측 액션 vs 빈상태 CTA로 갈린다 — 아래 headerActions/EmptyState.)
     const canAdd = !searching && isLeaf && !!onAddObject;
 
@@ -156,16 +202,16 @@ export function HierarchyExplorer(props: Props) {
     const controls = (
       <Group gap="sm" align="center" wrap={false}>
         {onSearchChange && (
-          <div style={{ width: 220 }}>
+          <div style={{ width: 160 }}>
             <InputGroup leftAddon={<Icon name="search" size="sm" />}>
-              <TextInput value={searchQuery ?? ''} onChange={onSearchChange} placeholder="품목 검색" />
+              <TextInput size="sm" value={searchQuery ?? ''} onChange={onSearchChange} placeholder="품목 검색" />
             </InputGroup>
           </div>
         )}
         {showsObjects && (
           <SegmentedControl
-            options={[{ label: '카드', value: 'card' }, { label: '목록', value: 'row' }]}
-            value={view} onChange={(v) => setView(v as ObjectCardLayout)} size="sm"
+            options={[{ label: '카드', value: 'card' }, { label: '목록', value: 'list' }]}
+            value={view} onChange={(v) => setView(v as 'card' | 'list')} size="sm"
           />
         )}
       </Group>
@@ -190,12 +236,18 @@ export function HierarchyExplorer(props: Props) {
       headerDesc = `${results.length}건`;
       bodyNode = results.length === 0
         ? <EmptyState icon="search" title="검색 결과가 없습니다" description={`‘${searchQuery}’와(과) 일치하는 품목이 없습니다.`} />
-        : collection(results.map((r) => (
-            <Stack key={r.id} gap="xxs">
-              <Breadcrumb items={r.path.map((n) => ({ label: n.label, onClick: () => { navigateTo(n.id); onSearchChange!(''); } }))} />
-              {objCard(r)}
-            </Stack>
-          )));
+        : (
+            <div style={SEARCH_GRID}>
+              {results.map((r) => (
+                <div key={r.id} style={{ gridColumn: `span ${CARD_SPAN.col}`, minWidth: 0 }}>
+                  <Stack gap="xxs">
+                    <Breadcrumb items={r.path.map((n) => ({ label: n.label, onClick: () => { navigateTo(n.id); onSearchChange!(''); } }))} />
+                    {objCard(r)}
+                  </Stack>
+                </div>
+              ))}
+            </div>
+          );
     } else if (selectedId == null) {
       // 미선택: 헤더엔 컨트롤만, 본문은 가운데 안내.
       bodyNode = <div style={{ margin: 'auto' }}><EmptyState icon="folder" title="디렉토리를 선택하세요" description="왼쪽 트리에서 디렉토리를 고르면 품목이 표시됩니다." /></div>;
@@ -214,7 +266,7 @@ export function HierarchyExplorer(props: Props) {
       } else {
         // 잎: 품목 컬렉션 / 빈상태. 추가가능+빈 → EmptyState 추가 CTA(헤더 액션은 숨고 여기로). 읽기전용+빈 → 안내만.
         bodyNode = objects.length > 0
-          ? collection(objects.map((o) => objCard(o)))
+          ? browse(objects)
           : canAdd
             ? <EmptyState icon="box" title="품목이 없습니다" description="첫 품목을 추가하세요." action={{ label: '품목 추가', variant: 'primary', icon: 'plus', onClick: onAddObject! }} />
             : <EmptyState icon="box" title="등록된 품목이 없습니다" />;

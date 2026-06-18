@@ -4,6 +4,8 @@
 //    alt는 접근성 필수.
 //  · fit = cover(꽉 채우고 넘침 자름)/contain(다 보이게 안쪽 맞춤). size가 박스를 고정해야 fit이 산다.
 //  · size = sm/md/lg 토큰. 고정 종횡비(4:3) 박스의 폭을 정하고 높이는 비율로 도출.
+//    full = 컨테이너 폭 100% + 4:3 잠금(배너). fill = 부모 박스를 cover로 가득 채움(비율 잠금 없음) —
+//    ObjectCard 타일의 media band처럼 *부모가 높이까지 정하는* 자리에서 쓴다.
 //  · radius = 토큰(sm/md/full).
 //  ※ 예외(명시): "폭은 컨테이너가 분배" 원칙의 고정치수 예외 — 이미지는 고유 종횡비 콘텐츠라
 //    컨테이너에 맡기면 찌그러진다(Avatar 동형). 값은 토큰으로 닫혀 임의 px 누수 없음.
@@ -13,7 +15,7 @@ type Fit = 'cover' | 'contain';
 type Radius = 'sm' | 'md' | 'full';
 //  · sm/md/lg = 고정 폭 토큰(고정 종횡비 박스). full = 컨테이너 폭을 채우되 4:3 비율은 잠금(왜곡 0).
 //    full도 "임의 폭"이 아니라 *부모가 분배한 폭*을 받는 닫힌 값 — ObjectCard 상세 뷰의 배너 썸네일용.
-type Size = 'sm' | 'md' | 'lg' | 'full';
+type Size = 'sm' | 'md' | 'lg' | 'full' | 'fill';
 
 type ImageProps = {
   src: string;
@@ -36,6 +38,14 @@ export function Image({
     return (
       <M src={src} alt={alt} fallbackSrc={fallbackSrc} fit={fit} radius={radius}
         w="100%" style={{ aspectRatio: '4 / 3' }} />
+    );
+  }
+  // fill = 부모 박스를 가득(폭·높이 100%) cover. 부모가 position·overflow로 박스를 잡아준다(타일 media band).
+  //  object-fit·height는 인라인으로 못박는다(레이어 CSS·height 미지정에 흔들리지 않게) — 비율 왜곡 0.
+  if (size === 'fill') {
+    return (
+      <M src={src} alt={alt} fallbackSrc={fallbackSrc} fit={fit} radius={radius}
+        w="100%" h="100%" style={{ display: 'block', height: '100%', objectFit: 'cover' }} />
     );
   }
   const w = WIDTH_PX[size];

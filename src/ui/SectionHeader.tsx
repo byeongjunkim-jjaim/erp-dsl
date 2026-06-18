@@ -23,9 +23,10 @@ type Props = {
 
 // 헤더 행 안정 밴드 — sm 액션 버튼이 있을 때의 높이를 *항상* 예약해, 액션 유무로 헤더가 위아래로 흔들리지 않게 한다.
 //  "그 자리에 올 수 있는 가장 큰 상태로 고정"(PageGrid ROW_UNIT·AppShell HEADER_HEIGHT와 동류). 토큰에 'sm 버튼 높이'가
-//  없어 잠정 px(AppShell 아이콘 md=36 대역, 8px 스냅 잠정 — EmptyState minHeight 선례와 동종의 명시 잠정값).
-//  효과: 같은 카드의 좌/우 패널 헤더(Tree·Explorer)가 같은 밴드라 세로 시작점이 자동 정렬된다.
-const HEADER_ROW_MIN = 36;
+//  없어 실측 px(sm 검색 InputGroup = 36 입력 + 1px 보더×2 = 38; 좌측 제목 텍스트는 이 바닥에 맞춰진다).
+//  효과: 같은 카드의 좌/우 패널 헤더(Tree·Explorer)가 같은 밴드라 시작점뿐 아니라 divider(끝)까지 정렬된다.
+//  (36이면 우측 InputGroup이 38로 밴드를 키워 좌측 divider보다 2px 아래로 어긋났다 — CDP 실측 확인.)
+const HEADER_ROW_MIN = 38;
 
 export function SectionHeader({ title, titleNode, description, controls, actions, divider }: Props) {
   const hasActions = !!actions && actions.length > 0;

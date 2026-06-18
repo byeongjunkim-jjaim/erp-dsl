@@ -12,7 +12,10 @@ type Props = { items: BreadcrumbItem[] };
 
 export function Breadcrumb({ items }: Props) {
   return (
-    <Group gap="xxs" align="center" wrap>
+    // nowrap — 헤더에서 경로가 두 줄/글자단위로 접히면 헤더 밴드가 높아져 좌/우 패널 divider가 어긋난다(유격).
+    //  white-space:nowrap이 Text(span)에 상속돼 한글 글자쪼갬을 막는다. flex nowrap과 합쳐 항상 한 줄.
+    <div style={{ whiteSpace: 'nowrap', minWidth: 0 }}>
+    <Group gap="xxs" align="center" wrap={false}>
       {items.map((it, i) => {
         const last = i === items.length - 1;
         const text = <Text variant={last ? 'body-strong' : 'body'} color={last ? 'primary' : 'secondary'}>{it.label}</Text>;
@@ -29,5 +32,6 @@ export function Breadcrumb({ items }: Props) {
         );
       })}
     </Group>
+    </div>
   );
 }

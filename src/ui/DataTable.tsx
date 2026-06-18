@@ -34,6 +34,7 @@ type Props = {
   totalPages?: number;
   totalCount?: number;                        // 푸터 좌측 "총 N건"(number만, 포맷은 부품 고정). 데이터가 결정.
   onRowClick?: (row: DataTableRow) => void;   // 행 클릭 이동(범용). actions 셀과 경쟁 안 하도록 보기 액션은 두지 않음.
+  stickyHeader?: boolean;                     // 스크롤 컨테이너 안에서 헤더 고정(목록을 내부 스크롤에 얹을 때). 기본 false.
   emptyState?: { icon?: IconName; title: string; description?: string };
   // 행 선택(체크박스 열) — controlled. 액션 경계: 행/선택/컬럼 스코프=DataTable, 페이지 스코프(신규 생성 등)=ListPage.
   selectable?: boolean;
@@ -43,14 +44,14 @@ type Props = {
   bulkActions?: Action[];                     // 선택된 행 대상(선택>0일 때 상단 툴바). 선택 무관 액션은 ListPage 몫.
 };
 
-const RIGHT = new Set<CellType>(['number', 'currency', 'actions', 'percent']);
+const RIGHT = new Set<CellType>(['number', 'currency', 'actions', 'menu', 'percent']);
 const CENTER = new Set<CellType>(['boolean', 'thumbnail']); // boolean(체크/대시)·썸네일은 가운데.
 const textAlignOf = (t: CellType): 'right' | 'center' | 'left' => (RIGHT.has(t) ? 'right' : CENTER.has(t) ? 'center' : 'left');
 const justifyOf = (t: CellType): 'flex-end' | 'center' | 'flex-start' => (RIGHT.has(t) ? 'flex-end' : CENTER.has(t) ? 'center' : 'flex-start');
 
 export function DataTable({
   columns, rows, status = 'ready', sort, onSortChange,
-  page, onPageChange, totalPages, totalCount, onRowClick, emptyState,
+  page, onPageChange, totalPages, totalCount, onRowClick, stickyHeader, emptyState,
   selectable, selectedIds, onSelectionChange, rowId, bulkActions,
 }: Props) {
   if (status === 'loading') return <Center p="xl"><Spinner /></Center>;
@@ -88,7 +89,7 @@ export function DataTable({
       )}
       {/* 데이터행 세로여백 = sm(12). 내용(텍스트 한 줄·작은 아바타) 대비 md(16)는 과해 낮춤. */}
       {/* highlightOnHover는 행이 이동(onRowClick)할 때만 — 비이동 행은 hover 강조 불필요(클릭 가능 신호). */}
-      <Table verticalSpacing="sm" horizontalSpacing="md" highlightOnHover={!!onRowClick}>
+      <Table verticalSpacing="sm" horizontalSpacing="md" highlightOnHover={!!onRowClick} stickyHeader={stickyHeader}>
         <Table.Thead style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-default)' }}>
           <Table.Tr>
             {selectable && (
@@ -129,7 +130,7 @@ export function DataTable({
                 )}
                 {columns.map((c) => (
                   <Table.Td key={c.key} style={{ textAlign: textAlignOf(c.type), verticalAlign: 'middle' }}
-                    onClick={c.type === 'actions' ? (e) => e.stopPropagation() : undefined}>
+                    onClick={c.type === 'actions' || c.type === 'menu' ? (e) => e.stopPropagation() : undefined}>
                     {renderCell(c.type, row[c.key], { badgeColors: c.badgeColors })}
                   </Table.Td>
                 ))}

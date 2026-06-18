@@ -41,6 +41,7 @@ import { MultiSelect } from './MultiSelect';
 import { DateRangeField } from './DateRangeField';
 import { InputGroup } from './InputGroup';
 import { FileUploader, type FileItem } from './FileUploader';
+import { fmtCurrency } from './_cells';
 import { Pagination } from './Pagination';
 import { IconButton } from './IconButton';
 import { Callout } from './Callout';
@@ -60,6 +61,8 @@ import { Menu } from './Menu';
 import { ObjectCard } from './ObjectCard';
 import { Tree, type TreeNodeData } from './Tree';
 import { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
+import { PeriodNavigator } from './PeriodNavigator';
+import { LedgerPage } from './LedgerPage';
 import { SectionHeader } from './SectionHeader';
 import { Breadcrumb } from './Breadcrumb';
 import { PageGrid } from './PageGrid';
@@ -122,44 +125,49 @@ function BeforeAfter({ before, after }: { before: ReactNode; after: ReactNode })
   );
 }
 
+// kk ERP 도메인(철물/부자재) — 캡쳐의 '경첩'처럼 최하위 분류에 품목을 등록한다.
 const SAMPLE_TREE: TreeNodeData[] = [
-  { id: 'd1', label: '현장', children: [
-    { id: 'd1-1', label: '강남 현장' },
-    { id: 'd1-2', label: '판교 현장' },
+  { id: 'd1', label: '부자재', children: [
+    { id: 'd1-1', label: '경첩' },
+    { id: 'd1-2', label: '손잡이' },
   ] },
-  { id: 'd2', label: '거래처', children: [{ id: 'd2-1', label: '가구상사' }] },
+  { id: 'd2', label: '거래처', children: [{ id: 'd2-1', label: '동양철물' }] },
 ];
 
+// viewBox 필수 — 없으면 컨테이너 비율로 SVG가 늘어나(반응형 스케일 불가) 미디어 밴드에서 찌그러진다.
 const IMG_SRC =
   'data:image/svg+xml;utf8,' +
-  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90"><rect width="120" height="90" fill="#3b5ba5"/><text x="60" y="50" fill="#fff" font-size="14" text-anchor="middle">IMG</text></svg>');
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice" width="120" height="90"><rect width="120" height="90" fill="#3b5ba5"/><text x="60" y="50" fill="#fff" font-size="14" text-anchor="middle">IMG</text></svg>');
 
-// HierarchyExplorer 데모 데이터 — 잎별 오브젝트 + 경로(검색 결과용). 폴더(d1·d2)는 여기 없어 하위분류 타일이 보인다.
-//  summary:true 필드(단가)는 목록(brief) 뷰에도 노출 — 카드=전체 필드 / 목록=요약(단가)만. 토글의 의의 확인용.
+// HierarchyExplorer 데모 데이터(kk ERP 철물/부자재) — 잎별 오브젝트 + 경로(검색 결과용).
+//  역할 슬롯: 썸네일 없으면 폴백 아이콘 / status=상태 배지 / headline=핵심값 1개 / attributes=보조(상세 뷰만).
+//  ※ 단위는 *데이터 층*에서 단가 뒤에 합성("₩3,200 / 개") — 한 칸 차지할 값이 아니다. ObjectCard(DSL)는 단위를
+//    모른다(완성된 텍스트만 받음). 그래서 type:'text'. 단가 합성은 fmtCurrency로 통화 포맷 단일출처 유지.
+const won = (n: number, unit: string) => `${fmtCurrency(n)} / ${unit}`;
 const HX_DATA: { id: string; path: { id: string; label: string }[]; objects: HierarchyObject[] }[] = [
-  { id: 'd1-1', path: [{ id: 'd1', label: '현장' }, { id: 'd1-1', label: '강남 현장' }], objects: [
-    // 전체 props 기준 카드(썸네일·배지·여러 필드·note·summary·액션 3종)
-    { id: 'o1', title: '거실 도면 A', subtitle: 'rev.2 · 2026-06-10', badge: { label: '승인', tone: 'success' }, thumbnail: IMG_SRC,
-      fields: [
-        { label: '단가', value: 1200000, type: 'currency', summary: true },
-        { label: '면적', value: 32, type: 'number' },
-        { label: '상태', value: '활성', type: 'text' },
-        { label: '수정일', value: '2026-06-10', type: 'date', note: { label: '변경요청중', tone: 'warning' } },
+  { id: 'd1-1', path: [{ id: 'd1', label: '부자재' }, { id: 'd1-1', label: '경첩' }], objects: [
+    // 전체 슬롯 기준 카드(썸네일·상태·headline(단가/단위)·attributes·액션 2종)
+    { id: 'o1', title: '스테인리스 자유경첩 4″', subtitle: 'HG-SS-4F', status: { label: '판매중', tone: 'success' }, thumbnail: IMG_SRC,
+      headline: { label: '단가', value: won(3200, '개'), type: 'text' },
+      attributes: [
+        { label: '규격', value: '4″', type: 'text' },
+        { label: '재질', value: 'STS304', type: 'text' },
       ],
       actions: [
         { label: '수정', icon: 'edit', onClick: () => {} },
-        { label: '발주', variant: 'primary', icon: 'send', onClick: () => {} },
-        { label: '삭제', variant: 'danger', icon: 'trash', iconOnly: true, onClick: () => {} },
+        { label: '삭제', variant: 'danger', icon: 'trash', onClick: () => {} },
       ] },
-    { id: 'o2', title: '주방 도면', subtitle: 'rev.1', fields: [{ label: '단가', value: 800000, type: 'currency', summary: true }, { label: '면적', value: 18, type: 'number', note: { label: '검토중', tone: 'warning' } }] },
-    { id: 'o3', title: '욕실 도면', badge: { label: '검토중', tone: 'warning' }, fields: [{ label: '단가', value: 300000, type: 'currency', summary: true }, { label: '면적', value: 8, type: 'number' }] },
-    { id: 'o4', title: '현관 도면', thumbnail: IMG_SRC, fields: [{ label: '단가', value: 150000, type: 'currency', summary: true }, { label: '면적', value: 5, type: 'number' }] },
-    { id: 'o5', title: '발코니 도면', fields: [{ label: '단가', value: 200000, type: 'currency', summary: true }, { label: '면적', value: 12, type: 'number' }] },
+    { id: 'o2', title: '다마경첩 35mm', subtitle: 'HG-DM-35', icon: 'package', status: { label: '판매중', tone: 'success' }, headline: { label: '단가', value: won(1800, '개'), type: 'text' }, attributes: [{ label: '개폐각', value: '110°', type: 'text' }, { label: '재질', value: '아연도금', type: 'text' }] },
+    { id: 'o3', title: '평경첩 3″ (소)', subtitle: 'HG-FL-3', icon: 'package', status: { label: '견적대기', tone: 'warning' }, headline: { label: '단가', value: '견적 필요', type: 'text' }, attributes: [{ label: '규격', value: '3″', type: 'text' }] },
+    { id: 'o4', title: '유압 댐퍼경첩', subtitle: 'HG-DP-08', status: { label: '단종', tone: 'danger' }, thumbnail: IMG_SRC, headline: { label: '단가', value: won(5500, '개'), type: 'text' }, attributes: [{ label: '하중', value: '8kg', type: 'text' }] },
+    { id: 'o5', title: '비철 경첩 2.5″', subtitle: 'HG-NF-25', icon: 'package', headline: { label: '단가', value: won(1200, '개'), type: 'text' }, attributes: [{ label: '규격', value: '2.5″', type: 'text' }] },
+    { id: 'o6', title: 'LED 센서경첩', subtitle: 'HG-LED-12', icon: 'package', status: { label: '신규', tone: 'info' }, headline: { label: '단가', value: won(9800, '개'), type: 'text', note: { label: '변경요청중', tone: 'warning' } }, attributes: [{ label: '전압', value: 'DC12V', type: 'text' }] },
   ] },
-  { id: 'd1-2', path: [{ id: 'd1', label: '현장' }, { id: 'd1-2', label: '판교 현장' }], objects: [
-    { id: 'o6', title: '판교 거실 도면', fields: [{ label: '단가', value: 900000, type: 'currency', summary: true }, { label: '면적', value: 40, type: 'number' }] },
+  { id: 'd1-2', path: [{ id: 'd1', label: '부자재' }, { id: 'd1-2', label: '손잡이' }], objects: [
+    { id: 'o7', title: '바형 손잡이 192mm', subtitle: 'HD-BAR-192', status: { label: '판매중', tone: 'success' }, thumbnail: IMG_SRC, headline: { label: '단가', value: won(4500, '개'), type: 'text' }, attributes: [{ label: '재질', value: '알루미늄', type: 'text' }, { label: '길이', value: '192mm', type: 'text' }] },
+    { id: 'o8', title: '원목 노브', subtitle: 'HD-KNB-01', icon: 'package', status: { label: '판매중', tone: 'success' }, headline: { label: '단가', value: won(2300, '개'), type: 'text' }, attributes: [{ label: '재질', value: '고무나무', type: 'text' }] },
   ] },
-  { id: 'd2-1', path: [{ id: 'd2', label: '거래처' }, { id: 'd2-1', label: '가구상사' }], objects: [] }, // 잎+빈+추가가능 → +타일만
+  { id: 'd2-1', path: [{ id: 'd2', label: '거래처' }, { id: 'd2-1', label: '동양철물' }], objects: [] }, // 잎+빈+추가가능 → EmptyState 추가 CTA
 ];
 
 // 부품명 → 라이브 예시. 박물관 상세가 <Demo name/>로 렌더.
@@ -204,6 +212,10 @@ export function Demo({ name }: { name: string }) {
   const [treeSel, setTreeSel] = useState<string | null>('d1-1');
   const [treeExp, setTreeExp] = useState<string[]>(['d1']);
   const [hxSearch, setHxSearch] = useState('');
+  const [hxPage, setHxPage] = useState(1);
+  const [ledgerMonth, setLedgerMonth] = useState(6);
+  const [ledgerTab, setLedgerTab] = useState('item');
+  const [ledgerSel, setLedgerSel] = useState<string | null>(null);
   const toggleExp = (id: string) => setTreeExp((e) => (e.includes(id) ? e.filter((x) => x !== id) : [...e, id]));
 
   const D: Record<string, ReactNode> = {
@@ -454,17 +466,19 @@ export function Demo({ name }: { name: string }) {
       </Stack>
     ),
     Menu: <Menu trigger={<IconButton icon="dots-vertical" label="메뉴" variant="secondary" />} items={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '복제', icon: 'copy', onClick: () => {} }, { label: '삭제', icon: 'trash', variant: 'danger', onClick: () => {} }]} />,
-    ObjectCard: <div style={{ width: 240 }}><ObjectCard title="자작나무 합판 18T" subtitle="SKU-0421" thumbnail={IMG_SRC} badge={{ label: '판매중', tone: 'success' }} fields={[{ label: '가격', value: 120000, type: 'currency', note: { label: '변경요청중', tone: 'warning' } }, { label: '단위', value: 'EA', type: 'text' }]} actions={[{ label: '수정', variant: 'secondary', icon: 'edit', onClick: () => {} }]} /></div>,
+    ObjectCard: <div style={{ width: 260, height: 300 }}><ObjectCard title="스테인리스 자유경첩 4″" subtitle="HG-SS-4F" thumbnail={IMG_SRC} status={{ label: '판매중', tone: 'success' }} headline={{ label: '단가', value: won(3200, '개'), type: 'text', note: { label: '변경요청중', tone: 'warning' } }} attributes={[{ label: '규격', value: '4″', type: 'text' }, { label: '재질', value: 'STS304', type: 'text' }]} actions={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '삭제', variant: 'danger', icon: 'trash', onClick: () => {} }]} /></div>,
     Tree: <div style={{ width: 300 }}><Tree nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp} title="디렉토리" editable onAddRoot={() => {}} onAddChild={() => {}} onRename={() => {}} onDelete={() => {}} /></div>,
     HierarchyExplorer: (
       <HierarchyExplorer
-        title="자재 계층" description="현장·거래처별 품목 디렉토리"
+        title="품목 카탈로그" description="분류별 부자재 품목 등록 (kk ERP)"
         nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp}
-        editable treeTitle="공간" selectedLabel="강남 현장"
+        editable treeTitle="분류" selectedLabel="경첩"
         // 잎이면 그 오브젝트, 폴더(d1·d2)면 [] → 빈상태 3갈래(하위분류/잎빈/읽기전용)가 보인다.
         objects={(HX_DATA.find((d) => d.id === treeSel)?.objects) ?? []}
         onAddObject={() => {}}
-        // 전역 검색 — 입력 시 결과 모드(각 결과에 경로). 폴더 선택 후 위 검색칸에 '도면' 입력해보면 보인다.
+        // pagination(controlled) — 소비처가 페이지 슬라이스를 주입. 여기선 컨트롤 노출용 예시값(totalPages 4).
+        page={hxPage} totalPages={4} onPageChange={setHxPage}
+        // 전역 검색 — 입력 시 결과 모드(각 결과에 경로). 폴더 선택 후 위 검색칸에 '경첩' 입력해보면 보인다.
         searchQuery={hxSearch}
         onSearchChange={setHxSearch}
         searchResults={HX_DATA.flatMap((d) => d.objects.filter((o) => o.title.includes(hxSearch)).map((o) => ({ ...o, path: d.path })))}
@@ -472,6 +486,69 @@ export function Demo({ name }: { name: string }) {
     ),
     SectionHeader: <div style={{ width: 360 }}><Card variant="elevated" padding="md"><SectionHeader title="강남 현장" description="rev.2 · 2026-05-02 등록" divider actions={[{ label: '추가', variant: 'primary', icon: 'plus', onClick: () => {} }]} /></Card></div>,
     Breadcrumb: <Breadcrumb items={[{ label: '현장', onClick: () => {} }, { label: '강남 현장', onClick: () => {} }, { label: '도면' }]} />,
+    PeriodNavigator: <PeriodNavigator label={`2026년 ${ledgerMonth}월`} onPrev={() => setLedgerMonth((m) => Math.max(1, m - 1))} onNext={() => setLedgerMonth((m) => Math.min(12, m + 1))} disabledPrev={ledgerMonth <= 1} disabledNext={ledgerMonth >= 12} />,
+    LedgerPage: (() => {
+      // 정산 데모(kk ERP) — 기간·KPI밴드·분해(품목별/발주별)·드릴(Drawer). 발주별에서 행 클릭 → 라인 상세.
+      const isItem = ledgerTab === 'item';
+      const columns = isItem
+        ? [
+            { key: 'name', label: '품목명', type: 'text' as const },
+            { key: 'qty', label: '수량', type: 'number' as const },
+            { key: 'amount', label: '금액 합계', type: 'currency' as const },
+          ]
+        : [
+            { key: 'no', label: '발주번호', type: 'text' as const },
+            { key: 'vendor', label: '거래처', type: 'text' as const },
+            { key: 'amount', label: '금액', type: 'currency' as const },
+            { key: 'status', label: '상태', type: 'badge' as const, badgeColors: { '정산완료': 'success' as const, '미정산': 'warning' as const } },
+          ];
+      const rows = isItem
+        ? [{ id: 'i1', name: '모니터암', qty: 2, amount: 12323 }]
+        : [
+            { id: 'PO-2026-0612', no: 'PO-2026-0612', vendor: '㈜대한철물', amount: 12323, status: '정산완료' },
+            { id: 'PO-2026-0613', no: 'PO-2026-0613', vendor: '세양하드웨어', amount: 45000, status: '미정산' },
+          ];
+      return (
+        <LedgerPage
+          title="정산"
+          description="월별 정산 현황 (kk ERP)"
+          actions={[{ label: '명세서 다운로드', variant: 'secondary', icon: 'upload', onClick: () => {} }]}
+          period={{ label: `2026년 ${ledgerMonth}월`, onPrev: () => setLedgerMonth((m) => Math.max(1, m - 1)), onNext: () => setLedgerMonth((m) => Math.min(12, m + 1)), disabledPrev: ledgerMonth <= 1, disabledNext: ledgerMonth >= 12 }}
+          metrics={[
+            { kind: 'stat', label: '정산 총액', value: fmtCurrency(12323), trend: 'up', delta: '전월 +8%', icon: 'wallet' },
+            { kind: 'summary', label: '미정산 잔액', icon: 'credit-card', tone: 'warning', amount: 45000 },
+            { kind: 'summary', label: '정산 완료', icon: 'check-circle', tone: 'success', count: 1, amount: 12323 },
+            { kind: 'summary', label: '정산 대기', icon: 'clock', tone: 'neutral', count: 1 },
+          ]}
+          breakdown={{
+            tabs: [{ label: '품목별', value: 'item' }, { label: '발주별', value: 'order' }],
+            value: ledgerTab, onChange: setLedgerTab,
+            columns, rows, total: isItem ? 12323 : 57323,
+            onRowClick: isItem ? undefined : (row) => setLedgerSel(String(row.no)),
+            emptyState: { icon: 'wallet', title: '정산 내역이 없습니다' },
+          }}
+          detail={{
+            opened: ledgerSel != null,
+            onClose: () => setLedgerSel(null),
+            title: ledgerSel ?? '',
+            actions: [{ label: '명세서 출력', icon: 'receipt', onClick: () => {} }, { label: '정산 확정', variant: 'primary', onClick: () => {} }],
+            content: (
+              <Stack gap="md">
+                <StatusRow label="세양하드웨어" status={{ label: '미정산', tone: 'warning' }} />
+                <Text variant="caption" color="secondary">발주일 2026-06-13 · 3품목</Text>
+                <Divider />
+                <Stack gap="xs">
+                  <Group justify="between"><Text variant="body">모니터암 ×2</Text><Text variant="body">{fmtCurrency(12323)}</Text></Group>
+                  <Group justify="between"><Text variant="body">경첩 4″ ×5</Text><Text variant="body">{fmtCurrency(16000)}</Text></Group>
+                  <Group justify="between"><Text variant="body">레일 ×4</Text><Text variant="body">{fmtCurrency(16677)}</Text></Group>
+                </Stack>
+                <TotalRow amount={45000} />
+              </Stack>
+            ),
+          }}
+        />
+      );
+    })(),
     PageGrid: (() => {
       // 고정 셀을 보이게 가득 채우는 데모 타일.
       const cell = (t: string) => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--mantine-color-primary-1)', color: 'var(--text-primary)', borderRadius: 4, fontSize: 13 }}>{t}</div>;

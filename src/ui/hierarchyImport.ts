@@ -2,6 +2,8 @@
 //  · 의존성 0 — 파일 해독(SheetJS 등)은 호출 측(dev import 도구/소비앱)이 하고, 여기엔 "행"만 들어온다.
 //  · 단일 시트 모델: 한 행 = 한 품목. '품목명' 열을 기준으로 왼쪽 = 폴더(계층) 칸, 오른쪽 = 품목 필드.
 //    비전공자가 ‘>’ 경로 문법이나 두 표 교차참조 없이, 칸만 채우면 트리가 선다(왼쪽=큰 분류 → 오른쪽=작은 분류).
+//  · 품목명 오른쪽 동적 열의 *첫 칸 = 핵심값(headline)*, 나머지 = 보조(attributes). '배지' 열 = 상태(status).
+//    → ObjectCard 역할 슬롯과 1:1. 양식의 열 순서가 곧 카드의 정보 위계(중요한 지표를 첫 열에).
 //  · 산출: { nodes(TreeNodeData[]) , objectsByPath } — 익스플로러 selectedId(=경로)로 objectsByPath[path] 조회.
 import type { TreeNodeData } from './Tree';
 import type { HierarchyObject } from './HierarchyExplorer';
@@ -93,19 +95,22 @@ export function buildHierarchyFromRows(rows: string[][]): HierarchyImport {
     if (!title) continue;                       // 폴더만 만드는 줄
 
     const path = pathId(segs);
-    const badgeLabel = badgeIdx >= 0 ? at(row, badgeIdx) : '';
+    const badgeLabel = badgeIdx >= 0 ? at(row, badgeIdx) : ''; // '배지' 열 = 오브젝트 상태(status)로 매핑
     const tone = toneIdx >= 0 ? (TONE_KO[at(row, toneIdx)] ?? 'neutral') : 'neutral';
-    const fields = dynCols
+    // 동적 열(값 있는 것만) → 첫 칸 = 핵심값(headline), 나머지 = 보조(attributes). 역할 슬롯 강제 매핑.
+    const dyn = dynCols
       .map((c) => ({ label: c.label, type: c.type, value: coerce(row[c.i], c.type) }))
       .filter((f) => f.value !== '' && f.value != null);
+    const [headline, ...attributes] = dyn;
 
     const obj: HierarchyObject = {
       id: `${path}#${r}`,
       title,
       subtitle: subIdx >= 0 ? (at(row, subIdx) || undefined) : undefined,
-      badge: badgeLabel ? { label: badgeLabel, tone } : undefined,
+      status: badgeLabel ? { label: badgeLabel, tone } : undefined,
       thumbnail: thumbIdx >= 0 ? (at(row, thumbIdx) || undefined) : undefined,
-      fields: fields.length ? fields : undefined,
+      headline,
+      attributes: attributes.length ? attributes : undefined,
     };
     (objectsByPath[path] ??= []).push(obj);
   }

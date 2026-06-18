@@ -47,6 +47,12 @@ const BADGE = "'neutral' | 'success' | 'warning' | 'danger' | 'info'";
 const SIZE2 = "'sm' | 'md'";
 const SIZE3 = "'sm' | 'md' | 'lg'";
 
+// 의미 원자의 하위 분류(뷰 그룹핑 단일 출처) — 입력군 vs 표시·행동. 새 입력 원자는 여기 한 곳에 등록.
+export const INPUT_ATOMS: ReadonlySet<string> = new Set([
+  'TextInput', 'PasswordInput', 'NumberInput', 'Textarea', 'Select', 'Combobox',
+  'Radio', 'Checkbox', 'Switch', 'DatePicker', 'MultiDatePicker', 'TimePicker',
+]);
+
 export const CATALOG: CatalogEntry[] = [
   // ── 의미 원자 — 표시·행동 ─────────────────────────────────────────────
   { name: 'Button', layer: '의미 원자', role: '클릭 행동의 기본 단위. variant가 색·강조를 닫는다.',

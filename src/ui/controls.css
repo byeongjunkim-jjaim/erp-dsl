@@ -64,3 +64,11 @@
   border-radius: 3px;
   box-shadow: 0 0 0 1px var(--mantine-color-primary-3), 0 1px 2px rgba(11, 26, 53, 0.12);
 }
+
+/* Collapsible 헤더 — 행 전체가 토글 대상. 패딩 토큰 + 가벼운 hover 배경(헤더 유틸리티). */
+.erp-collapsible-header {
+  padding: var(--mantine-spacing-md);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.erp-collapsible-header:hover { background: var(--bg-secondary); }

@@ -25,3 +25,64 @@
   cursor: pointer;
 }
 .erp-profile-trigger:hover { background: var(--bg-secondary); }
+
+/* 하단 탭 내비(모바일) — footer 슬롯 안의 바. 골격(flex 균등 분배·safe-area)은 여기 raw CSS(명시 예외),
+   타일 콘텐츠는 AppShell이 우리 Stack/Icon/Text로 조립한다. 색·여백은 전부 토큰(raw hex/px 우회 없음). */
+.erp-bottomnav {
+  display: flex;
+  height: 100%;
+  box-sizing: border-box;
+  /* footer 총높이 = 56 + safe-area. 탭 콘텐츠는 위 56에 두고, 인셋(아이폰 홈 인디케이터)만큼 아래를 비운다. */
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--bg-primary);
+}
+
+/* 균등 분배는 바의 *직접 자식* 전체에 건다 — '더보기' 탭은 Popover의 target span으로 감싸여
+   직접 자식이 그 span이 되므로, .erp-tab에만 flex를 주면 더보기 칸만 좁아진다. */
+.erp-bottomnav > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 탭 한 칸 — 버튼 리셋 + 칸을 꽉 채움. 내부 타일(아이콘+라벨)은 AppShell의 Stack이 그린다. */
+.erp-tab {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 활성 탭 — 상단 짧은 인디케이터 막대(브랜드 토큰색). 아이콘·라벨 색은 AppShell이 역할 prop으로 이미 구분. */
+.erp-tab[data-active='true']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--mantine-color-primary-6);
+}
+
+/* '더보기' Popover 안의 메뉴 행 — 행 클릭 대상. 콘텐츠(아이콘+라벨)는 AppShell의 Group이 그린다. */
+.erp-more-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 6px 8px;
+  border-radius: var(--mantine-radius-md);
+  cursor: pointer;
+}
+.erp-more-row:hover,
+.erp-more-row[data-active='true'] { background: var(--bg-secondary); }

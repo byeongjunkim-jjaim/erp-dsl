@@ -47,6 +47,7 @@ import { Callout } from './Callout';
 import { StatusRow } from './StatusRow';
 import { SummaryCard } from './SummaryCard';
 import { TotalRow } from './TotalRow';
+import { Collapsible } from './Collapsible';
 import { Modal } from './Modal';
 import { DataTable } from './DataTable';
 import { EmptyState } from './EmptyState';
@@ -58,10 +59,23 @@ import { FormSection } from './FormSection';
 import { Menu } from './Menu';
 import { ObjectCard } from './ObjectCard';
 import { Tree, type TreeNodeData } from './Tree';
-import { HierarchyExplorer } from './HierarchyExplorer';
+import { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
 import { SectionHeader } from './SectionHeader';
 import { Breadcrumb } from './Breadcrumb';
 import { PageGrid } from './PageGrid';
+import { Accordion } from './Accordion';
+import { Drawer } from './Drawer';
+import { Skeleton } from './Skeleton';
+import { Combobox } from './Combobox';
+import { Progress } from './Progress';
+import { TimePicker } from './TimePicker';
+import { Stat } from './Stat';
+import { Stepper } from './Stepper';
+import { Transfer } from './Transfer';
+import { TreeSelect } from './TreeSelect';
+import { Cascader } from './Cascader';
+import { SearchToolbar } from './SearchToolbar';
+import { notify } from './notify';
 
 const opts = [
   { label: '합판', value: 'plywood' },
@@ -69,11 +83,42 @@ const opts = [
   { label: '집성목', value: 'glulam' },
 ];
 
+const CASC_OPTS = [
+  { value: 'seoul', label: '서울', children: [
+    { value: 'gangnam', label: '강남구', children: [{ value: 'samsung', label: '삼성동' }, { value: 'yeoksam', label: '역삼동' }] },
+    { value: 'mapo', label: '마포구', children: [{ value: 'hapjeong', label: '합정동' }] },
+  ] },
+  { value: 'gyeonggi', label: '경기', children: [{ value: 'seongnam', label: '성남시', children: [{ value: 'pangyo', label: '판교' }] }] },
+];
+const XFER_ITEMS = [
+  { value: 'plywood', label: '합판' }, { value: 'mdf', label: 'MDF' }, { value: 'glulam', label: '집성목' },
+  { value: 'veneer', label: '베니어' }, { value: 'osb', label: 'OSB' },
+];
+
 function Box({ children }: { children?: ReactNode }) {
   return (
     <div style={{ background: 'var(--mantine-color-primary-1)', color: 'var(--text-primary)', padding: '6px 12px', borderRadius: 4, textAlign: 'center', fontSize: 13 }}>
       {children ?? '·'}
     </div>
+  );
+}
+
+// 비포/애프터 — 부품 정형화 시 '기존 ↔ 수정안'을 같은 탭에서 나란히 본다(삭제 전 검증용).
+//  좌: 현행(땜빵/직접 조립) · 우: 신규 부품 적용. dev 전용 비교 슬롯.
+function BeforeAfter({ before, after }: { before: ReactNode; after: ReactNode }) {
+  const col = (tag: string, tone: 'neutral' | 'success', node: ReactNode) => (
+    <div style={{ flex: 1, minWidth: 280 }}>
+      <Stack gap="xs">
+        <Group gap="xs" align="center"><Badge color={tone}>{tag}</Badge></Group>
+        <Card variant="outlined" padding="md">{node}</Card>
+      </Stack>
+    </div>
+  );
+  return (
+    <Group gap="lg" align="start" wrap>
+      {col('기존', 'neutral', before)}
+      {col('수정안', 'success', after)}
+    </Group>
   );
 }
 
@@ -88,6 +133,34 @@ const SAMPLE_TREE: TreeNodeData[] = [
 const IMG_SRC =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90"><rect width="120" height="90" fill="#3b5ba5"/><text x="60" y="50" fill="#fff" font-size="14" text-anchor="middle">IMG</text></svg>');
+
+// HierarchyExplorer 데모 데이터 — 잎별 오브젝트 + 경로(검색 결과용). 폴더(d1·d2)는 여기 없어 하위분류 타일이 보인다.
+//  summary:true 필드(단가)는 목록(brief) 뷰에도 노출 — 카드=전체 필드 / 목록=요약(단가)만. 토글의 의의 확인용.
+const HX_DATA: { id: string; path: { id: string; label: string }[]; objects: HierarchyObject[] }[] = [
+  { id: 'd1-1', path: [{ id: 'd1', label: '현장' }, { id: 'd1-1', label: '강남 현장' }], objects: [
+    // 전체 props 기준 카드(썸네일·배지·여러 필드·note·summary·액션 3종)
+    { id: 'o1', title: '거실 도면 A', subtitle: 'rev.2 · 2026-06-10', badge: { label: '승인', tone: 'success' }, thumbnail: IMG_SRC,
+      fields: [
+        { label: '단가', value: 1200000, type: 'currency', summary: true },
+        { label: '면적', value: 32, type: 'number' },
+        { label: '상태', value: '활성', type: 'text' },
+        { label: '수정일', value: '2026-06-10', type: 'date', note: { label: '변경요청중', tone: 'warning' } },
+      ],
+      actions: [
+        { label: '수정', icon: 'edit', onClick: () => {} },
+        { label: '발주', variant: 'primary', icon: 'send', onClick: () => {} },
+        { label: '삭제', variant: 'danger', icon: 'trash', iconOnly: true, onClick: () => {} },
+      ] },
+    { id: 'o2', title: '주방 도면', subtitle: 'rev.1', fields: [{ label: '단가', value: 800000, type: 'currency', summary: true }, { label: '면적', value: 18, type: 'number', note: { label: '검토중', tone: 'warning' } }] },
+    { id: 'o3', title: '욕실 도면', badge: { label: '검토중', tone: 'warning' }, fields: [{ label: '단가', value: 300000, type: 'currency', summary: true }, { label: '면적', value: 8, type: 'number' }] },
+    { id: 'o4', title: '현관 도면', thumbnail: IMG_SRC, fields: [{ label: '단가', value: 150000, type: 'currency', summary: true }, { label: '면적', value: 5, type: 'number' }] },
+    { id: 'o5', title: '발코니 도면', fields: [{ label: '단가', value: 200000, type: 'currency', summary: true }, { label: '면적', value: 12, type: 'number' }] },
+  ] },
+  { id: 'd1-2', path: [{ id: 'd1', label: '현장' }, { id: 'd1-2', label: '판교 현장' }], objects: [
+    { id: 'o6', title: '판교 거실 도면', fields: [{ label: '단가', value: 900000, type: 'currency', summary: true }, { label: '면적', value: 40, type: 'number' }] },
+  ] },
+  { id: 'd2-1', path: [{ id: 'd2', label: '거래처' }, { id: 'd2-1', label: '가구상사' }], objects: [] }, // 잎+빈+추가가능 → +타일만
+];
 
 // 부품명 → 라이브 예시. 박물관 상세가 <Demo name/>로 렌더.
 export function Demo({ name }: { name: string }) {
@@ -115,11 +188,22 @@ export function Demo({ name }: { name: string }) {
   ]);
   const [page, setPage] = useState(2);
   const [modal, setModal] = useState(false);
+  const [dwBefore, setDwBefore] = useState(false);
+  const [dwAfter, setDwAfter] = useState(false);
+  const [cbo, setCbo] = useState<string | null>(null);
+  const [time, setTime] = useState('');
+  const [stp, setStp] = useState(1);
+  const [xfer, setXfer] = useState<string[]>(['mdf']);
+  const [tsel, setTsel] = useState<string | null>(null);
+  const [casc, setCasc] = useState<string[]>([]);
+  const [stbSearch, setStbSearch] = useState('');
+  const [stbStatus, setStbStatus] = useState<string | null>(null);
   const [month, setMonth] = useState('2026-06');
   const [form, setForm] = useState<Record<string, unknown>>({});
   const [dtSel, setDtSel] = useState<string[]>([]);
   const [treeSel, setTreeSel] = useState<string | null>('d1-1');
   const [treeExp, setTreeExp] = useState<string[]>(['d1']);
+  const [hxSearch, setHxSearch] = useState('');
   const toggleExp = (id: string) => setTreeExp((e) => (e.includes(id) ? e.filter((x) => x !== id) : [...e, id]));
 
   const D: Record<string, ReactNode> = {
@@ -165,6 +249,46 @@ export function Demo({ name }: { name: string }) {
     StatusRow: <StatusRow label="발주서 #1024" icon="file-text" status={{ label: '승인 대기', tone: 'warning' }} actions={[{ label: '승인', variant: 'primary', onClick: () => {} }, { label: '반려', variant: 'ghost', onClick: () => {} }]} />,
     SummaryCard: <div style={{ width: 220 }}><SummaryCard label="승인 대기" icon="clock" tone="warning" count={12} amount={3400000} /></div>,
     TotalRow: <div style={{ width: 280 }}><TotalRow amount={3400000} /></div>,
+    Collapsible: (
+      // 정산 사용례 — 발주 한 건당 요약행(StatusRow) 헤더, 펼치면 품목 줄들 + 소계(TotalRow). 쌓아서 요약 목록.
+      <div style={{ width: 440, display: 'flex', flexDirection: 'column', gap: 'var(--mantine-spacing-sm)' }}>
+        <Collapsible defaultOpen header={<StatusRow label="발주서 #1024" icon="file-text" status={{ label: '완료', tone: 'success' }} />}>
+          <Stack gap="xs">
+            <Group justify="between"><Text variant="body">합판 24T × 50</Text><Text variant="body">₩1,200,000</Text></Group>
+            <Group justify="between"><Text variant="body">경첩 × 200</Text><Text variant="body">₩800,000</Text></Group>
+            <TotalRow amount={2000000} />
+          </Stack>
+        </Collapsible>
+        <Collapsible header={<StatusRow label="발주서 #1025" icon="file-text" status={{ label: '진행', tone: 'info' }} />}>
+          <Text variant="body">기본 접힘 — 헤더를 누르면 펼쳐집니다.</Text>
+        </Collapsible>
+      </div>
+    ),
+    Accordion: (
+      // 정형화 비교 — 기존: Collapsible 직접 쌓기(서로 조율 안 됨, 여러 개 동시 열림).
+      //  수정안: Accordion 한 부품이 펼침 조율(하나만 열림). 같은 섹션 묶음을 단일 부품이 관리.
+      <div style={{ width: 640 }}>
+        <BeforeAfter
+          before={
+            <Stack gap="sm">
+              <Collapsible defaultOpen header={<StatusRow label="기본 정보" icon="file-text" status={{ label: '필수', tone: 'info' }} />}><Text variant="body">상호 · 사업자번호 · 대표자</Text></Collapsible>
+              <Collapsible header={<StatusRow label="담당자" icon="user" status={{ label: '선택', tone: 'neutral' }} />}><Text variant="body">이름 · 연락처 · 이메일</Text></Collapsible>
+              <Collapsible header={<StatusRow label="환경설정" icon="settings" status={{ label: '선택', tone: 'neutral' }} />}><Text variant="body">여신한도 · 결제일</Text></Collapsible>
+            </Stack>
+          }
+          after={
+            <Accordion
+              defaultOpen={['basic']}
+              items={[
+                { value: 'basic', label: <StatusRow label="기본 정보" icon="file-text" status={{ label: '필수', tone: 'info' }} />, children: <Text variant="body">상호 · 사업자번호 · 대표자</Text> },
+                { value: 'owner', label: <StatusRow label="담당자" icon="user" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">이름 · 연락처 · 이메일</Text> },
+                { value: 'config', label: <StatusRow label="환경설정" icon="settings" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">여신한도 · 결제일</Text> },
+              ]}
+            />
+          }
+        />
+      </div>
+    ),
     Modal: (
       <>
         <Button variant="secondary" onClick={() => setModal(true)}>모달 열기</Button>
@@ -172,6 +296,22 @@ export function Demo({ name }: { name: string }) {
           <Text variant="body">본문(children)에 도메인 폼이 온다. Modal은 그게 뭔지 모른다.</Text>
         </Modal>
       </>
+    ),
+    Drawer: (
+      // 단독 부품(신규, 기존 대체 아님). 기준: 뒤 화면이 보여야 하면 Drawer / 가려도 되면(차단) Modal.
+      <Stack gap="xs">
+        <Text variant="caption" color="secondary">맥락(목록·상세)을 유지한 채 가장자리에서 보조작업. position으로 좌/우/상/하.</Text>
+        <Group gap="xs" wrap>
+          <Button variant="secondary" onClick={() => setDwAfter(true)}>우측 상세 Drawer</Button>
+          <Button variant="ghost" onClick={() => setDwBefore(true)}>좌측 필터 Drawer</Button>
+        </Group>
+        <Drawer opened={dwAfter} onClose={() => setDwAfter(false)} position="right" title="거래처 상세" actions={[{ label: '닫기', variant: 'ghost', onClick: () => setDwAfter(false) }, { label: '저장', variant: 'primary', onClick: () => setDwAfter(false) }]}>
+          <Text variant="body">우측에서 슬라이드 — 뒤 목록 맥락을 유지한 채 편집.</Text>
+        </Drawer>
+        <Drawer opened={dwBefore} onClose={() => setDwBefore(false)} position="left" title="필터" actions={[{ label: '적용', variant: 'primary', onClick: () => setDwBefore(false) }]}>
+          <Text variant="body">좌측 필터 패널 예시.</Text>
+        </Drawer>
+      </Stack>
     ),
     DataTable: (
       <DataTable
@@ -191,6 +331,26 @@ export function Demo({ name }: { name: string }) {
           { id: '2', name: '목재유통', owner: { name: '이수연' }, tags: ['B2C'], rate: 47, amount: 880000 },
         ]}
         status="ready"
+      />
+    ),
+    Skeleton: (
+      // 정형화 비교 — 기존: 로딩 시 점 하나(Spinner)로 레이아웃 붕괴. 수정안: 실제 행 구조를 흉내낸 Skeleton(레이아웃 유지).
+      <BeforeAfter
+        before={
+          <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Spinner />
+          </div>
+        }
+        after={
+          <Stack gap="sm">
+            {[0, 1, 2].map((i) => (
+              <Group key={i} gap="sm" align="center" wrap={false}>
+                <Skeleton variant="circle" size="sm" />
+                <div style={{ flex: 1 }}><Skeleton variant="text" lines={2} /></div>
+              </Group>
+            ))}
+          </Stack>
+        }
       />
     ),
     EmptyState: <EmptyState icon="box" title="등록된 발주가 없습니다" description="신규 발주를 만들어 시작하세요." action={{ label: '신규 발주', variant: 'primary', onClick: () => {} }} />,
@@ -213,6 +373,86 @@ export function Demo({ name }: { name: string }) {
     ),
     ListPage: <Anchor href="/customers">→ /customers 에서 라이브 (스키마 구동 목록)</Anchor>,
     DetailPage: <Anchor href="/customers">→ /customers/[id] 에서 라이브 (정보+폼 2분할)</Anchor>,
+    Combobox: (
+      <BeforeAfter
+        before={<Select options={opts} value={cbo} onChange={setCbo} placeholder="Select (검색 불가)" />}
+        after={<Combobox options={opts} value={cbo} onChange={setCbo} placeholder="Combobox (타이핑 검색)" />}
+      />
+    ),
+    Progress: (
+      // 단독(신규) — 결정형(%) 진행. 끝 모르는 로딩은 Spinner(대체 아님, 별개 축).
+      <Stack gap="xxs">
+        <Text variant="caption" color="secondary">결정형 진행률(0~100). 끝 모르는 로딩은 Spinner.</Text>
+        <div style={{ width: 320 }}><Progress value={68} /></div>
+      </Stack>
+    ),
+    TimePicker: (
+      // 단독(신규) — 시각 입력 축(날짜=DatePicker와 별개).
+      <Stack gap="xxs">
+        <Text variant="caption" color="secondary">시각 입력(HH:MM).</Text>
+        <TimePicker value={time} onChange={setTime} />
+      </Stack>
+    ),
+    Stat: (
+      // 단독(신규) — SummaryCard와 형제. 건수/금액 요약=SummaryCard, 단일 지표+추세=Stat.
+      <Stack gap="xxs">
+        <Text variant="caption" color="secondary">단일 지표 + 추세·델타(SummaryCard와 형제).</Text>
+        <div style={{ width: 240 }}><Stat label="이번 달 매출" value="₩34,000,000" trend="up" delta="12.4%" icon="check-circle" /></div>
+      </Stack>
+    ),
+    Stepper: (
+      // 단독(신규) — 다단계 진행 표시(controlled active). 단계 콘텐츠는 호출측이 active로 분기.
+      <Stack gap="xxs">
+        <Text variant="caption" color="secondary">등록 마법사 등 다단계 흐름. 노드 클릭으로 이동.</Text>
+        <Stepper active={stp} onStepClick={setStp} steps={[{ label: '기본 정보' }, { label: '연락처' }, { label: '확인' }]} />
+      </Stack>
+    ),
+    Transfer: (
+      // 단독 부품(신규) — MultiSelect와 독립. 대량 항목을 양쪽 리스트로 옮길 때(MultiSelect=인라인 태그 다중).
+      <Stack gap="xxs">
+        <Text variant="caption" color="secondary">대량 항목 양쪽 배정(MultiSelect와 독립)</Text>
+        <div style={{ width: 640 }}>
+          <Transfer items={XFER_ITEMS} selected={xfer} onChange={setXfer} titles={['자재 후보', '선택 자재']} />
+        </div>
+      </Stack>
+    ),
+    TreeSelect: (
+      // 단독 부품(신규) — Tree와 독립. Tree=파인더/표시(HierarchyExplorer·dev 좌측 패널), TreeSelect=노드를 값으로 고르는 입력.
+      <Stack gap="xxs">
+        <Text variant="caption" color="secondary">계층에서 노드 하나를 값으로 선택(Tree와 독립)</Text>
+        <TreeSelect nodes={SAMPLE_TREE} value={tsel} onChange={setTsel} placeholder="디렉토리 선택" />
+      </Stack>
+    ),
+    Cascader: (
+      // 단독(신규) — 방식 A: 한 칸 고르면 다음 칸 등장(깊이=칸 수). 리프 선택 시 경로 확정.
+      <Stack gap="xxs">
+        <Text variant="caption" color="secondary">서울 → 강남구 → 삼성동 순으로 칸이 늘어난다(도메인 무관, 임의 깊이).</Text>
+        <Cascader options={CASC_OPTS} value={casc} onChange={setCasc} placeholder="지역 선택" />
+      </Stack>
+    ),
+    SearchToolbar: (
+      // 세로 비교(전체폭) — SearchToolbar는 가로로 길어 2열 비교에 넣으면 wrap돼 행이 쌓인다. 실제는 한 줄.
+      <Stack gap="md">
+        <Stack gap="xxs">
+          <Group gap="xs" align="center"><Badge color="neutral">기존</Badge><Text variant="caption" color="secondary">ListPage 죽은 필터 버튼(동작 없음)</Text></Group>
+          <Group gap="xs" align="center"><Button variant="secondary" disabled>필터</Button></Group>
+        </Stack>
+        <Stack gap="xxs">
+          <Group gap="xs" align="center"><Badge color="success">수정안</Badge></Group>
+          <SearchToolbar searchValue={stbSearch} onSearchChange={setStbSearch} searchPlaceholder="거래처 검색" filters={[{ key: 'status', label: '상태', options: [{ label: '활성', value: 'active' }, { label: '휴면', value: 'dormant' }], value: stbStatus, onChange: setStbStatus }]} />
+        </Stack>
+      </Stack>
+    ),
+    ToastHost: (
+      <Stack gap="xs">
+        <Text variant="caption" color="secondary">notify.* 트리거 — 호스트=ToastHost(위치·지속 단일 관리)</Text>
+        <Group gap="xs" wrap>
+          <Button variant="secondary" onClick={() => notify.success('저장되었습니다')}>성공</Button>
+          <Button variant="danger" onClick={() => notify.danger('삭제 실패')}>실패</Button>
+          <Button variant="ghost" onClick={() => notify.info('동기화 중')}>정보</Button>
+        </Group>
+      </Stack>
+    ),
     Menu: <Menu trigger={<IconButton icon="dots-vertical" label="메뉴" variant="secondary" />} items={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '복제', icon: 'copy', onClick: () => {} }, { label: '삭제', icon: 'trash', variant: 'danger', onClick: () => {} }]} />,
     ObjectCard: <div style={{ width: 240 }}><ObjectCard title="자작나무 합판 18T" subtitle="SKU-0421" thumbnail={IMG_SRC} badge={{ label: '판매중', tone: 'success' }} fields={[{ label: '가격', value: 120000, type: 'currency', note: { label: '변경요청중', tone: 'warning' } }, { label: '단위', value: 'EA', type: 'text' }]} actions={[{ label: '수정', variant: 'secondary', icon: 'edit', onClick: () => {} }]} /></div>,
     Tree: <div style={{ width: 300 }}><Tree nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp} title="디렉토리" editable onAddRoot={() => {}} onAddChild={() => {}} onRename={() => {}} onDelete={() => {}} /></div>,
@@ -221,11 +461,13 @@ export function Demo({ name }: { name: string }) {
         title="자재 계층" description="현장·거래처별 품목 디렉토리"
         nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp}
         editable treeTitle="공간" selectedLabel="강남 현장"
-        objects={treeSel ? [
-          { id: 'o1', title: '거실 도면', subtitle: 'rev.2', badge: { label: '승인', tone: 'success' }, fields: [{ label: '면적', value: 32, type: 'number' }, { label: '수정일', value: '2026-06-10', type: 'date' }] },
-          { id: 'o2', title: '주방 도면', subtitle: 'rev.1', fields: [{ label: '면적', value: 18, type: 'number', note: { label: '검토중', tone: 'warning' } }] },
-        ] : []}
+        // 잎이면 그 오브젝트, 폴더(d1·d2)면 [] → 빈상태 3갈래(하위분류/잎빈/읽기전용)가 보인다.
+        objects={(HX_DATA.find((d) => d.id === treeSel)?.objects) ?? []}
         onAddObject={() => {}}
+        // 전역 검색 — 입력 시 결과 모드(각 결과에 경로). 폴더 선택 후 위 검색칸에 '도면' 입력해보면 보인다.
+        searchQuery={hxSearch}
+        onSearchChange={setHxSearch}
+        searchResults={HX_DATA.flatMap((d) => d.objects.filter((o) => o.title.includes(hxSearch)).map((o) => ({ ...o, path: d.path })))}
       />
     ),
     SectionHeader: <div style={{ width: 360 }}><Card variant="elevated" padding="md"><SectionHeader title="강남 현장" description="rev.2 · 2026-05-02 등록" divider actions={[{ label: '추가', variant: 'primary', icon: 'plus', onClick: () => {} }]} /></Card></div>,

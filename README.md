@@ -92,7 +92,7 @@ type FieldSpec = {
 > 각 부품의 **닫힌 prop과 enum 값**만 적는다. 전체 prop·미노출 사유·근거는 [`docs/02_토큰과구현.md`](docs/02_토큰과구현.md).
 > 표기: `prop: 값` / 닫힌 enum은 `a|b|c`. 공통적으로 `className`·`style`은 어디에도 없다.
 
-### 의미 원자 — 표시·행동 (15)
+### 의미 원자 — 표시·행동 (17)
 - **Button** `variant: primary|secondary|danger|ghost` · `size: sm|md` · `loading` `disabled` `fullWidth` `leftIcon` `rightIcon` `onClick` `type: button|submit`
 - **IconButton** `icon: IconName` · `label`(aria 필수) · `variant`(Button과 동일) · `size: sm|md`
 - **Badge** `color: neutral|success|warning|danger|info` · children=string
@@ -103,20 +103,24 @@ type FieldSpec = {
 - **Anchor** `href`
 - **Icon** `name: IconName`(85종, `Icon.tsx` 참조) · `size: sm|md|lg` · `color`(텍스트 역할)
 - **Avatar** `src` · children=이니셜 · `size`
-- **Image** `src` `alt` `fallbackSrc` · `fit: cover|contain` · `radius: sm|md|full` · `size: sm|md|lg`
+- **Image** `src` `alt` `fallbackSrc` · `fit: cover|contain` · `radius: sm|md|full` · `size: sm|md|lg|full`(full=컨테이너 폭, 4:3 잠금)
 - **Tooltip** `label` · children
 - **Popover** `content`(부품 슬롯) · `opened` `onChange` · `position: top|bottom|left|right` · `width: sm|md|lg`
 - **Spinner** `size`
+- **Skeleton** `variant: text|block|circle` · `lines`(text) · `size: sm|md|lg` · `radius: sm|md` — 로드 전 자리표시(레이아웃 부품 안에 박아 형태 보존; 비결정형 점은 Spinner)
+- **Progress** `value: 0~100` · `tone: primary|success|warning|danger` · `size` — 결정형 진행률(끝 모르는 로딩은 Spinner)
 - **SegmentedControl** `options` `value` `onChange` · `size` `fullWidth`  ← 같은 대상의 뷰/모드 토글
 - **TabBar** `options` `value` `onChange`  ← 다른 구획으로 전환
 
-### 의미 원자 — 입력군 (10)
+### 의미 원자 — 입력군 (12)
 공통: `value`/`onChange`(controlled 전용) · `name` · `size: sm|md` · `disabled` · `placeholder`. **`label`·`error`·`required`는 입력칸이 아니라 `FormField`가 소유**.
 - **TextInput** / **PasswordInput** / **NumberInput** / **Textarea**(`autosize`)
 - **Select** `options: {label,value}[]` · `value: string`(단일)
 - **Radio** `options` · `value`(단일)
 - **DatePicker** `value`(Date/ISO) · **MultiDatePicker** `value: string[]`(개별 날짜 집합)
 - **Checkbox** / **Switch** `checked`/`onChange` · 인라인 `label`은 유지
+- **Combobox** `options` `value`(단일) `clearable?` — 검색되는 Select(대용량 옵션 타이핑 필터)
+- **TimePicker** `value: "HH:MM"` — 시각 입력(날짜는 DatePicker)
 
 ### 레이아웃 원자 (3) · 배치 프리미티브 (3)
 - **Card** `variant: elevated|outlined|flat` · `padding: none|sm|md|lg`
@@ -126,24 +130,34 @@ type FieldSpec = {
 - **Group**(가로) `gap` · `align: start|center|end` · `justify: …|between` · `wrap`
 - **Grid** `columns: 1|2|3|4|6|12` · `gap` · 자식 `Grid.Col span: 1~12`
 
-### 분자 (15) — 원자를 결합·일부 상태 고정
+### 분자 (21) — 원자를 결합·일부 상태 고정
 - **FormField** — 입력 컨트롤을 children으로 받아 `label`·`withAsterisk`·`error`(메시지+빨간 테두리)를 두름. **모든 입력칸은 이걸로 감싼다.**
 - **MultiSelect** `options` `value: string[]` · **DateRangeField** `value: {start,end}`
 - **InputGroup** `leftAddon`/`rightAddon: string|<Icon>` · **FileUploader** `value: FileItem[]`
 - **Pagination** `total` `value` `onChange` · **Callout** `tone: info|warning|danger|neutral` `title?` (비휘발 인라인 안내)
 - **StatusRow** `label` `status:{label,tone}` `actions` · **SummaryCard** `label` `count?` `amount?` `tone?` (KPI 타일)
 - **TotalRow** `label?` `amount`(합계 행) · **Menu** `trigger` `items: Action[]` `header?`
-- **ObjectCard** `{title,subtitle?,badge?,thumbnail?,fields?,actions?}` · **SectionHeader** `title|titleNode` `actions?` `divider?`
-- **Breadcrumb** `items: {label,onClick?}[]`(마지막=현재)
+- **ObjectCard** `{title,subtitle?,badge?,thumbnail?,fields?,actions?}` · `layout: card|row`(상세/요약 2뷰) · 필드 `summary?`(요약 뷰 노출)
+- **SectionHeader** `title|titleNode` `controls?`(좌측 도구) `actions?`(우측 액션) `divider?` · **Breadcrumb** `items: {label,onClick?}[]`(마지막=현재)
+- **Collapsible** `header`(요약 슬롯) `children`(상세) `defaultOpen?` — **단독 토글 1개**(헤더 클릭). 여러 섹션 조율(하나만/동시 열림)은 **Accordion**(직접 쌓지 않는다)
+- **Accordion** `items: {value,label,children}[]` `multiple?` `defaultOpen?` — 여러 섹션 펼침 조율(`multiple`=동시 열림). Collapsible 직접 쌓기를 대체
+- **Stat** `label` `value`(포맷된 표시값) `trend: up|down|flat` `delta?` `icon?` — 단일 지표+추세(건수/금액 요약은 SummaryCard)
+- **TreeSelect** `nodes: TreeNodeData[]` `value`(node id) — 계층 노드를 값으로 선택. **Tree(파인더/표시)와 독립**
+- **Cascader** `options: {value,label,children}[]` `value: string[]`(경로) — 순차 드롭다운 경로 선택(한 칸 고르면 다음 칸), 완료 시 브레드크럼 압축
+- **SearchToolbar** `searchValue` `onSearchChange` `searchPlaceholder?` `filters?: {key,label,options,value,onChange}[]` — 목록 상단 검색+필터+활성 필터칩
 
-### 유기체 (9) — 화면 한 구획, 도메인은 스키마로만 주입
+### 유기체 (13) — 화면 한 구획, 도메인은 스키마로만 주입
 - **Modal** `opened` `onClose` `title` `actions` `size: sm|md|lg` · children=본문
 - **DataTable** `columns` `rows` `status: loading|empty|ready` · controlled 정렬·페이징 · `onRowClick`
 - **EmptyState** `icon` `title` `description` `action?`
 - **PageHeader** `title` `description?` `actions?` · **DescriptionList** `items` `columns: 1|2|3`
-- **AppShell** `logo` `menuItems` `activePath` `onNavigate` `profile` `notification` · children=콘텐츠
+- **AppShell** `logo` `menuItems` `activePath` `onNavigate` `profile` `notification` · children=콘텐츠 · 반응형(데스크탑 넷바 ↔ 모바일 하단 탭, 자동)
 - **Timeline** `events: TimelineEvent[]` · **Calendar** `month` `events: CalendarEvent[]`(월 뷰 단일)
 - **Tree** `nodes` controlled 선택·펼침 · `editable`(쓰기 게이트)
+- **Drawer** `opened` `onClose` `title` `actions?` `position: left|right|top|bottom` `size: sm|md|lg` — 가장자리 슬라이드 패널(뒤 맥락 유지; 차단형은 Modal)
+- **Stepper** `active`(index) `steps: {label,description?}[]` `orientation?` `onStepClick?` — 다단계 진행 표시(콘텐츠는 호출측이 active로 분기)
+- **Transfer** `items: {value,label}[]` `selected: string[]` `onChange` `titles?` — 좌·우 듀얼 리스트 대량 배정(인라인 다중은 MultiSelect)
+- **ToastHost** (props 없음) — 토스트 호스트(위치·지속·스택 단일 관리). 트리거는 `notify.*`, 앱 셸에 1회 배치
 
 ### 페이지 템플릿 (4) + 폼 조립 조직 (1) — `FieldSpec[]` 구동, 도메인 0줄
 - **ListPage** `schema` `rows` `status` · 정렬·페이징·`totalCount`
@@ -163,6 +177,8 @@ type FieldSpec = {
 
 - **Group vs Grid:** 자식이 내용 크기대로 흐르면 **Group**, 비율(1:2 등)을 *지정*하면 **Grid**. 한 행만 있어도 비율 지정이면 Grid.
 - **단일 선택 부품:** 폼 제출값 → `Radio`/`Select`(선택지 ~5개 기준 Radio) · 같은 대상 뷰/모드 토글 → `SegmentedControl` · 다른 구획 전환 → `TabBar`.
+- **Modal vs Drawer:** 뒤 화면(목록·상세)을 보면서 옆에서 보조작업(긴 폼·필터·연속 처리) → **Drawer**; 흐름을 막고 단일 결정/확인(차단) → **Modal**.
+- **Collapsible vs Accordion:** 단독 토글 1개 → **Collapsible**; 여러 섹션(하나만/동시 열림) → **Accordion**(`multiple`). Collapsible을 쌓아 그룹을 만들지 않는다.
 - **"이건 부품일까 스키마일까":** 정의에서 도메인(예: "발주")을 빼도 말이 되면 부품, 안 되면 스키마다. "발주항목카드"는 없다 → `DataTable` + 발주 `FieldSpec[]`.
 - **변형이 필요하면 옵션을 쌓지 말고** 사람에게 새 부품 큐레이션을 요청한다(토글 15개 = 무한 공간 부활).
 - **한 화면의 primary 행동은 하나.** PageHeader에 주 행동이 있으면 EmptyState의 action은 비운다.
@@ -234,6 +250,8 @@ import { Providers, ColorSchemeScript, mantineHtmlProps } from '@byeongjunkim-jj
 - [`docs/01_규칙과구조.md`](docs/01_규칙과구조.md) — 헌법 8조·강제 3층·계층 모델·배치/폭/공간 장부
 - [`docs/02_토큰과구현.md`](docs/02_토큰과구현.md) — 토큰 값·전체 부품 prop 규격·스키마 층·패키지/배포
 - [`docs/03_로드맵과미해결.md`](docs/03_로드맵과미해결.md) — 진행 상황·미해결 지점
+- [`docs/04_확장전략과청사진.md`](docs/04_확장전략과청사진.md) — 위젯 확장(v0.11) · 청사진 수확 → DSL 조립 · json-render/A2UI 활용 여지 · 정형화 백로그
+- [`docs/widget-blueprint-registry.md`](docs/widget-blueprint-registry.md) — 검증된 디자인시스템(Carbon·Fluent·Polaris·Ant·MUI·Mantine·Radix) 위젯 청사진 ↔ 우리 DSL 조립 대조표
 
 ---
 

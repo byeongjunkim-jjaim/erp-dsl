@@ -44,10 +44,13 @@ export default function ShellDemo() {
       activePath={active}
       onNavigate={setActive}
       menuItems={[
-        { label: '대시보드', icon: 'dots', path: '/', group: '개요' },
+        { label: '대시보드', icon: 'dashboard', path: '/', group: '개요' },
         { label: '발주', icon: 'upload', path: '/orders', group: '거래' },
-        { label: '제품', icon: 'search', path: '/products', group: '거래' },
-        { label: '설정', icon: 'refresh', path: '/settings', group: '관리' },
+        { label: '제품', icon: 'package', path: '/products', group: '거래' },
+        { label: '거래처', icon: 'building', path: '/partners', group: '거래' },
+        { label: '재고', icon: 'warehouse', path: '/stock', group: '관리' },
+        { label: '정산', icon: 'wallet', path: '/billing', group: '관리' },
+        { label: '설정', icon: 'settings', path: '/settings', group: '관리' },
       ]}
       profile={{
         name: '김병준', role: '관리자', email: 'bj.kim@kk.co.kr',

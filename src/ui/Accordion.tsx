@@ -6,9 +6,9 @@
 //    Collapsible이 Collapse를, MultiSelect가 Combobox를 래핑한 것과 동형).
 //  · 닫힌 props만: items(섹션 배열)·multiple(다중 펼침)·defaultOpen·clearAttentionOnOpen. className/style 비노출.
 import { Accordion as MAccordion } from '@mantine/core';
-import { useReducedMotion } from '@mantine/hooks';
 import { useState, type ReactNode } from 'react';
 import { Icon } from './Icon';
+import './controls.css';
 
 export type AccordionItem = {
   value: string;        // 섹션 식별자(열림 상태 키)
@@ -30,7 +30,6 @@ type Props = {
 };
 
 export function Accordion({ items, multiple = false, defaultOpen = [], clearAttentionOnOpen = false }: Props) {
-  const reduce = useReducedMotion();
   // 펼쳐서 본 value 누적(영구 — 접어도 유지). clearAttentionOnOpen일 때만 의미.
   const [seen, setSeen] = useState<string[]>([]);
   const markSeen = (v: string | string[] | null) => {
@@ -44,21 +43,17 @@ export function Accordion({ items, multiple = false, defaultOpen = [], clearAtte
     variant: 'separated' as const,
     radius: 'md' as const,
   };
-  // attention 활성 = tone 지정 && (해제옵션 꺼짐 || 아직 안 봄). 본 순간 false로 → 아래 transition으로 페이드아웃.
+  // attention 활성 = tone 지정 && (해제옵션 꺼짐 || 아직 안 봄). 본 순간 off로 → 클래스 transition으로 페이드.
   const active = (it: AccordionItem) =>
     it.tone === 'attention' && !(clearAttentionOnOpen && seen.includes(it.value));
-  // 좌측 띠는 inset box-shadow로(보더 폭 점프 없이 색만 전이 → 매끈한 페이드). reduced-motion이면 전이 생략.
-  const styleFor = (it: AccordionItem) =>
-    it.tone === 'attention'
-      ? {
-          background: active(it) ? 'var(--mantine-color-danger-0)' : 'var(--bg-primary)',
-          boxShadow: active(it) ? 'inset 3px 0 0 var(--mantine-color-danger-6)' : 'inset 3px 0 0 transparent',
-          transition: reduce ? undefined : 'background-color 350ms ease, box-shadow 350ms ease',
-        }
-      : undefined;
-
+  // 스타일은 controls.css(.erpAccordionAttn). attention 행만 클래스+data-attn — off면 override 0 → 기본 행과 동일.
   const body = items.map((it) => (
-    <MAccordion.Item key={it.value} value={it.value} style={styleFor(it)}>
+    <MAccordion.Item
+      key={it.value}
+      value={it.value}
+      className={it.tone === 'attention' ? 'erpAccordionAttn' : undefined}
+      {...(it.tone === 'attention' ? { 'data-attn': active(it) ? 'on' : 'off' } : {})}
+    >
       <MAccordion.Control>{it.label}</MAccordion.Control>
       <MAccordion.Panel>{it.children}</MAccordion.Panel>
     </MAccordion.Item>

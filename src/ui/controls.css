@@ -72,3 +72,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 .erp-collapsible-header:hover { background: var(--bg-secondary); }
+
+/* Accordion attention 행 — clearAttentionOnOpen으로 펼치면(=봤음) 좌측 띠+틴트가 페이드 해제.
+   핵심: data-attn="off"면 *override를 아무것도 안 줘서* Mantine 기본 행과 완전 동일(본 뒤 접으면 일반 행과 구분 0).
+   띠는 inset box-shadow라 보더 폭 점프 없이 색만 전이. transition은 항상(base) 걸려 있어 on↔off 전환이 매끈하게 페이드. */
+.erpAccordionAttn { transition: background-color 350ms ease, box-shadow 350ms ease; }
+.erpAccordionAttn[data-attn="on"] {
+  background: var(--mantine-color-danger-0);
+  box-shadow: inset 3px 0 0 var(--mantine-color-danger-6);
+}
+@media (prefers-reduced-motion: reduce) { .erpAccordionAttn { transition: none; } }

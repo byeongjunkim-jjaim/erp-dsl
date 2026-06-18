@@ -307,6 +307,7 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'items', kind: '콘텐츠', values: "{ value, label, children, tone?: 'attention' }[] (tone=행동요구 행 → 좌측 띠+틴트)" },
       { name: 'multiple', kind: '기능', values: 'boolean (여러 개 동시 펼침)' },
       { name: 'defaultOpen', kind: '값', values: 'string[] (처음 펼친 섹션 value)' },
+      { name: 'clearAttentionOnOpen', kind: '기능', values: 'boolean (펼침=봤음 → attention 틴트 페이드 해제(영구). 큐/인박스용)' },
     ],
     composition: {
       토큰: ['radius md', '구분(separated)', 'chevron', 'attention(danger 띠·틴트)'],

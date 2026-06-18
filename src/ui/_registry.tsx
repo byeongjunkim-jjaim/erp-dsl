@@ -306,7 +306,7 @@ export function Demo({ name }: { name: string }) {
           }
           after={
             <Accordion
-              defaultOpen={['basic']}
+              clearAttentionOnOpen
               items={[
                 { value: 'basic', label: <StatusRow label="기본 정보" icon="file-text" status={{ label: '필수', tone: 'info' }} />, children: <Text variant="body">상호 · 사업자번호 · 대표자</Text>, tone: 'attention' },
                 { value: 'owner', label: <StatusRow label="담당자" icon="user" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">이름 · 연락처 · 이메일</Text> },

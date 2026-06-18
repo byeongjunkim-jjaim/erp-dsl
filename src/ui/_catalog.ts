@@ -70,6 +70,13 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'color', kind: '스타일', values: BADGE + ' (primary 제외)' },
       { name: 'children', kind: '콘텐츠', values: 'string' },
     ] },
+  { name: 'CountBadge', layer: '의미 원자', role: '알림 카운트(미처리 건수) — 카톡식 빨강 N 동그라미. 솔리드 채움(행동요구 환기). Badge(상태·반투명)와 별개 역할.',
+    props: [
+      { name: 'count', kind: '값', values: 'number (0 이하면 안 보임)' },
+      { name: 'tone', kind: '스타일', values: "'danger'(기본=행동요구) | 'neutral'(정보 카운트)" },
+      { name: 'max', kind: '값', values: 'number (초과시 "N+", 기본 99)' },
+      { name: 'dot', kind: '스타일', values: 'boolean (숫자 없이 점만)' },
+    ] },
   { name: 'Chip', layer: '의미 원자', role: '행동 있는 알약(선택/삭제). controlled.',
     props: [
       { name: 'color', kind: '스타일', values: BADGE + ' + neutral' },

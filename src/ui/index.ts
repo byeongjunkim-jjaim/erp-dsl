@@ -5,6 +5,7 @@
 // 표시·행동 원자
 export { Button } from './Button';
 export { Badge } from './Badge';
+export { CountBadge } from './CountBadge';
 export { Chip } from './Chip';
 export { Text } from './Text';
 export { Title } from './Title';

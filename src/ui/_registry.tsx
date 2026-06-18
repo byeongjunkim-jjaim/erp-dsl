@@ -14,6 +14,7 @@ import { Divider } from './Divider';
 import { Title } from './Title';
 import { Text } from './Text';
 import { Badge } from './Badge';
+import { CountBadge } from './CountBadge';
 import { Button } from './Button';
 import { Chip } from './Chip';
 import { Label } from './Label';
@@ -221,6 +222,21 @@ export function Demo({ name }: { name: string }) {
   const D: Record<string, ReactNode> = {
     Button: <Group gap="xs" wrap><Button variant="primary">저장</Button><Button variant="secondary">취소</Button><Button variant="danger">삭제</Button><Button variant="ghost">더보기</Button></Group>,
     Badge: <Group gap="xs"><Badge color="success">완료</Badge><Badge color="warning">대기</Badge><Badge color="danger">실패</Badge><Badge color="info">신규</Badge></Group>,
+    CountBadge: (
+      <Stack gap="sm">
+        {/* 탭 라벨 뒤 카운트 — 행동요구(빨강)만 튀고 정보(중립)는 가라앉는다. 0건은 안 보임. */}
+        <Group gap="lg" align="center">
+          <Group gap="xs" align="center"><Text variant="body-strong">새 주문</Text><CountBadge count={1} /></Group>
+          <Group gap="xs" align="center"><Text variant="body" color="secondary">진행 중</Text><CountBadge count={3} tone="neutral" /></Group>
+          <Group gap="xs" align="center"><Text variant="body" color="secondary">완료</Text><CountBadge count={0} /></Group>
+        </Group>
+        {/* 점(dot) 모드 + 99+ 캡 */}
+        <Group gap="lg" align="center">
+          <Group gap="xs" align="center"><Text variant="body">발주</Text><CountBadge count={5} dot /></Group>
+          <CountBadge count={128} />
+        </Group>
+      </Stack>
+    ),
     Chip: <Chip color="info" selected={chip} onChange={() => setChip((v) => !v)} onRemove={() => {}}>합판</Chip>,
     Text: <Stack gap="xxs"><Text variant="body">본문(body)</Text><Text variant="body-strong">강조(body-strong)</Text><Text variant="caption" color="secondary">보조(caption)</Text></Stack>,
     Title: <Stack gap="xxs"><Title variant="display">Display</Title><Title variant="heading">Heading</Title><Title variant="subheading">Subheading</Title></Stack>,

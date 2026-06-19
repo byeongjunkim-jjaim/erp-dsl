@@ -118,7 +118,7 @@ export function HierarchyExplorer(props: Props) {
   };
 
   // '목록' 뷰 — 역할 슬롯을 가로 컬럼으로 펼친 DataTable(비교·스캔). **최대한 간결(한 줄/행)**: 이미지·코드 없음,
-  //  품목명 · (검색 시)분류 경로 · 핵심값(headline) · 상태 · 액션(케밥)만. 행 클릭=onClick(상세). 헤더는 stickyHeader로 고정.
+  //  품목명 · (검색 시)분류 경로 · 핵심값(headline) · 비고(headline.note 배지) · 상태 · 액션(케밥)만. 행 클릭=onClick(상세). 헤더는 stickyHeader로 고정.
   //  paths를 주면(검색 결과) '분류' 컬럼에 "분류 › 하위분류 › …" 경로를 그린다(품목이 어디 사는지).
   const listView = (objs: HierarchyObject[], paths?: Record<string, string>) => {
     const withHeadline = objs.find((o) => o.headline)?.headline;
@@ -126,11 +126,17 @@ export function HierarchyExplorer(props: Props) {
       if (o.status) m[o.status.label] = o.status.tone;
       return m;
     }, {});
+    // headline.note(값-국소 상태 배지, 예: '변경요청중') → '비고' 컬럼. 카드 뷰의 '값 옆 배지'를 표에선 별도 배지 컬럼으로.
+    const noteColors = objs.reduce<Record<string, BadgeColor>>((m, o) => {
+      if (o.headline?.note) m[o.headline.note.label] = o.headline.note.tone;
+      return m;
+    }, {});
     const columns: DataTableColumn[] = [
       { key: '_name', label: '품목', type: 'text' },
     ];
     if (paths) columns.push({ key: '_path', label: '분류', type: 'text' });
     if (withHeadline) columns.push({ key: '_metric', label: withHeadline.label, type: withHeadline.type });
+    if (objs.some((o) => o.headline?.note)) columns.push({ key: '_note', label: '비고', type: 'badge', badgeColors: noteColors });
     if (objs.some((o) => o.status)) columns.push({ key: '_status', label: '상태', type: 'badge', badgeColors });
     if (objs.some((o) => o.actions && o.actions.length > 0)) columns.push({ key: '_actions', label: '', type: 'menu' });
     const rows: DataTableRow[] = objs.map((o) => ({
@@ -138,6 +144,7 @@ export function HierarchyExplorer(props: Props) {
       _name: o.title,
       _path: paths?.[o.id],
       _metric: o.headline?.value,
+      _note: o.headline?.note?.label,
       _status: o.status?.label,
       _actions: o.actions,
     }));

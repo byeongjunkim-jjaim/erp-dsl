@@ -311,13 +311,13 @@ export const CATALOG: CatalogEntry[] = [
     } },
   { name: 'Accordion', layer: '분자', role: '여러 [헤더+본문] 섹션의 펼침을 조율(하나만/여럿). Collapsible 직접 쌓기를 대체.',
     props: [
-      { name: 'items', kind: '콘텐츠', values: "{ value, label, children, tone?: 'attention' }[] (tone=행동요구 행 → 좌측 띠+틴트)" },
+      { name: 'items', kind: '콘텐츠', values: "{ value, label, children, tone?: 'attention', color?: BadgeColor }[] (tone=틴트 행 / color=틴트 색, 기본 danger)" },
       { name: 'multiple', kind: '기능', values: 'boolean (여러 개 동시 펼침)' },
       { name: 'defaultOpen', kind: '값', values: 'string[] (처음 펼친 섹션 value)' },
       { name: 'clearAttentionOnOpen', kind: '기능', values: 'boolean (펼침=봤음 → attention 틴트 페이드 해제(영구). 큐/인박스용)' },
     ],
     composition: {
-      토큰: ['radius md', '구분(separated)', 'chevron', 'attention(danger 띠·틴트)'],
+      토큰: ['radius md', '구분(separated)', 'chevron', 'attention(틴트 색 토큰 — 기본 danger 띠·틴트)'],
       '의미 원자': ['Icon'],
     } },
   { name: 'Stat', layer: '분자', role: 'KPI 지표 타일(추세형). SummaryCard 형제: 큰 값 + 추세·델타.',
@@ -791,10 +791,10 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'objects', kind: '기능', values: 'HierarchyObject[] (선택 디렉토리 직속만 — 소비처가 한 페이지 분량으로 슬라이스)' },
       { name: 'onAddObject', kind: '기능', values: '() => void' },
       { name: 'page / onPageChange / totalPages', kind: '기능', values: 'Pagination(controlled)' },
-      { name: 'searchQuery / onSearchChange / searchResults', kind: '기능', values: '우측 전역 검색(controlled — onSearchChange 주면 검색바, 쿼리 있으면 결과 모드)' },
+      { name: 'searchQuery / onSearchChange / searchResults', kind: '기능', values: '전역 검색(controlled — onSearchChange 주면 좌측 분류 헤더 아래 검색바, 쿼리 있으면 우측 결과 리스팅 모드)' },
     ],
     composition: {
-      토큰: ['Container wide', '단일 elevated 카드', '좌측 고정폭 280', '고정높이 70vh+내부 스크롤', '카드/목록 뷰 토글(Finder 뷰 스위처)', '카드=12×6 벤토 4×3(6장/페이지) / 목록=DataTable 행'],
+      토큰: ['Container wide', '단일 elevated 카드', '좌측 고정폭 280', '고정높이 70vh+내부 스크롤', '검색바=좌측 분류 헤더 아래', '잎 품목=목록(DataTable) — 카드(벤토) 뷰는 잠정 보류'],
       '레이아웃 원자': ['Card', 'Container'],
       '배치 프리미티브': ['Group', 'Stack'],
       '의미 원자': ['Button', 'Icon'],

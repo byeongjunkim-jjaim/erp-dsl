@@ -4,7 +4,7 @@
 //  · 편집 UI(어느 노드를 제자리 입력 중인가)만 Tree 내부 ephemeral 상태. 확정/취소로 콜백 호출.
 //  · 깊이 = VS Code식 들여쓰기 가이드 직선(꺽쇠 앞 세로선). 선택 강조는 full-width지만 가이드선으로 깊이가 항상 보임.
 //  · DnD 없음 / 더블·우클릭 편집 없음(⋯ 메뉴로만) / 보기 전용 모드(editable=false → ⋯·추가 숨김).
-import { Fragment, useState } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import { Stack } from './Stack';
 import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
@@ -27,6 +27,7 @@ type Props = {
   onAddChild?: (parentId: string, label: string) => void;
   onRename?: (id: string, label: string) => void;
   onDelete?: (id: string) => void;
+  toolbar?: ReactNode;   // 헤더 바로 아래 슬롯(예: HierarchyExplorer 검색 바). 미지정이면 없음.
 };
 
 const INDENT = 16;
@@ -36,7 +37,7 @@ const ROW_H = 36;
 
 export function Tree({
   nodes, selectedId, expandedIds, onSelect, onToggle,
-  title, editable = false, onAddRoot, onAddChild, onRename, onDelete,
+  title, editable = false, onAddRoot, onAddChild, onRename, onDelete, toolbar,
 }: Props) {
   const expanded = new Set(expandedIds);
   const [editing, setEditing] = useState<{ mode: 'rename' | 'addChild' | 'addRoot'; id?: string } | null>(null);
@@ -67,20 +68,34 @@ export function Tree({
   //  · **컴포넌트(<InlineRow/>)가 아니라 함수 호출**로 둔다 — 컴포넌트로 두면 매 렌더 타입이 새로 생겨 input이
   //    글자마다 remount(포커스·크기 흔들림). 함수면 같은 위치에서 재사용돼 remount 0.
   //  · 폭은 가용 영역을 채우는 고정폭(flex) — size(글자 수) 기반은 타이핑 중 폭이 변해 제외. 패널(닫힌 280)엔 영향 0.
+  // 버튼 클릭 시 input의 blur(=confirm)가 먼저 터져 취소가 확정으로 둔갑하는 것을 막는다 —
+  //  mousedown에서 preventDefault하면 포커스가 input에 남아 blur가 안 일어나고, 이어서 onClick의 실제 동작만 돈다.
+  const holdFocus = (e: React.MouseEvent) => e.preventDefault();
+  // 컴팩트 버튼(20px, controls.css .erpTreeEditBtn) — sm IconButton(36px)은 행(ROW_H 36)을 꽉 채워 링이 넘쳐
+  //  편집 행이 아래 행보다 미세하게 높아진다. 작은 커스텀 버튼이라야 행 높이가 아래 행과 픽셀 동일.
+  const editBtn = (icon: IconName, label: string, onClick: () => void) => (
+    <button type="button" aria-label={label} className="erpTreeEditBtn" onMouseDown={holdFocus} onClick={onClick}>
+      <Icon name={icon} size="sm" color="secondary" />
+    </button>
+  );
+  // 스타일은 controls.css(.erpTreeEdit) — 입력칸 모양 래퍼 안에 [입력 | 취소 ✕ | 확인 ✓]. 행 높이 ROW_H로 아래 행과 픽셀 동일.
   const renderInline = (depth: number) => (
     <div style={{ display: 'flex', alignItems: 'center', height: ROW_H, paddingLeft: 8, paddingRight: 8 }}>
       {guides(depth)}
       <span style={{ width: 16, flexShrink: 0 }} />
-      {/* 스타일은 controls.css(.erpTreeEdit) — 라벨과 폰트·텍스트 위치 일치 + full 폭 + 얇은 윤곽·음영. */}
-      <input
-        autoFocus
-        className="erpTreeEdit"
-        value={draft}
-        onChange={(e) => setDraft(e.currentTarget.value)}
-        onFocus={(e) => e.currentTarget.select()}    /* 이름 변경 시 기존 값 전체 선택(바로 덮어쓰기) */
-        onKeyDown={(e) => { if (e.key === 'Enter') confirm(); else if (e.key === 'Escape') cancel(); }}
-        onBlur={confirm}
-      />
+      <div className="erpTreeEdit">
+        <input
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.currentTarget.value)}
+          onFocus={(e) => e.currentTarget.select()}    /* 이름 변경 시 기존 값 전체 선택(바로 덮어쓰기) */
+          onKeyDown={(e) => { if (e.key === 'Enter') confirm(); else if (e.key === 'Escape') cancel(); }}
+          onBlur={confirm}
+        />
+        {/* 취소 → 확인 순(우측). flexShrink:0이라 텍스트가 길어도 버튼은 안 밀리고 input이 내부 스크롤. */}
+        {editBtn('x', '취소', cancel)}
+        {editBtn('check', '확인', confirm)}
+      </div>
     </div>
   );
 
@@ -145,6 +160,8 @@ export function Tree({
           actions={editable ? [{ label: '최상위 디렉토리 추가', icon: 'plus', iconOnly: true, onClick: startAddRoot }] : undefined}
         />
       )}
+      {/* 헤더 바로 아래 슬롯(검색 바 등) — 헤더와 노드 사이. */}
+      {toolbar}
       {/* 노드 컨테이너 gap 0 → 가이드선 세그먼트가 행 사이 끊김 없이 연속. */}
       <div>
         {/* 최상위 추가 입력은 헤더 바로 밑(상단, + 버튼 근처) — 아래 누적 아님. */}

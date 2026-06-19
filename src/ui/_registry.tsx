@@ -216,6 +216,7 @@ export function Demo({ name }: { name: string }) {
   const [treeExp, setTreeExp] = useState<string[]>(['d1']);
   const [hxSearch, setHxSearch] = useState('');
   const [hxPage, setHxPage] = useState(1);
+  const [hxDetail, setHxDetail] = useState<HierarchyObject | null>(null);
   const [ledgerMonth, setLedgerMonth] = useState(6);
   const [ledgerTab, setLedgerTab] = useState('item');
   const [ledgerSel, setLedgerSel] = useState<string | null>(null);
@@ -487,22 +488,46 @@ export function Demo({ name }: { name: string }) {
     Menu: <Menu trigger={<IconButton icon="dots-vertical" label="메뉴" variant="secondary" />} items={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '복제', icon: 'copy', onClick: () => {} }, { label: '삭제', icon: 'trash', variant: 'danger', onClick: () => {} }]} />,
     ObjectCard: <div style={{ width: 260, height: 300 }}><ObjectCard title="스테인리스 자유경첩 4″" subtitle="HG-SS-4F" thumbnail={IMG_SRC} status={{ label: '판매중', tone: 'success' }} headline={{ label: '단가', value: won(3200, '개'), type: 'text', note: { label: '변경요청중', tone: 'warning' } }} attributes={[{ label: '규격', value: '4″', type: 'text' }, { label: '재질', value: 'STS304', type: 'text' }]} actions={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '삭제', variant: 'danger', icon: 'trash', onClick: () => {} }]} /></div>,
     Tree: <div style={{ width: 300 }}><Tree nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp} title="디렉토리" editable onAddRoot={() => {}} onAddChild={() => {}} onRename={() => {}} onDelete={() => {}} /></div>,
-    HierarchyExplorer: (
-      <HierarchyExplorer
-        title="품목 카탈로그" description="분류별 부자재 품목 등록 (kk ERP)"
-        nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp}
-        editable treeTitle="분류" selectedLabel="경첩"
-        // 잎이면 그 오브젝트, 폴더(d1·d2)면 [] → 빈상태 3갈래(하위분류/잎빈/읽기전용)가 보인다.
-        objects={(HX_DATA.find((d) => d.id === treeSel)?.objects) ?? []}
-        onAddObject={() => {}}
-        // pagination(controlled) — 소비처가 페이지 슬라이스를 주입. 여기선 컨트롤 노출용 예시값(totalPages 4).
-        page={hxPage} totalPages={4} onPageChange={setHxPage}
-        // 전역 검색 — 입력 시 결과 모드(각 결과에 경로). 폴더 선택 후 위 검색칸에 '경첩' 입력해보면 보인다.
-        searchQuery={hxSearch}
-        onSearchChange={setHxSearch}
-        searchResults={HX_DATA.flatMap((d) => d.objects.filter((o) => o.title.includes(hxSearch)).map((o) => ({ ...o, path: d.path })))}
-      />
-    ),
+    HierarchyExplorer: (() => {
+      // 품목 클릭 → 상세(Modal)는 *소비처* 책임 — 부품(HE/ObjectCard)은 onClick만 노출하고 상세에 뭐가 들었는지 모른다(헌법 1).
+      //  데모에선 onClick에 상세 Modal 열기를 배선해 카드/목록 항목이 interactive함을 보인다(액션 케밥은 별개).
+      const withDetail = (objs: HierarchyObject[]) => objs.map((o) => ({ ...o, onClick: () => setHxDetail(o) }));
+      return (
+        <>
+          <HierarchyExplorer
+            title="품목 카탈로그" description="분류별 부자재 품목 등록 (kk ERP)"
+            nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp}
+            editable treeTitle="분류" selectedLabel="경첩"
+            // 잎이면 그 오브젝트, 폴더(d1·d2)면 [] → 빈상태 3갈래(하위분류/잎빈/읽기전용)가 보인다.
+            objects={withDetail((HX_DATA.find((d) => d.id === treeSel)?.objects) ?? [])}
+            onAddObject={() => {}}
+            // pagination(controlled) — 소비처가 페이지 슬라이스를 주입. 여기선 컨트롤 노출용 예시값(totalPages 4).
+            page={hxPage} totalPages={4} onPageChange={setHxPage}
+            // 전역 검색 — 입력 시 결과 모드(각 결과에 경로). 폴더 선택 후 위 검색칸에 '경첩' 입력해보면 보인다.
+            searchQuery={hxSearch}
+            onSearchChange={setHxSearch}
+            searchResults={HX_DATA.flatMap((d) => d.objects.filter((o) => o.title.includes(hxSearch)).map((o) => ({ ...o, path: d.path, onClick: () => setHxDetail(o) })))}
+          />
+          {/* 상세 모달(소비처 조립) — 클릭한 품목의 역할 슬롯을 그대로 펼친다. */}
+          <Modal opened={hxDetail != null} onClose={() => setHxDetail(null)} title={hxDetail?.title ?? ''}
+            actions={[{ label: '닫기', variant: 'ghost', onClick: () => setHxDetail(null) }]}>
+            <Stack gap="sm">
+              {hxDetail?.subtitle && <Text variant="caption" color="secondary">{hxDetail.subtitle}</Text>}
+              {hxDetail?.status && <div><Badge color={hxDetail.status.tone}>{hxDetail.status.label}</Badge></div>}
+              <Divider />
+              <Stack gap="xs">
+                {hxDetail?.headline && (
+                  <Group justify="between"><Text variant="body" color="secondary">{hxDetail.headline.label}</Text><Text variant="body-strong">{String(hxDetail.headline.value)}</Text></Group>
+                )}
+                {hxDetail?.attributes?.map((a, i) => (
+                  <Group key={i} justify="between"><Text variant="body" color="secondary">{a.label}</Text><Text variant="body">{String(a.value)}</Text></Group>
+                ))}
+              </Stack>
+            </Stack>
+          </Modal>
+        </>
+      );
+    })(),
     SectionHeader: <div style={{ width: 360 }}><Card variant="elevated" padding="md"><SectionHeader title="강남 현장" description="rev.2 · 2026-05-02 등록" divider actions={[{ label: '추가', variant: 'primary', icon: 'plus', onClick: () => {} }]} /></Card></div>,
     Breadcrumb: <Breadcrumb items={[{ label: '현장', onClick: () => {} }, { label: '강남 현장', onClick: () => {} }, { label: '도면' }]} />,
     PeriodNavigator: <PeriodNavigator label={`2026년 ${ledgerMonth}월`} onPrev={() => setLedgerMonth((m) => Math.max(1, m - 1))} onNext={() => setLedgerMonth((m) => Math.min(12, m + 1))} disabledPrev={ledgerMonth <= 1} disabledNext={ledgerMonth >= 12} />,

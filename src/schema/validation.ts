@@ -25,6 +25,7 @@ export function buildZodSchema(fields: FieldSpec[]) {
 
     switch (f.type) {
       case 'number':
+      case 'currency': // 돈도 검증은 number(표현만 ₩·콤마).
         base = hardRequired ? z.number() : z.number().optional();
         break;
       case 'checkbox':

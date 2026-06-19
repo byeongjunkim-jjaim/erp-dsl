@@ -26,6 +26,7 @@ export { TabBar } from './TabBar';
 export { TextInput } from './TextInput';
 export { PasswordInput } from './PasswordInput';
 export { NumberInput } from './NumberInput';
+export { CurrencyInput } from './CurrencyInput';
 export { Textarea } from './Textarea';
 export { Select } from './Select';
 export { Combobox } from './Combobox';

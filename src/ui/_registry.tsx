@@ -30,6 +30,7 @@ import { TabBar } from './TabBar';
 import { TextInput } from './TextInput';
 import { PasswordInput } from './PasswordInput';
 import { NumberInput } from './NumberInput';
+import { CurrencyInput } from './CurrencyInput';
 import { Textarea } from './Textarea';
 import { Select } from './Select';
 import { DatePicker } from './DatePicker';
@@ -180,6 +181,7 @@ export function Demo({ name }: { name: string }) {
   const [txt, setTxt] = useState('');
   const [pw, setPw] = useState('');
   const [num, setNum] = useState<number | string>('');
+  const [cur, setCur] = useState<number | string>(3200);
   const [area, setArea] = useState('');
   const [sel, setSel] = useState<string | null>(null);
   const [date, setDate] = useState<string | null>(null);
@@ -253,6 +255,7 @@ export function Demo({ name }: { name: string }) {
     TextInput: <TextInput value={txt} onChange={setTxt} placeholder="이름 입력" />,
     PasswordInput: <PasswordInput value={pw} onChange={setPw} placeholder="비밀번호" />,
     NumberInput: <NumberInput value={num} onChange={setNum} placeholder="수량" />,
+    CurrencyInput: <CurrencyInput value={cur} onChange={setCur} placeholder="단가" />,
     Textarea: <Textarea value={area} onChange={setArea} placeholder="메모" autosize />,
     Select: <Select options={opts} value={sel} onChange={setSel} placeholder="자재 선택" />,
     DatePicker: <DatePicker value={date} onChange={setDate} placeholder="날짜" />,

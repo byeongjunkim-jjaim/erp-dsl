@@ -9,6 +9,7 @@ import { Group } from './Group';
 import { FormField } from './FormField';
 import { TextInput } from './TextInput';
 import { NumberInput } from './NumberInput';
+import { CurrencyInput } from './CurrencyInput';
 import { Textarea } from './Textarea';
 import { Select } from './Select';
 import { DatePicker } from './DatePicker';
@@ -45,6 +46,9 @@ export function FormSection({ fields, values, onChange, columns = 1, resolvers, 
     switch (f.type) {
       case 'number':
         return <NumberInput name={f.name} placeholder={f.placeholder} disabled={disabled}
+          value={(v as number | string) ?? ''} onChange={(x) => onChange(f.name, x)} />;
+      case 'currency':
+        return <CurrencyInput name={f.name} placeholder={f.placeholder} disabled={disabled}
           value={(v as number | string) ?? ''} onChange={(x) => onChange(f.name, x)} />;
       case 'textarea':
         return <Textarea name={f.name} placeholder={f.placeholder} autosize disabled={disabled}

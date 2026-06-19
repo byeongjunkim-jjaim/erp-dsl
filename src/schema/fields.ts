@@ -6,6 +6,7 @@
 export type FieldType =
   | 'text'
   | 'number'
+  | 'currency'   // 돈 입력(₩ + 천단위 콤마, 무소수). number와 검증 동일(z.number)이나 표현이 다름 → CurrencyInput.
   | 'textarea'
   | 'select'
   | 'date'

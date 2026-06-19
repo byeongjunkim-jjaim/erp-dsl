@@ -49,7 +49,7 @@ const SIZE3 = "'sm' | 'md' | 'lg'";
 
 // 의미 원자의 하위 분류(뷰 그룹핑 단일 출처) — 입력군 vs 표시·행동. 새 입력 원자는 여기 한 곳에 등록.
 export const INPUT_ATOMS: ReadonlySet<string> = new Set([
-  'TextInput', 'PasswordInput', 'NumberInput', 'Textarea', 'Select', 'Combobox',
+  'TextInput', 'PasswordInput', 'NumberInput', 'CurrencyInput', 'Textarea', 'Select', 'Combobox',
   'Radio', 'Checkbox', 'Switch', 'DatePicker', 'MultiDatePicker', 'TimePicker',
 ]);
 
@@ -200,6 +200,13 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'disabled', kind: '스타일', values: 'boolean' },
     ] },
   { name: 'NumberInput', layer: '의미 원자', role: '숫자 입력(min/max는 스키마로).',
+    props: [
+      { name: 'value / onChange', kind: '기능', values: 'controlled, number | string' },
+      { name: 'placeholder', kind: '콘텐츠', values: 'string' },
+      { name: 'size', kind: '스타일', values: SIZE2 },
+      { name: 'disabled', kind: '스타일', values: 'boolean' },
+    ] },
+  { name: 'CurrencyInput', layer: '의미 원자', role: '돈 입력 전용(₩ prefix + 천단위 콤마, 무소수). NumberInput의 형제 — 옵션 대신 named 부품. 값은 순수 number(표시만 ₩·콤마, 다운스트림은 fmtCurrency).',
     props: [
       { name: 'value / onChange', kind: '기능', values: 'controlled, number | string' },
       { name: 'placeholder', kind: '콘텐츠', values: 'string' },

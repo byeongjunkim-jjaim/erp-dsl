@@ -92,10 +92,11 @@ type FieldSpec = {
 > 각 부품의 **닫힌 prop과 enum 값**만 적는다. 전체 prop·미노출 사유·근거는 [`docs/02_토큰과구현.md`](docs/02_토큰과구현.md).
 > 표기: `prop: 값` / 닫힌 enum은 `a|b|c`. 공통적으로 `className`·`style`은 어디에도 없다.
 
-### 의미 원자 — 표시·행동 (17)
+### 의미 원자 — 표시·행동 (18)
 - **Button** `variant: primary|secondary|danger|ghost` · `size: sm|md` · `loading` `disabled` `fullWidth` `leftIcon` `rightIcon` `onClick` `type: button|submit`
 - **IconButton** `icon: IconName` · `label`(aria 필수) · `variant`(Button과 동일) · `size: sm|md`
 - **Badge** `color: neutral|success|warning|danger|info` · children=string
+- **CountBadge** `count`(0 이하면 안 보임) · `tone: danger|neutral`(기본 danger=행동요구) · `max?`(기본 99, 초과 "N+") · `dot?` — 알림 카운트(솔리드 빨강 N). 상태=Badge와 역할 분리
 - **Chip** `color`(상태색+neutral) · `selected` `onChange` `onRemove`
 - **Text** `variant: body|body-strong|caption` · `color: primary|secondary|danger`
 - **Title** `variant: display|heading|subheading`
@@ -103,7 +104,7 @@ type FieldSpec = {
 - **Anchor** `href`
 - **Icon** `name: IconName`(85종, `Icon.tsx` 참조) · `size: sm|md|lg` · `color`(텍스트 역할)
 - **Avatar** `src` · children=이니셜 · `size`
-- **Image** `src` `alt` `fallbackSrc` · `fit: cover|contain` · `radius: sm|md|full` · `size: sm|md|lg|full`(full=컨테이너 폭, 4:3 잠금)
+- **Image** `src` `alt` `fallbackSrc` · `fit: cover|contain` · `radius: sm|md|full` · `size: sm|md|lg|full|fill`(full=컨테이너 폭 4:3 잠금 / fill=부모 박스 cover)
 - **Tooltip** `label` · children
 - **Popover** `content`(부품 슬롯) · `opened` `onChange` · `position: top|bottom|left|right` · `width: sm|md|lg`
 - **Spinner** `size`
@@ -112,9 +113,10 @@ type FieldSpec = {
 - **SegmentedControl** `options` `value` `onChange` · `size` `fullWidth`  ← 같은 대상의 뷰/모드 토글
 - **TabBar** `options` `value` `onChange`  ← 다른 구획으로 전환
 
-### 의미 원자 — 입력군 (12)
+### 의미 원자 — 입력군 (13)
 공통: `value`/`onChange`(controlled 전용) · `name` · `size: sm|md` · `disabled` · `placeholder`. **`label`·`error`·`required`는 입력칸이 아니라 `FormField`가 소유**.
 - **TextInput** / **PasswordInput** / **NumberInput** / **Textarea**(`autosize`)
+- **CurrencyInput** `value: number|string` — 돈 입력(₩ prefix·천단위 콤마·무소수). NumberInput 형제(표시만 통화, 저장·검증은 number)
 - **Select** `options: {label,value}[]` · `value: string`(단일)
 - **Radio** `options` · `value`(단일)
 - **DatePicker** `value`(Date/ISO) · **MultiDatePicker** `value: string[]`(개별 날짜 집합)
@@ -130,21 +132,22 @@ type FieldSpec = {
 - **Group**(가로) `gap` · `align: start|center|end` · `justify: …|between` · `wrap`
 - **Grid** `columns: 1|2|3|4|6|12` · `gap` · 자식 `Grid.Col span: 1~12`
 
-### 분자 (21) — 원자를 결합·일부 상태 고정
+### 분자 (22) — 원자를 결합·일부 상태 고정
 - **FormField** — 입력 컨트롤을 children으로 받아 `label`·`withAsterisk`·`error`(메시지+빨간 테두리)를 두름. **모든 입력칸은 이걸로 감싼다.**
 - **MultiSelect** `options` `value: string[]` · **DateRangeField** `value: {start,end}`
 - **InputGroup** `leftAddon`/`rightAddon: string|<Icon>` · **FileUploader** `value: FileItem[]`
 - **Pagination** `total` `value` `onChange` · **Callout** `tone: info|warning|danger|neutral` `title?` (비휘발 인라인 안내)
 - **StatusRow** `label` `status:{label,tone}` `actions` · **SummaryCard** `label` `count?` `amount?` `tone?` (KPI 타일)
 - **TotalRow** `label?` `amount`(합계 행) · **Menu** `trigger` `items: Action[]` `header?`
-- **ObjectCard** `{title,subtitle?,badge?,thumbnail?,fields?,actions?}` · `layout: card|row`(상세/요약 2뷰) · 필드 `summary?`(요약 뷰 노출)
+- **ObjectCard** `title` `subtitle?` `status?` `thumbnail?`/`icon?` `headline?` `attributes?` `actions?` `onClick?` — 단일 사진 카드(역할 슬롯, 자유 render 0). 높이는 그리드 셀이 분배
 - **SectionHeader** `title|titleNode` `controls?`(좌측 도구) `actions?`(우측 액션) `divider?` · **Breadcrumb** `items: {label,onClick?}[]`(마지막=현재)
 - **Collapsible** `header`(요약 슬롯) `children`(상세) `defaultOpen?` — **단독 토글 1개**(헤더 클릭). 여러 섹션 조율(하나만/동시 열림)은 **Accordion**(직접 쌓지 않는다)
-- **Accordion** `items: {value,label,children}[]` `multiple?` `defaultOpen?` — 여러 섹션 펼침 조율(`multiple`=동시 열림). Collapsible 직접 쌓기를 대체
+- **Accordion** `items: {value,label,children,tone?:'attention',color?:BadgeColor}[]` `multiple?` `defaultOpen?` `clearAttentionOnOpen?` — 여러 섹션 펼침 조율(`multiple`=동시 열림). `tone:'attention'`=틴트 행(`color` 토큰, 기본 danger), `clearAttentionOnOpen`=펼치면 틴트 해제. Collapsible 쌓기 대체
 - **Stat** `label` `value`(포맷된 표시값) `trend: up|down|flat` `delta?` `icon?` — 단일 지표+추세(건수/금액 요약은 SummaryCard)
 - **TreeSelect** `nodes: TreeNodeData[]` `value`(node id) — 계층 노드를 값으로 선택. **Tree(파인더/표시)와 독립**
 - **Cascader** `options: {value,label,children}[]` `value: string[]`(경로) — 순차 드롭다운 경로 선택(한 칸 고르면 다음 칸), 완료 시 브레드크럼 압축
 - **SearchToolbar** `searchValue` `onSearchChange` `searchPlaceholder?` `filters?: {key,label,options,value,onChange}[]` — 목록 상단 검색+필터+활성 필터칩
+- **PeriodNavigator** `label`(포맷된 기간 문자열) `onPrev` `onNext` `disabledPrev?` `disabledNext?` — 기간 한 칸 이동(‹ 라벨 ›). 돈 화면 기간 스코프(LedgerPage)
 
 ### 유기체 (13) — 화면 한 구획, 도메인은 스키마로만 주입
 - **Modal** `opened` `onClose` `title` `actions` `size: sm|md|lg` · children=본문
@@ -159,10 +162,11 @@ type FieldSpec = {
 - **Transfer** `items: {value,label}[]` `selected: string[]` `onChange` `titles?` — 좌·우 듀얼 리스트 대량 배정(인라인 다중은 MultiSelect)
 - **ToastHost** (props 없음) — 토스트 호스트(위치·지속·스택 단일 관리). 트리거는 `notify.*`, 앱 셸에 1회 배치
 
-### 페이지 템플릿 (4) + 폼 조립 조직 (1) — `FieldSpec[]` 구동, 도메인 0줄
+### 페이지 템플릿 (5) + 폼 조립 조직 (1) — `FieldSpec[]` 구동, 도메인 0줄
 - **ListPage** `schema` `rows` `status` · 정렬·페이징·`totalCount`
 - **DetailPage** `title` `info`(DescriptionList) `form?`(FormSection) — 좌 정보 / 우 폼 2분할
-- **HierarchyExplorer** 좌 Tree / 우 ObjectCard 그리드 (계층 마스터-디테일)
+- **HierarchyExplorer** 좌 Tree(+검색 바) / 우 품목 목록(DataTable) — 계층 마스터-디테일. 검색=분류 헤더 아래, 결과=우측 목록(분류 경로 컬럼)
+- **LedgerPage** `period`(PeriodNavigator) `metrics`(KPI 밴드: Stat/SummaryCard) `breakdown`(SegmentedControl→DataTable→TotalRow) `detail?`(Drawer 드릴) — 돈 지표 페이지(정산·매출 등)
 - **PageGrid** 닫힌 격자(Bento): `columns` `gap` · 타일 `colSpan` `rowSpan`(고정 셀 높이)
 - **FormSection** `fields: FieldSpec[]` `values` `onChange` `columns: 1|2` `resolvers?` `errors?` — 타입→원자 매핑·FormField 감싸기를 자동 수행
 

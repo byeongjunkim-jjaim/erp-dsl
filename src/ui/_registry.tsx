@@ -257,7 +257,7 @@ export function Demo({ name }: { name: string }) {
   const [modal, setModal] = useState(false);
   const [dwBefore, setDwBefore] = useState(false);
   const [dwAfter, setDwAfter] = useState(false);
-  const [paper, setPaper] = useState<'portrait' | 'landscape' | null>(null);
+  const [paper, setPaper] = useState(false);
   const [cbo, setCbo] = useState<string | null>(null);
   const [time, setTime] = useState('');
   const [stp, setStp] = useState(1);
@@ -402,89 +402,50 @@ export function Demo({ name }: { name: string }) {
       </Stack>
     ),
     PaperModal: (
-      // 보기 전용 A4 뷰어. 종이가 자기 윤곽을 가지고(모달 아님) 한 화면에 통째로 — 스크롤 0. JS 실측으로 A4를 화면에 꽉 맞춤(transform scale).
+      // 보기 전용 A4 뷰어. 종이가 자기 윤곽을 가짐(모달 아님). 헤더 토글 — 전체(통째·무스크롤) / 크게(폭 채워 확대·세로 스크롤).
       <Stack gap="xs">
-        <Text variant="caption" color="secondary">완성 문서를 한 화면에(무스크롤). children은 표준 A4 캔버스(794×1123) 좌표계로 작성 — 뷰어가 화면에 맞게 통째로 스케일.</Text>
+        <Text variant="caption" color="secondary">완성 문서를 본다. 헤더 토글 자세히(기본·폭 채워 확대·세로 스크롤) / 전체(한눈에·무스크롤). children은 표준 A4 캔버스(794×1123) 좌표계.</Text>
         <Group gap="xs" wrap>
-          <Button variant="secondary" onClick={() => setPaper('portrait')}>세로 문서 뷰어</Button>
-          <Button variant="secondary" onClick={() => setPaper('landscape')}>가로 문서 뷰어</Button>
+          <Button variant="secondary" onClick={() => setPaper(true)}>문서 뷰어 열기</Button>
         </Group>
         <PaperModal
-          opened={paper != null}
-          onClose={() => setPaper(null)}
-          orientation={paper ?? 'portrait'}
-          title={paper === 'landscape' ? '상반기 손익 요약 — 가로 A4' : '거래명세서 — 세로 A4'}
-          actions={[{ label: '닫기', variant: 'ghost', onClick: () => setPaper(null) }]}
+          opened={paper}
+          onClose={() => setPaper(false)}
+          orientation="portrait"
+          title="거래명세서 — 세로 A4"
+          actions={[{ label: '닫기', variant: 'ghost', onClick: () => setPaper(false) }]}
         >
-          {/* 표준 A4 캔버스(794×1123 / 1123×794) 기준 데모 문서 — 세로·가로 따로(실전은 FieldGrid 장표). 문서 여백 48px. */}
-          {paper === 'landscape' ? (
-            // 가로 문서 — 넓은 다열 표(가로가 자연스러운 손익 요약).
-            <div style={{ padding: 48, height: '100%', boxSizing: 'border-box' }}>
-              <Stack gap="lg">
-                <Group justify="between" align="end">
-                  <Title variant="display">상반기 손익 요약</Title>
-                  <Text variant="caption" color="secondary">2026 H1 · ㈜한빛산업 · 단위: 천원</Text>
-                </Group>
-                <Divider />
-                <Grid columns={6} gap="md">
-                  {['월', '매출액', '매출원가', '매출총이익', '판관비', '영업이익'].map((h) => (
-                    <Text key={h} variant="body-strong">{h}</Text>
-                  ))}
-                </Grid>
-                <Divider />
-                {[
-                  ['1월', '142,000', '98,400', '43,600', '21,000', '22,600'],
-                  ['2월', '128,500', '90,100', '38,400', '20,500', '17,900'],
-                  ['3월', '171,200', '116,300', '54,900', '23,800', '31,100'],
-                  ['4월', '159,800', '108,600', '51,200', '22,400', '28,800'],
-                  ['5월', '183,400', '121,900', '61,500', '24,100', '37,400'],
-                  ['6월', '196,700', '129,200', '67,500', '25,300', '42,200'],
-                ].map((r) => (
-                  <Grid key={r[0]} columns={6} gap="md">
-                    {r.map((c, i) => <Text key={i} variant="body">{c}</Text>)}
-                  </Grid>
-                ))}
-                <Divider />
-                <Grid columns={6} gap="md">
-                  {['합계', '981,600', '664,500', '317,100', '137,100', '180,000'].map((c, i) => (
-                    <Title key={i} variant="subheading">{c}</Title>
-                  ))}
-                </Grid>
-              </Stack>
-            </div>
-          ) : (
-            // 세로 문서 — 거래명세서(세로가 자연스러운 전표).
-            <div style={{ padding: 48, height: '100%', boxSizing: 'border-box' }}>
-              <Stack gap="lg">
-                <Group justify="between" align="start">
-                  <Stack gap="xs">
-                    <Title variant="display">거래명세서</Title>
-                    <Text variant="caption" color="secondary">No. 2026-0622-017 · 발행일 2026-06-22</Text>
-                  </Stack>
-                  <Stack gap="xs" align="end">
-                    <Text variant="body">㈜한빛산업</Text>
-                    <Text variant="caption" color="secondary">사업자 123-45-67890</Text>
-                  </Stack>
-                </Group>
-                <Divider />
-                <Grid columns={2} gap="lg">
-                  <Stack gap="xs"><Text variant="caption" color="secondary">공급받는 자</Text><Text variant="body">대성건설 ㈜</Text></Stack>
-                  <Stack gap="xs"><Text variant="caption" color="secondary">담당</Text><Text variant="body">김현수 과장 · 010-1234-5678</Text></Stack>
-                </Grid>
-                <Divider />
-                <Stack gap="sm">
-                  <Group justify="between"><Text variant="body-strong">품목</Text><Text variant="body-strong">금액</Text></Group>
-                  <Divider />
-                  <Group justify="between"><Text variant="body">강관 파이프 50A × 120</Text><Text variant="body">3,600,000</Text></Group>
-                  <Group justify="between"><Text variant="body">엘보 90° 50A × 80</Text><Text variant="body">640,000</Text></Group>
-                  <Group justify="between"><Text variant="body">플랜지 50A × 40</Text><Text variant="body">520,000</Text></Group>
-                  <Group justify="between"><Text variant="body">시공·운반비</Text><Text variant="body">1,200,000</Text></Group>
-                  <Divider />
-                  <Group justify="between"><Title variant="heading">합계 (VAT 별도)</Title><Title variant="heading">5,960,000</Title></Group>
+          {/* 표준 A4 캔버스(794×1123) 기준 데모 문서(실전은 FieldGrid 장표). 문서 여백 48px. */}
+          <div style={{ padding: 48, height: '100%', boxSizing: 'border-box' }}>
+            <Stack gap="lg">
+              <Group justify="between" align="start">
+                <Stack gap="xs">
+                  <Title variant="display">거래명세서</Title>
+                  <Text variant="caption" color="secondary">No. 2026-0622-017 · 발행일 2026-06-22</Text>
                 </Stack>
+                <Stack gap="xs" align="end">
+                  <Text variant="body">㈜한빛산업</Text>
+                  <Text variant="caption" color="secondary">사업자 123-45-67890</Text>
+                </Stack>
+              </Group>
+              <Divider />
+              <Grid columns={2} gap="lg">
+                <Stack gap="xs"><Text variant="caption" color="secondary">공급받는 자</Text><Text variant="body">대성건설 ㈜</Text></Stack>
+                <Stack gap="xs"><Text variant="caption" color="secondary">담당</Text><Text variant="body">김현수 과장 · 010-1234-5678</Text></Stack>
+              </Grid>
+              <Divider />
+              <Stack gap="sm">
+                <Group justify="between"><Text variant="body-strong">품목</Text><Text variant="body-strong">금액</Text></Group>
+                <Divider />
+                <Group justify="between"><Text variant="body">강관 파이프 50A × 120</Text><Text variant="body">3,600,000</Text></Group>
+                <Group justify="between"><Text variant="body">엘보 90° 50A × 80</Text><Text variant="body">640,000</Text></Group>
+                <Group justify="between"><Text variant="body">플랜지 50A × 40</Text><Text variant="body">520,000</Text></Group>
+                <Group justify="between"><Text variant="body">시공·운반비</Text><Text variant="body">1,200,000</Text></Group>
+                <Divider />
+                <Group justify="between"><Title variant="heading">합계 (VAT 별도)</Title><Title variant="heading">5,960,000</Title></Group>
               </Stack>
-            </div>
-          )}
+            </Stack>
+          </div>
         </PaperModal>
       </Stack>
     ),

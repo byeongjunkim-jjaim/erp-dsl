@@ -5,14 +5,14 @@
 //    안의 스타일 우회는 인지(부품만 조립)로 막고 hex는 eslint가 차단(강제 3층).
 //  · position은 닫힌 enum(top/bottom/left/right, 기본 bottom). auto 제외 — "명시 top"과
 //    "auto가 고른 top"이 경쟁 경로라서. 화면 끝 자동 뒤집기(flip)는 position과 별개 동작이라 상시 ON.
-//  · width는 sm/md/lg 토큰(Container 동형, px는 내부 매핑·잠정값). 그림자·radius·화살표 고정.
+//  · width는 sm/md/lg/xl 토큰(Container 동형, px는 내부 매핑·잠정값) 또는 auto(내용폭 — 컬럼 수 따라 늘고 줆). 그림자·radius·화살표 고정.
 //  · controlled(opened/onChange) 전용 — 상태 주인은 하나(횡단규칙 2와 동형).
 import { Popover as M, type FloatingPosition } from '@mantine/core';
 import type { ReactNode } from 'react';
 
 type Position = 'top' | 'bottom' | 'left' | 'right';
 type Align = 'start' | 'center' | 'end';
-type Width = 'sm' | 'md' | 'lg' | 'xl';
+type Width = 'sm' | 'md' | 'lg' | 'xl' | 'auto';   // auto=내용폭(다단 컬럼이 컬럼 수만큼 늘고, 1컬럼이면 좁게)
 
 type PopoverProps = {
   children: ReactNode;          // trigger(감쌀 대상)
@@ -22,27 +22,32 @@ type PopoverProps = {
   position?: Position;          // 기본 bottom
   align?: Align;                // 축 위 정렬(기본 center). start=트리거 시작모서리에 맞춤(드롭다운형: bottom-start)
   width?: Width;                // 기본 md
-  // 재배치 정책(기본 flip). 'fixed'=flip 끄고 shift만 → content 크기가 변해도(예: 다단 컬럼 증식) 한 번 잡은 위치에서 안 흔들림.
-  reposition?: 'flip' | 'fixed';
+  // 재배치 정책(기본 flip). 'fixed'=flip 끄고 shift만(화면 안 유지) → content 크기 변해도 화면 밖으로 안 나감.
+  //  'anchored'=flip·shift 둘 다 끔 → 좌상단 앵커가 *완전 고정*, 내용은 오른쪽·아래로만 성장(점프 0). 다단 컬럼 증식용.
+  reposition?: 'flip' | 'fixed' | 'anchored';
 };
 
-// width 토큰 → px(잠정값, 화면 검증에서 조정). Container SIZE와 같은 구조. xl=다단 패널(Cascader Miller 컬럼)용.
-const WIDTH_PX: Record<Width, number> = { sm: 200, md: 280, lg: 360, xl: 600 };
+// width 토큰 → px(잠정값, 화면 검증에서 조정). Container SIZE와 같은 구조. auto는 내용폭(undefined → Mantine이 content 크기로).
+const WIDTH_PX: Record<Exclude<Width, 'auto'>, number> = { sm: 200, md: 280, lg: 360, xl: 600 };
 
 export function Popover({
   children, content, opened, onChange, position = 'bottom', align = 'center', width = 'md', reposition = 'flip',
 }: PopoverProps) {
   // align=center면 측면 그대로(bottom), 아니면 '{측면}-{정렬}'(bottom-start 등) — 드롭다운형은 start로 시작모서리 정렬.
   const mPos = (align === 'center' ? position : `${position}-${align}`) as FloatingPosition;
-  // fixed=flip 끔(shift만 유지) → content 크기 변해도 위치 고정. 기본은 Mantine 기본(flip+shift).
-  const middlewares = reposition === 'fixed' ? { flip: false, shift: true } : undefined;
+  const mWidth = width === 'auto' ? undefined : WIDTH_PX[width];   // auto=내용폭(컬럼 수 따라 동적), 나머지=고정 px.
+  // 재배치: fixed=flip off·shift on(화면 안 유지). anchored=flip·shift 둘 다 off(앵커 완전 고정, 오른쪽·아래로만 성장). 기본=Mantine flip+shift.
+  const middlewares =
+    reposition === 'fixed' ? { flip: false, shift: true }
+      : reposition === 'anchored' ? { flip: false, shift: false }
+        : undefined;
   return (
     <M
       opened={opened}
       onChange={onChange}
       position={mPos}
       middlewares={middlewares}
-      width={WIDTH_PX[width]}
+      width={mWidth}
       withArrow
       shadow="md"
       radius="md"

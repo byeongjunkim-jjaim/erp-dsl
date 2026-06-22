@@ -108,9 +108,9 @@ export function MillerColumns({ options, value, onChange, placeholder = '선택'
     </div>
   );
 
-  // 좁은 모드 = 단일 컬럼 드릴인(현재 깊이 + 뒤로 헤더). 넓은 모드 = 다단(가로 스크롤).
-  // 박스 크기는 *내용에 맞춰 동적*(작은 내용엔 작게). 점프 방지는 reposition="fixed"(flip off·좌상단 앵커)가 담당 —
-  //  컬럼은 아래/오른쪽으로만 증식하고 앵커가 안 움직인다. 긴 컬럼은 .erpColList max-height 안에서 내부 스크롤.
+  // 좁은 모드 = 단일 컬럼 드릴인(현재 깊이 + 뒤로 헤더). 넓은 모드 = 다단.
+  // 팝오버 폭=내용폭(width="auto") — 1컬럼(하위분류 없음)이면 좁게, 드릴할수록 오른쪽으로 늘어남. 상한 600 넘으면 내부 가로 스크롤.
+  // 점프 0: reposition="anchored"(flip·shift 둘 다 off) → 좌상단 앵커 완전 고정, 컬럼은 아래/오른쪽으로만 증식. 긴 컬럼은 .erpColList max-height 내부 스크롤.
   const dShown = Math.min(drillDepth, columns.length - 1);
   const content = narrow ? (
     <div style={{ width: 220 }}>
@@ -129,7 +129,8 @@ export function MillerColumns({ options, value, onChange, placeholder = '선택'
       {colView(columns[dShown], dShown)}
     </div>
   ) : (
-    <div style={{ display: 'flex', alignItems: 'stretch', overflowX: 'auto' }}>
+    // 폭=내용(컬럼 수)에 동적. 상한(600)까지 늘고, 넘으면 내부 가로 스크롤(화면 무한 이탈 방지).
+    <div style={{ display: 'flex', alignItems: 'stretch', overflowX: 'auto', maxWidth: 600 }}>
       {columns.map((col, depth) => colView(col, depth))}
     </div>
   );
@@ -140,8 +141,8 @@ export function MillerColumns({ options, value, onChange, placeholder = '선택'
       onChange={(o) => (o ? open() : setOpened(false))}
       position="bottom"
       align="start"
-      reposition="fixed"
-      width={narrow ? 'sm' : 'xl'}
+      reposition="anchored"
+      width="auto"
       content={content}
     >
       {complete ? (

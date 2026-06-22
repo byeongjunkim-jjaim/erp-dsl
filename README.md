@@ -163,7 +163,7 @@ type FieldSpec = {
 - **Tree** `nodes` controlled 선택·펼침 · `editable`(쓰기 게이트)
 - **FieldGrid** `columns` `rows: FieldGridCell[][]`(셀=`label?`|`field?`|`image?`|`node?`, `colSpan?` `rowSpan?` `align?`) `fields: FieldSpec[]` `mode: edit|read` `size: sm|md|lg`(기본 md — 타이포·행 단위·세로패딩 한 세트, 행 높이는 타이포 따라 동적) `values` `onChange` `errors?` — 테두리 셀 격자(장표/帳票). 작성·확인 양용·**같은 기하**(셀 박스 불변, read=같은 입력 원자 inert 재사용). `node`=비표준 컨트롤 통째 슬롯(4종 배타·mode 무관). 머리표(라벨:값)·명세표(헤더+값 행)·대분류 밴드 다 같은 모델
 - **Drawer** `opened` `onClose` `title` `actions?` `position: left|right|top|bottom` `size: sm|md|lg|xl|full`(full=축 95%) — 가장자리 슬라이드 패널(뒤 맥락 유지; 차단형은 Modal)
-- **PaperModal** `opened` `onClose` `title` `actions?` `orientation: portrait|landscape` · children=표준 A4 캔버스(794×1123) 기준 문서 — **순수 A4 문서 뷰어**. 종이가 자기 윤곽을 가짐(모달 아님), JS 실측 fit(transform scale). 모달 폭=가로 A4 고정, 헤더 토글 **자세히**(기본·폭 채워 확대·세로 스크롤) / **전체**(통째·무스크롤). 내용은 소비처(보통 FieldGrid), 인쇄는 소비처 위임(`.erpPaper` print)
+- **PaperModal** `opened` `onClose` `title` `actions?` `orientation: portrait|landscape` · children=표준 A4 캔버스(794×1123) 기준 문서 — **순수 A4 문서 뷰어**. 종이가 자기 윤곽을 가짐(모달 아님), JS 실측 fit(transform scale). 모달 폭=가로 A4 고정, 헤더 토글 **자세히**(기본·폭 채워 확대·세로 스크롤) / **전체**(통째·무스크롤). 내용은 소비처(보통 FieldGrid). **인쇄 빌트인**(`@media print`: 종이만 물리 A4 1:1·1장·머리말꼬리말 제거·디바이더 크리스프 — 트리거 버튼만 `actions`로 소비처 배선)
 - **Stepper** `active`(index) `steps: {label,description?}[]` `orientation?` `onStepClick?` — 다단계 진행 표시(콘텐츠는 호출측이 active로 분기)
 - **Transfer** `items: {value,label}[]` `selected: string[]` `onChange` `titles?` — 좌·우 듀얼 리스트 대량 배정(인라인 다중은 MultiSelect)
 - **ToastHost** (props 없음) — 토스트 호스트(위치·지속·스택 단일 관리). 트리거는 `notify.*`, 앱 셸에 1회 배치

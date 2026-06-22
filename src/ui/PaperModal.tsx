@@ -8,7 +8,8 @@
 //      ② 전체(우측 토글): 문서를 높이에 맞춰 contain(통째) 가운데 표시 → 세로 문서는 좌우 데스크, **스크롤 0**.
 //      뷰 토글은 헤더 SegmentedControl — 내부 상태(공개 prop 아님, 순수 뷰 어포던스).
 //  · 내용(children)은 소비처가 표준 A4 캔버스(CANON) 좌표계 기준으로 채움(보통 FieldGrid 장표) — 도메인 0.
-//  · 인쇄는 소비처 위임: actions에 인쇄 버튼 + .erpPaper를 print CSS로 타겟(뷰어 빌트인 없음).
+//  · 인쇄 빌트인(@media print, controls.css): 종이만 남기고(머리말/꼬리말·모달 백드롭 제거) 화면 맞춤 scale·모달 변형을
+//    무효화해 물리 A4 1:1·1장으로 출력. orientation별 @page size는 여기서 <style>로 주입(닫힌 enum). 인쇄 *트리거*(버튼)만 actions로 소비처 배선.
 //  · Mantine Modal 격리 래핑(헌법 7). 본문이 '뷰어 본문'이라 공유 Modal과 별도 유기체.
 import { Modal as M } from '@mantine/core';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
@@ -117,6 +118,10 @@ export function PaperModal({
     >
       {/* 3영역 flex 세로 — 헤더 + 본문(고정 가로 박스) + 푸터. 루트에 콜백 ref로 측정·관찰. */}
       <div ref={setRootRef} style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* 인쇄용 @page — orientation별 A4 size + margin 0(머리말/꼬리말 제거). 나머지 인쇄 규칙은 controls.css.
+            html/body를 페이지 높이로 고정 + overflow:hidden → 뒤 앱/문서가 visibility:hidden으로 남긴 *높이*를 클립해
+            빈 2페이지 방지(종이 1장만). 종이는 position:fixed라 이 클립에 안 잘림. */}
+        <style>{`@media print{@page{size:A4 ${orientation === 'landscape' ? 'landscape' : 'portrait'};margin:0}html,body{margin:0!important;padding:0!important;height:${orientation === 'landscape' ? '210mm' : '297mm'}!important;overflow:hidden!important}}`}</style>
         {/* 헤더(고정) — 좌: 제목 / 우: 뷰 토글(전체·크게) + 닫기. */}
         <div ref={headerRef} style={{ flex: 'none', padding: 'var(--mantine-spacing-md)', borderBottom: `var(--border-width) solid var(--border-default)` }}>
           <Group justify="between" align="center">
@@ -147,9 +152,10 @@ export function PaperModal({
         >
           {/* 발자국 박스(paperW×paperH) — 종이를 absolute로 스케일해 채운다. 크게에서 paperH가 본문보다 크면 위 overflow가 받는다. */}
           <div style={{ position: 'relative', width: paperW, height: paperH, flexShrink: 0 }}>
-            {/* 종이 — 표준 A4 캔버스(canon)를 transform:scale로 맞춤(origin top-left). 종이가 자기 윤곽(.erpPaper)을 가짐. */}
+            {/* 종이 — 표준 A4 캔버스(canon)를 transform:scale로 맞춤(origin top-left). 종이가 자기 윤곽(.erpPaper)을 가짐.
+                인쇄 시 .erpPaper 규칙(controls.css)이 scale 무효화 + 물리 A4 고정. erpPaper-landscape=가로 물리 치수. */}
             <div
-              className="erpPaper"
+              className={orientation === 'landscape' ? 'erpPaper erpPaper-landscape' : 'erpPaper'}
               style={{
                 position: 'absolute', top: 0, left: 0,
                 width: canon.w, height: canon.h,

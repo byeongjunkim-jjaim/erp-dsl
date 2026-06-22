@@ -57,3 +57,14 @@
   font-size: var(--fg-typo-size) !important;
   line-height: var(--fg-typo-lh) !important;
 }
+
+/* 인쇄 크리스프 보더 — 1px 보더가 인쇄 DPI에서 픽셀 스냅으로 일부 사라지는 것 방지.
+   보더 색을 진한 토큰(--border-strong)으로 + 폭을 물리단위(0.2mm)로 고정 → 모든 디바이더 균일 출력.
+   print-color-adjust:exact로 라벨 음영(bg-secondary)도 출력. 화면 불변(@media print 안에서만). */
+@media print {
+  .erp-fg { border-color: var(--border-strong) !important; border-width: 0.2mm !important; }
+  .erp-fg-cell {
+    border-color: var(--border-strong) !important; border-width: 0.2mm !important;
+    -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+  }
+}

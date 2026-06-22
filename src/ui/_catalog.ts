@@ -606,7 +606,7 @@ export const CATALOG: CatalogEntry[] = [
       '배치 프리미티브': ['Group (헤더 직접 조립)'],
       공유: ['_cells(renderAction)'],
     } },
-  { name: 'PaperModal', layer: '유기체', role: 'A4 문서 *뷰어* 모달(보기 전용 — 거래명세서·견적서). 종이가 자기 윤곽을 가짐(모달 아님). 실측(ResizeObserver)→fitA4로 A4 박스 px 계산→표준 A4 캔버스(794×1123 @96dpi)를 transform:scale. aspect-ratio·max-* 안 씀. **모달 폭은 가로(landscape) A4 기준 고정**(세로 문서여도 넓은 박스) — 한 모달에서 헤더 뷰토글(자세히/전체)로 두 뷰: ① 자세히(기본·좌)=폭 채워 확대·세로 스크롤(글자 읽기용) / ② 전체(우)=높이 맞춤 통째·무스크롤(세로 문서는 좌우 데스크). 토글은 내부 상태(공개 prop 아님). 내용=소비처 FieldGrid 장표(CANON 좌표계), 인쇄=소비처 위임(.erpPaper print 훅). Modal의 뷰어 형제(공유 Modal 불변).',
+  { name: 'PaperModal', layer: '유기체', role: 'A4 문서 *뷰어* 모달(보기 전용 — 거래명세서·견적서). 종이가 자기 윤곽을 가짐(모달 아님). 실측(ResizeObserver)→fitA4로 A4 박스 px 계산→표준 A4 캔버스(794×1123 @96dpi)를 transform:scale. aspect-ratio·max-* 안 씀. **모달 폭은 가로(landscape) A4 기준 고정**(세로 문서여도 넓은 박스) — 한 모달에서 헤더 뷰토글(자세히/전체)로 두 뷰: ① 자세히(기본·좌)=폭 채워 확대·세로 스크롤(글자 읽기용) / ② 전체(우)=높이 맞춤 통째·무스크롤(세로 문서는 좌우 데스크). 토글은 내부 상태(공개 prop 아님). 내용=소비처 FieldGrid 장표(CANON 좌표계). 인쇄 빌트인(@media print: 종이만 남기고 화면 맞춤 scale·모달 변형 무효화 → 물리 A4 1:1·1장·머리말꼬리말 제거, FieldGrid 디바이더 크리스프; orientation별 @page size 주입) — 인쇄 *트리거*(버튼)만 actions로 소비처 배선. Modal의 뷰어 형제(공유 Modal 불변).',
     props: [
       { name: 'opened / onClose', kind: '기능', values: 'boolean, () => void' },
       { name: 'title', kind: '콘텐츠', values: 'string' },
@@ -616,7 +616,7 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'children', kind: '콘텐츠', values: 'ReactNode (표준 A4 캔버스 794×1123 좌표계 기준 문서 — FieldGrid 등)' },
     ],
     composition: {
-      토큰: ['모달 폭=가로 A4 고정(상한 95vw×95vh)', '데스크 패딩 8px(명시예외)', '--bg-secondary(데스크)', '.erpPaper=--bg-primary/--border-default/shadow md', '자세히=폭채움·세로스크롤(기본) / 전체=contain·무스크롤'],
+      토큰: ['모달 폭=가로 A4 고정(상한 95vw×95vh)', '데스크 패딩 8px(명시예외)', '--bg-secondary(데스크)', '.erpPaper=--bg-primary/--border-default/shadow md', '자세히=폭채움·세로스크롤(기본) / 전체=contain·무스크롤', '@media print: 물리 A4 1:1·머리말꼬리말 제거·크리스프 보더(--border-strong/0.2mm)'],
       '의미 원자': ['Title', 'Icon(x)', 'SegmentedControl(자세히/전체 토글)'],
       '배치 프리미티브': ['Group (헤더 직접 조립)'],
       공유: ['_cells(renderAction)'],

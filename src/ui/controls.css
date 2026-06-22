@@ -110,3 +110,22 @@
   border-color: var(--erp-attn-border, var(--mantine-color-danger-3));
 }
 @media (prefers-reduced-motion: reduce) { .erpAccordionAttn { transition: none; } }
+
+/* 컬럼형 선택 공유 — Cascader(순차 인라인 박스 N개) / MillerColumns(트리거 1개 + 팝오버 다단). 같은 트리거·컬럼-아이템 박스 비주얼. */
+.erpColTrigger {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--mantine-spacing-sm);
+  min-width: 160px; height: 36px; padding: 0 var(--mantine-spacing-sm);
+  border: 1px solid var(--border-default); border-radius: var(--mantine-radius-md);
+  background: var(--bg-primary); cursor: pointer;
+}
+.erpColTrigger:hover { background: var(--bg-secondary); }
+/* 꺽쇠는 flex span으로 감싸 박스 기준 수직 중앙정렬(Icon의 vertical-align baseline 보정은 flex에서 무효이므로 끊고, line-height 0으로 svg 인라인 여백 제거). */
+.erpColTriggerIcon, .erpColItemIcon { display: flex; align-items: center; flex-shrink: 0; line-height: 0; }
+/* 컬럼 = 한 레벨 목록(세로 스크롤). MillerColumns 다단은 컬럼 사이 좌측 구분선. */
+.erpColList { min-width: 180px; max-height: 280px; overflow-y: auto; padding: 4px; }
+.erpColList + .erpColList { border-left: 1px solid var(--border-default); }
+.erpColItem { display: flex; align-items: center; justify-content: space-between; gap: var(--mantine-spacing-sm); padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+.erpColItem:hover { background: var(--bg-secondary); }
+.erpColItem[data-selected] { background: var(--mantine-color-primary-0); }   /* 선택 경로 강조(Tree 선택과 동형) */
+.erpColBack { display: flex; align-items: center; gap: 4px; padding: 6px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--border-default); cursor: pointer; }
+.erpColBack:hover { background: var(--bg-secondary); }

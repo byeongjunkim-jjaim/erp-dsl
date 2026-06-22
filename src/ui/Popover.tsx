@@ -7,11 +7,12 @@
 //    "auto가 고른 top"이 경쟁 경로라서. 화면 끝 자동 뒤집기(flip)는 position과 별개 동작이라 상시 ON.
 //  · width는 sm/md/lg 토큰(Container 동형, px는 내부 매핑·잠정값). 그림자·radius·화살표 고정.
 //  · controlled(opened/onChange) 전용 — 상태 주인은 하나(횡단규칙 2와 동형).
-import { Popover as M } from '@mantine/core';
+import { Popover as M, type FloatingPosition } from '@mantine/core';
 import type { ReactNode } from 'react';
 
 type Position = 'top' | 'bottom' | 'left' | 'right';
-type Width = 'sm' | 'md' | 'lg';
+type Align = 'start' | 'center' | 'end';
+type Width = 'sm' | 'md' | 'lg' | 'xl';
 
 type PopoverProps = {
   children: ReactNode;          // trigger(감쌀 대상)
@@ -19,20 +20,23 @@ type PopoverProps = {
   opened: boolean;              // controlled
   onChange: (opened: boolean) => void;
   position?: Position;          // 기본 bottom
+  align?: Align;                // 축 위 정렬(기본 center). start=트리거 시작모서리에 맞춤(드롭다운형: bottom-start)
   width?: Width;                // 기본 md
 };
 
-// width 토큰 → px(잠정값, 화면 검증에서 조정). Container SIZE와 같은 구조.
-const WIDTH_PX: Record<Width, number> = { sm: 200, md: 280, lg: 360 };
+// width 토큰 → px(잠정값, 화면 검증에서 조정). Container SIZE와 같은 구조. xl=다단 패널(Cascader Miller 컬럼)용.
+const WIDTH_PX: Record<Width, number> = { sm: 200, md: 280, lg: 360, xl: 600 };
 
 export function Popover({
-  children, content, opened, onChange, position = 'bottom', width = 'md',
+  children, content, opened, onChange, position = 'bottom', align = 'center', width = 'md',
 }: PopoverProps) {
+  // align=center면 측면 그대로(bottom), 아니면 '{측면}-{정렬}'(bottom-start 등) — 드롭다운형은 start로 시작모서리 정렬.
+  const mPos = (align === 'center' ? position : `${position}-${align}`) as FloatingPosition;
   return (
     <M
       opened={opened}
       onChange={onChange}
-      position={position}
+      position={mPos}
       width={WIDTH_PX[width]}
       withArrow
       shadow="md"

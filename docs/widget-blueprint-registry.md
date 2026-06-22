@@ -12,10 +12,10 @@
 
 **Tier S(골격)에서 손볼 것** = 최우선 확보 목록:
 
-- **S · 진짜 갭(❌)**: `Cascader`(카테고리 트리 선택) · `Skeleton`(표/카드 로딩)
-- **S · 부분보유(🟡, 보강 필요)**: `Combobox/Autocomplete`(검색형 Select) · `TreeSelect`(조직/분류) · `Drawer`(상세·필터 패널) · `Header/Topbar` · `Filters/SearchToolbar`(목록 상단 바) · `Stat/Metric`(SummaryCard 보강) · `DashboardGrid`(PageGrid 보강)
+- ~~**S · 진짜 갭(❌)**: `Cascader` · `Skeleton`~~ → **둘 다 구현 완료**(Cascader=팝오버 Miller 컬럼, Skeleton=원자).
+- ~~**S · 부분보유(🟡)**: `Combobox` · `TreeSelect` · `Drawer` · `SearchToolbar` · `Stat`~~ → **모두 신설/보강 완료**. (Header/Topbar=AppShell 우상단 바 흡수, DashboardGrid=PageGrid.)
 
-이 9개만 처리하면 ERP 화면 골격은 완성. 나머지 Tier A/B는 여유 있게.
+→ **Tier S 골격 확보 완료.** 나머지 Tier A/B는 여유 있게.
 
 **전체 분포**: 총 ~80 · ✅보유 ~38 · 🟡부분 ~24 · ❌갭 ~18.
 
@@ -63,11 +63,11 @@
 - → DSL: `TextInput`(트리거)+`Popover`+`Menu`(필터결과). 로딩 `Spinner`, 빈결과 `EmptyState`. **보강: searchable Select를 비동기 typeahead로 확장**
 - 판단: ☐
 
-### Cascader — 보유:❌ · 합의 3/8 (Ant·MUI·Mantine) · **ERP 카테고리트리 필수**
-- 해부: 트리거 · 다단 패널(컬럼별 레벨) · hover로 하위 전개 · 리프 선택→경로값
+### Cascader — 보유:✅ · 합의 3/8 (Ant·MUI·Mantine) · **ERP 카테고리트리 필수**
+- 해부: 트리거 · 다단 패널(컬럼별 레벨) · 클릭으로 하위 전개 · 리프 선택→경로값
 - 표준 props: options(children) · value(path) · changeOnSelect · multiple · showSearch · expandTrigger
-- → DSL: 트리거 `Select`/`TextInput` + `Popover`에 `Group`으로 컬럼형 `Menu` 다단, 또는 `Tree` 계층 전개. 선택경로 `Breadcrumb`
-- 판단: ☐
+- → DSL: **두 부품으로 구현 완료** — ① `Cascader`(순차 인라인: 한 칸 고르면 다음 칸, 페이지에 N박스, 완료 시 압축). ② `MillerColumns`(트리거 1개 + `Popover`(width xl) 안 **다단 컬럼**, 좌→우; Ant Cascader UI에 대응. 좁은 화면 ≤600px은 단일 컬럼 드릴인 폴백). 둘 다 같은 컬럼-아이템 박스 비주얼. 검색(showSearch)은 `Combobox` 위임, 다중(multiple)은 미구현(필요 시 확장).
+- 판단: ✅ 채택(구현)
 
 ### TreeSelect — 보유:🟡(Tree) · 합의 4/8 · **조직/분류 필수**
 - 해부: Select 트리거 + Popover 안 Tree(접기/펼치기·checkable) · 다중 시 Chip

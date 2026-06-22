@@ -22,7 +22,8 @@ type Props = {
   onClose: () => void;
   title: string;
   actions?: Action[];
-  size?: 'sm' | 'md' | 'lg';
+  // 폭. sm/md/lg/xl=Mantine 네이티브 폭 토큰 / full='거의 꽉 찬 wide'(95vw·90vh — 풀스크린 아님, radius·여백 유지).
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   closeOnOverlayClick?: boolean;
   children: ReactNode;
 };
@@ -35,12 +36,14 @@ export function Modal({
   const ordered = actions
     ? [...actions].sort((a, b) => Number(isPrimaryEnd(a.variant)) - Number(isPrimaryEnd(b.variant)))
     : [];
+  const full = size === 'full';            // 풀스크린 대신 95vw/90vh — 큰 폼·표 편집용(여백·radius는 유지).
+  const mSize = full ? '95vw' : size;      // sm/md/lg/xl은 Mantine 토큰 그대로, full만 vw로 분기.
 
   return (
     <M
       opened={opened}
       onClose={onClose}
-      size={size}
+      size={mSize}
       centered
       closeOnClickOutside={closeOnOverlayClick}
       radius="md"
@@ -48,8 +51,8 @@ export function Modal({
       withCloseButton={false}  /* 기본 헤더 끔 — 우리가 직접 조립 */
       padding={0}              /* 본문 패딩 끔 — 패딩 주인을 우리 3영역으로 이관 */
     >
-      {/* 3영역 flex 세로 컨테이너 — maxHeight로 캡, 넘치면 본문만 스크롤 */}
-      <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '85vh' }}>
+      {/* 3영역 flex 세로 컨테이너 — maxHeight로 캡(full은 90vh로 더 키움), 넘치면 본문만 스크롤 */}
+      <div style={{ display: 'flex', flexDirection: 'column', maxHeight: full ? '90vh' : '85vh' }}>
         {/* 헤더(고정) — 우리 Group으로 조립. flex:none이라 스크롤 안 됨. */}
         <div style={{ flex: 'none', padding: 'var(--mantine-spacing-md)', borderBottom: `var(--border-width) solid var(--border-default)` }}>
           <Group justify="between" align="center">

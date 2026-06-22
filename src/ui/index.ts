@@ -68,6 +68,7 @@ export { Stat } from './Stat';
 export { PeriodNavigator } from './PeriodNavigator';
 export { TreeSelect } from './TreeSelect';
 export { Cascader, type CascaderOption } from './Cascader';
+export { MillerColumns, type MillerOption } from './MillerColumns';
 export { SearchToolbar } from './SearchToolbar';
 
 // 유기체

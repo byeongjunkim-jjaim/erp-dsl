@@ -80,6 +80,7 @@ import { Stepper } from './Stepper';
 import { Transfer } from './Transfer';
 import { TreeSelect } from './TreeSelect';
 import { Cascader } from './Cascader';
+import { MillerColumns } from './MillerColumns';
 import { SearchToolbar } from './SearchToolbar';
 import { notify } from './notify';
 
@@ -261,6 +262,7 @@ export function Demo({ name }: { name: string }) {
   const [xfer, setXfer] = useState<string[]>(['mdf']);
   const [tsel, setTsel] = useState<string | null>(null);
   const [casc, setCasc] = useState<string[]>([]);
+  const [mcol, setMcol] = useState<string[]>([]);
   const [stbSearch, setStbSearch] = useState('');
   const [stbStatus, setStbStatus] = useState<string | null>(null);
   const [month, setMonth] = useState('2026-06');
@@ -539,10 +541,18 @@ export function Demo({ name }: { name: string }) {
       </Stack>
     ),
     Cascader: (
-      // 단독(신규) — 방식 A: 한 칸 고르면 다음 칸 등장(깊이=칸 수). 리프 선택 시 경로 확정.
+      // 순차 인라인 — 한 칸 고르면 다음 칸 등장(깊이=칸 수). 리프 선택 시 "A › B › C [변경]"으로 압축.
+      //  드롭다운 박스는 MillerColumns와 같은 컬럼-아이템 레이아웃(Select 아님). 한 트리거+다단은 MillerColumns(형제).
       <Stack gap="xxs">
-        <Text variant="caption" color="secondary">서울 → 강남구 → 삼성동 순으로 칸이 늘어난다(도메인 무관, 임의 깊이).</Text>
+        <Text variant="caption" color="secondary">서울 → 강남구 → 삼성동 순으로 칸이 늘어난다(페이지에 N박스, 공간 여유용).</Text>
         <Cascader options={CASC_OPTS} value={casc} onChange={setCasc} placeholder="지역 선택" />
+      </Stack>
+    ),
+    MillerColumns: (
+      // 트리거 1개 → 팝오버 다단 컬럼(좌→우, 부모 클릭=다음 컬럼). 좁은 화면(≤600px)은 단일 컬럼 드릴인 폴백. 페이지 발자국 최소.
+      <Stack gap="xxs">
+        <Text variant="caption" color="secondary">트리거 1개 → 팝오버에서 좌→우 컬럼으로 좁혀 경로 선택(Finder·Ant Cascader 패턴). 브라우저 폭 ≤600px면 단일 컬럼 드릴인.</Text>
+        <MillerColumns options={CASC_OPTS} value={mcol} onChange={setMcol} placeholder="지역 선택" />
       </Stack>
     ),
     SearchToolbar: (

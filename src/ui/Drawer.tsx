@@ -18,7 +18,8 @@ type Props = {
   title: string;
   actions?: Action[];
   position?: 'left' | 'right' | 'top' | 'bottom';  // 기본 right(상세 편집 표준)
-  size?: 'sm' | 'md' | 'lg';
+  // 슬라이드 축 크기(좌/우=폭, 상/하=높이). sm/md/lg/xl=Mantine 네이티브 / full='거의 꽉 참'(축 95%).
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   closeOnOverlayClick?: boolean;
   children: ReactNode;
 };
@@ -31,13 +32,14 @@ export function Drawer({
   const ordered = actions
     ? [...actions].sort((a, b) => Number(isPrimaryEnd(a.variant)) - Number(isPrimaryEnd(b.variant)))
     : [];
+  const dSize = size === 'full' ? '95%' : size;  // full=축 95%(거의 꽉 참, 풀스크린 아님) / xl 등은 Mantine 토큰 그대로.
 
   return (
     <D
       opened={opened}
       onClose={onClose}
       position={position}
-      size={size}
+      size={dSize}
       closeOnClickOutside={closeOnOverlayClick}
       withCloseButton={false}  /* 기본 헤더 끔 — 우리가 직접 조립 */
       padding={0}              /* 본문 패딩 끔 — 패딩 주인을 우리 3영역으로 이관 */

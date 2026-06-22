@@ -17,6 +17,9 @@ export type DataTableColumn = {
   label: string;
   type: CellType;
   span?: number;          // text 열 폭(없으면 균등) — 비율은 구조에서
+  // 열 폭 제어(table-layout:auto 유지 — 나머지 열은 내용에 맞춤). 둘 다 도메인이 선택:
+  grow?: boolean;         // 이 열이 남은 폭을 채운다(유동 열). 내용이 길면 … 말줄임(보통 이름/제목 열 1개).
+  maxWidth?: number | string; // 이 열의 최대 폭(px/%/CSS) 상한. 넘으면 … 말줄임. 내용이 짧으면 그만큼만 차지(상한일 뿐 고정 아님).
   sortable?: boolean;
   badgeColors?: Record<string, BadgeColor>;
 };
@@ -45,7 +48,9 @@ type Props = {
 };
 
 const RIGHT = new Set<CellType>(['number', 'currency', 'actions', 'menu', 'percent']);
-const CENTER = new Set<CellType>(['boolean', 'thumbnail']); // boolean(체크/대시)·썸네일은 가운데.
+const CENTER = new Set<CellType>(['boolean', 'thumbnail', 'chevron']); // boolean(체크/대시)·썸네일·디스클로저(›)는 가운데.
+// 헤더 셀 공통 — 회색 밴드 + 하단 divider(inset boxShadow라 sticky로 핀돼도 그려진다; thead/tr 배경·보더는 sticky에서 페인트 안 됨).
+const HEAD_CELL = { background: 'var(--bg-secondary)', boxShadow: 'inset 0 -1px 0 var(--border-default)' } as const;
 const textAlignOf = (t: CellType): 'right' | 'center' | 'left' => (RIGHT.has(t) ? 'right' : CENTER.has(t) ? 'center' : 'left');
 const justifyOf = (t: CellType): 'flex-end' | 'center' | 'flex-start' => (RIGHT.has(t) ? 'flex-end' : CENTER.has(t) ? 'center' : 'flex-start');
 
@@ -54,6 +59,16 @@ export function DataTable({
   page, onPageChange, totalPages, totalCount, onRowClick, stickyHeader, emptyState,
   selectable, selectedIds, onSelectionChange, rowId, bulkActions,
 }: Props) {
+  // 열 폭 규칙(table-layout auto 유지 — 도메인 폭 하드코딩 0). 각 셀의 *최소폭 = 자기 내용*(절대 안 짓눌림), 최대 = 스키마(maxWidth):
+  //  · grow 열: width:100% + **max-width:0** → 남은 폭만 먹고(형제에게 공간 양보) 길면 … 말줄임. max-width:0이 없으면 형제를 min-content 이하로 짓눌러(배지가 자기 폭보다 작게 잘림) 버린다.
+  //  · 나머지 열: nowrap → 내용 자연폭 유지(grow가 공간을 다 가져가도 안 줄어듦). 헤더도 한 줄.
+  //  · maxWidth 열: 셀 내부 div가 상한(td의 max-width는 auto 레이아웃에서 무시) — 상한 안에서 자연폭, 넘으면 말줄임.
+  const CLIP = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const };
+  const hasGrow = columns.some((c) => c.grow);
+  const cellStyle = (c: DataTableColumn) =>
+    c.grow ? { width: '100%' as const, maxWidth: 0, ...CLIP }
+      : hasGrow ? { whiteSpace: 'nowrap' as const }
+        : null;
   if (status === 'loading') return <Center p="xl"><Spinner /></Center>;
   if (status === 'empty')
     return <EmptyState icon={emptyState?.icon} title={emptyState?.title ?? '데이터 없음'} description={emptyState?.description} />;
@@ -90,10 +105,13 @@ export function DataTable({
       {/* 데이터행 세로여백 = sm(12). 내용(텍스트 한 줄·작은 아바타) 대비 md(16)는 과해 낮춤. */}
       {/* highlightOnHover는 행이 이동(onRowClick)할 때만 — 비이동 행은 hover 강조 불필요(클릭 가능 신호). */}
       <Table verticalSpacing="sm" horizontalSpacing="md" highlightOnHover={!!onRowClick} stickyHeader={stickyHeader}>
-        <Table.Thead style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-default)' }}>
+        {/* 헤더 밴드 — 회색 배경 + 본문보다 강조(body-strong·primary)로 "내용 위 한 단계"임을 시각화.
+            ※ 배경·divider는 *셀(th)* 에 준다 — sticky <thead>/<tr>의 background·border는 페인트 안 됨(스크롤 시 회색·구분선 사라짐).
+            HEAD_CELL: bg-secondary + boxShadow inset 하단 1px(= sticky에서도 그려지는 divider, 핀돼도 아래 내용과 구분). */}
+        <Table.Thead>
           <Table.Tr>
             {selectable && (
-              <Table.Th style={{ width: 44, verticalAlign: 'middle' }} onClick={(e) => e.stopPropagation()}>
+              <Table.Th style={{ width: 44, verticalAlign: 'middle', ...HEAD_CELL }} onClick={(e) => e.stopPropagation()}>
                 <Checkbox checked={allSelected} onChange={toggleAll} />
               </Table.Th>
             )}
@@ -101,10 +119,10 @@ export function DataTable({
               const active = sort?.key === c.key;
               const arrow: IconName = active && sort?.direction === 'desc' ? 'chevron-down' : 'chevron-up';
               return (
-                <Table.Th key={c.key} style={{ textAlign: textAlignOf(c.type), cursor: c.sortable ? 'pointer' : 'default', paddingBlock: 'var(--mantine-spacing-xs)', verticalAlign: 'middle' }}
+                <Table.Th key={c.key} style={{ textAlign: textAlignOf(c.type), cursor: c.sortable ? 'pointer' : 'default', paddingBlock: 'var(--mantine-spacing-sm)', verticalAlign: 'middle', ...HEAD_CELL, ...cellStyle(c) }}
                   onClick={c.sortable ? () => toggleSort(c.key) : undefined}>
                   <MGroup gap={4} align="center" justify={justifyOf(c.type)} wrap="nowrap">
-                    <Text variant="caption" color="secondary">{c.label}</Text>
+                    <Text variant="body-strong">{c.label}</Text>
                     {c.sortable && (
                       // 정렬 가능 열엔 항상 꺽쇠(비활성=opacity 0.35로 옅게). 라벨 옆 — 텍스트 정렬은 데이터 타입대로(우측밀착 강제 X).
                       // flex 안에선 Icon vertical-align 보정이 죽으므로 같은 토큰을 transform으로 복원(헤더 한정).
@@ -128,12 +146,15 @@ export function DataTable({
                     <Checkbox checked={selected.has(id)} onChange={() => toggleOne(id)} />
                   </Table.Td>
                 )}
-                {columns.map((c) => (
-                  <Table.Td key={c.key} style={{ textAlign: textAlignOf(c.type), verticalAlign: 'middle' }}
-                    onClick={c.type === 'actions' || c.type === 'menu' ? (e) => e.stopPropagation() : undefined}>
-                    {renderCell(c.type, row[c.key], { badgeColors: c.badgeColors })}
-                  </Table.Td>
-                ))}
+                {columns.map((c) => {
+                  const content = renderCell(c.type, row[c.key], { badgeColors: c.badgeColors });
+                  return (
+                    <Table.Td key={c.key} style={{ textAlign: textAlignOf(c.type), verticalAlign: 'middle', ...cellStyle(c) }}
+                      onClick={c.type === 'actions' || c.type === 'menu' ? (e) => e.stopPropagation() : undefined}>
+                      {c.maxWidth != null ? <div style={{ ...CLIP, maxWidth: c.maxWidth }}>{content}</div> : content}
+                    </Table.Td>
+                  );
+                })}
               </Table.Tr>
             );
           })}

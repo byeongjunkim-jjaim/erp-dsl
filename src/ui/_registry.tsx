@@ -128,13 +128,34 @@ function BeforeAfter({ before, after }: { before: ReactNode; after: ReactNode })
   );
 }
 
-// kk ERP 도메인(철물/부자재) — 캡쳐의 '경첩'처럼 최하위 분류에 품목을 등록한다.
+// kk ERP 도메인(철물/부자재) — 캡쳐의 '경첩'처럼 최하위 분류에 제품을 등록한다. 더미 양 늘려 폴더 타일(4분할)·목록 스크롤 확인용.
 const SAMPLE_TREE: TreeNodeData[] = [
   { id: 'd1', label: '부자재', children: [
     { id: 'd1-1', label: '경첩' },
     { id: 'd1-2', label: '손잡이' },
+    { id: 'd1-3', label: '레일' },
+    { id: 'd1-4', label: '브라켓' },
+    { id: 'd1-5', label: '댐퍼' },
+    { id: 'd1-6', label: '자석·캐치' },
+    { id: 'd1-7', label: '볼트·너트' },
+    { id: 'd1-8', label: '타카·핀' },
+    { id: 'd1-9', label: '경첩 액세서리' },
   ] },
-  { id: 'd2', label: '거래처', children: [{ id: 'd2-1', label: '동양철물' }] },
+  { id: 'd2', label: '거래처', children: [
+    { id: 'd2-1', label: '동양철물' },
+    { id: 'd2-2', label: '세양하드웨어' },
+    { id: 'd2-3', label: '대한철물' },
+    { id: 'd2-4', label: '광성특수' },
+  ] },
+  { id: 'd3', label: '공구', children: [
+    { id: 'd3-1', label: '전동공구' },
+    { id: 'd3-2', label: '수공구' },
+    { id: 'd3-3', label: '측정공구' },
+  ] },
+  { id: 'd4', label: '소모품', children: [
+    { id: 'd4-1', label: '접착·실란트' },
+    { id: 'd4-2', label: '연마재' },
+  ] },
 ];
 
 // viewBox 필수 — 없으면 컨테이너 비율로 SVG가 늘어나(반응형 스케일 불가) 미디어 밴드에서 찌그러진다.
@@ -147,31 +168,63 @@ const IMG_SRC =
 //  ※ 단위는 *데이터 층*에서 단가 뒤에 합성("₩3,200 / 개") — 한 칸 차지할 값이 아니다. ObjectCard(DSL)는 단위를
 //    모른다(완성된 텍스트만 받음). 그래서 type:'text'. 단가 합성은 fmtCurrency로 통화 포맷 단일출처 유지.
 const won = (n: number, unit: string) => `${fmtCurrency(n)} / ${unit}`;
-const HX_DATA: { id: string; path: { id: string; label: string }[]; objects: HierarchyObject[] }[] = [
-  { id: 'd1-1', path: [{ id: 'd1', label: '부자재' }, { id: 'd1-1', label: '경첩' }], objects: [
-    // 전체 슬롯 기준 카드(썸네일·상태·headline(단가/단위)·attributes·액션 2종)
-    { id: 'o1', title: '스테인리스 자유경첩 4″', subtitle: 'HG-SS-4F', status: { label: '판매중', tone: 'success' }, thumbnail: IMG_SRC,
-      headline: { label: '단가', value: won(3200, '개'), type: 'text' },
-      attributes: [
-        { label: '규격', value: '4″', type: 'text' },
-        { label: '재질', value: 'STS304', type: 'text' },
-      ],
-      actions: [
-        { label: '수정', icon: 'edit', onClick: () => {} },
-        { label: '삭제', variant: 'danger', icon: 'trash', onClick: () => {} },
-      ] },
-    { id: 'o2', title: '다마경첩 35mm', subtitle: 'HG-DM-35', icon: 'package', status: { label: '판매중', tone: 'success' }, headline: { label: '단가', value: won(1800, '개'), type: 'text' }, attributes: [{ label: '개폐각', value: '110°', type: 'text' }, { label: '재질', value: '아연도금', type: 'text' }] },
-    { id: 'o3', title: '평경첩 3″ (소)', subtitle: 'HG-FL-3', icon: 'package', status: { label: '견적대기', tone: 'warning' }, headline: { label: '단가', value: '견적 필요', type: 'text' }, attributes: [{ label: '규격', value: '3″', type: 'text' }] },
-    { id: 'o4', title: '유압 댐퍼경첩', subtitle: 'HG-DP-08', status: { label: '단종', tone: 'danger' }, thumbnail: IMG_SRC, headline: { label: '단가', value: won(5500, '개'), type: 'text' }, attributes: [{ label: '하중', value: '8kg', type: 'text' }] },
-    { id: 'o5', title: '비철 경첩 2.5″', subtitle: 'HG-NF-25', icon: 'package', headline: { label: '단가', value: won(1200, '개'), type: 'text' }, attributes: [{ label: '규격', value: '2.5″', type: 'text' }] },
-    { id: 'o6', title: 'LED 센서경첩', subtitle: 'HG-LED-12', icon: 'package', status: { label: '신규', tone: 'info' }, headline: { label: '단가', value: won(9800, '개'), type: 'text', note: { label: '변경요청중', tone: 'warning' } }, attributes: [{ label: '전압', value: 'DC12V', type: 'text' }] },
-  ] },
-  { id: 'd1-2', path: [{ id: 'd1', label: '부자재' }, { id: 'd1-2', label: '손잡이' }], objects: [
-    { id: 'o7', title: '바형 손잡이 192mm', subtitle: 'HD-BAR-192', status: { label: '판매중', tone: 'success' }, thumbnail: IMG_SRC, headline: { label: '단가', value: won(4500, '개'), type: 'text' }, attributes: [{ label: '재질', value: '알루미늄', type: 'text' }, { label: '길이', value: '192mm', type: 'text' }] },
-    { id: 'o8', title: '원목 노브', subtitle: 'HD-KNB-01', icon: 'package', status: { label: '판매중', tone: 'success' }, headline: { label: '단가', value: won(2300, '개'), type: 'text' }, attributes: [{ label: '재질', value: '고무나무', type: 'text' }] },
-  ] },
-  { id: 'd2-1', path: [{ id: 'd2', label: '거래처' }, { id: 'd2-1', label: '동양철물' }], objects: [] }, // 잎+빈+추가가능 → EmptyState 추가 CTA
+// 중첩 트리에 자식 노드 추가 / id로 경로(브레드크럼) 찾기 — 데모의 분류 추가·검색 결과 경로용(순수 헬퍼).
+function addChildNode(nodes: TreeNodeData[], parentId: string, child: TreeNodeData): TreeNodeData[] {
+  return nodes.map((n) =>
+    n.id === parentId ? { ...n, children: [...(n.children ?? []), child] }
+      : n.children ? { ...n, children: addChildNode(n.children, parentId, child) } : n);
+}
+function pathOf(nodes: TreeNodeData[], id: string, trail: { id: string; label: string }[] = []): { id: string; label: string }[] | null {
+  for (const n of nodes) {
+    const t = [...trail, { id: n.id, label: n.label }];
+    if (n.id === id) return t;
+    if (n.children) { const r = pathOf(n.children, id, t); if (r) return r; }
+  }
+  return null;
+}
+// 더미 제품 생성기 — 디렉토리별로 N개를 양산(목록 스크롤 확인용). 상태·비고 배지·단가를 i로 변주해 컬럼이 다 차게.
+const HX_STATUSES: HierarchyObject['status'][] = [
+  { label: '판매중', tone: 'success' }, { label: '견적대기', tone: 'warning' },
+  { label: '신규', tone: 'info' }, { label: '단종', tone: 'danger' }, { label: '판매중', tone: 'success' },
 ];
+const HX_MATERIALS = ['STS304', '아연도금', '알루미늄', '황동', '냉간압연', '고무나무'];
+function genProducts(idBase: string, code: string, titlePrefix: string, n: number): HierarchyObject[] {
+  return Array.from({ length: n }, (_, i): HierarchyObject => ({
+    id: `${idBase}#${i}`,
+    title: `${titlePrefix} ${String.fromCharCode(65 + (i % 26))}형 ${i + 1}호`,
+    subtitle: `${code}-${String(i + 1).padStart(3, '0')}`,
+    icon: 'package',
+    status: HX_STATUSES[i % HX_STATUSES.length],
+    headline: {
+      label: '단가', type: 'text',
+      value: i % 7 === 3 ? '견적 필요' : won(1000 + ((i * 437) % 90) * 100, '개'),
+      note: i % 6 === 0 ? { label: '변경요청중', tone: 'warning' } : undefined,
+    },
+    attributes: [
+      { label: '규격', value: `${20 + (i % 12) * 5}mm`, type: 'text' },
+      { label: '재질', value: HX_MATERIALS[i % HX_MATERIALS.length], type: 'text' },
+    ],
+    // 행 액션(수정·삭제)은 목록 케밥이 아니라 *상세 모달 안*에서 — 목록 끝은 디스클로저(›)만(상세로 인도하는 시각 장치).
+  }));
+}
+// 디렉토리 id → 직속 제품. 부자재(d1)는 하위 분류 + 직속 제품 공존(잎/폴더 이분법 없음 시연). d2-2 등 일부는 비워 빈상태 확인.
+const HX_OBJECTS: Record<string, HierarchyObject[]> = {
+  d1: genProducts('d1', 'HW-GEN', '범용 부자재', 7),
+  'd1-1': genProducts('d1-1', 'HG', '경첩', 24),
+  'd1-2': genProducts('d1-2', 'HD', '손잡이', 16),
+  'd1-3': genProducts('d1-3', 'RL', '레일', 13),
+  'd1-4': genProducts('d1-4', 'BK', '브라켓', 9),
+  'd1-5': genProducts('d1-5', 'DP', '댐퍼', 7),
+  'd1-6': genProducts('d1-6', 'MC', '자석캐치', 5),
+  'd1-7': genProducts('d1-7', 'BN', '볼트너트', 31),
+  'd1-8': genProducts('d1-8', 'TP', '타카핀', 11),
+  'd2-1': genProducts('d2-1', 'OY', '동양철물 납품', 8),
+  'd2-3': genProducts('d2-3', 'DH', '대한철물 납품', 6),
+  'd3-1': genProducts('d3-1', 'PT', '전동공구', 14),
+  'd3-2': genProducts('d3-2', 'HT', '수공구', 19),
+  'd3-3': genProducts('d3-3', 'MT', '측정공구', 6),
+  'd4-1': genProducts('d4-1', 'SL', '실란트', 5),
+};
 
 // 부품명 → 라이브 예시. 박물관 상세가 <Demo name/>로 렌더.
 export function Demo({ name }: { name: string }) {
@@ -213,11 +266,14 @@ export function Demo({ name }: { name: string }) {
   const [month, setMonth] = useState('2026-06');
   const [form, setForm] = useState<Record<string, unknown>>({});
   const [dtSel, setDtSel] = useState<string[]>([]);
-  const [treeSel, setTreeSel] = useState<string | null>('d1-1');
+  const [treeSel, setTreeSel] = useState<string | null>('d1');
   const [treeExp, setTreeExp] = useState<string[]>(['d1']);
   const [hxSearch, setHxSearch] = useState('');
-  const [hxPage, setHxPage] = useState(1);
   const [hxDetail, setHxDetail] = useState<HierarchyObject | null>(null);
+  const [hxNodes, setHxNodes] = useState<TreeNodeData[]>(SAMPLE_TREE);
+  const [hxObjMap, setHxObjMap] = useState<Record<string, HierarchyObject[]>>(() => ({ ...HX_OBJECTS }));
+  const [addKind, setAddKind] = useState<null | 'product' | 'dir'>(null);
+  const [addName, setAddName] = useState('');
   const [ledgerMonth, setLedgerMonth] = useState(6);
   const [ledgerTab, setLedgerTab] = useState('item');
   const [ledgerSel, setLedgerSel] = useState<string | null>(null);
@@ -523,30 +579,62 @@ export function Demo({ name }: { name: string }) {
     ),
     Menu: <Menu trigger={<IconButton icon="dots-vertical" label="메뉴" variant="secondary" />} items={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '복제', icon: 'copy', onClick: () => {} }, { label: '삭제', icon: 'trash', variant: 'danger', onClick: () => {} }]} />,
     ObjectCard: <div style={{ width: 260, height: 300 }}><ObjectCard title="스테인리스 자유경첩 4″" subtitle="HG-SS-4F" thumbnail={IMG_SRC} status={{ label: '판매중', tone: 'success' }} headline={{ label: '단가', value: won(3200, '개'), type: 'text', note: { label: '변경요청중', tone: 'warning' } }} attributes={[{ label: '규격', value: '4″', type: 'text' }, { label: '재질', value: 'STS304', type: 'text' }]} actions={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '삭제', variant: 'danger', icon: 'trash', onClick: () => {} }]} /></div>,
-    Tree: <div style={{ width: 300 }}><Tree nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp} title="디렉토리" editable onAddRoot={() => {}} onAddChild={() => {}} onRename={() => {}} onDelete={() => {}} /></div>,
+    Tree: <div style={{ width: 300 }}><Tree nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp} title="디렉토리" editable onAddRoot={() => {}} onRename={() => {}} onDelete={() => {}} /></div>,
     HierarchyExplorer: (() => {
-      // 품목 클릭 → 상세(Modal)는 *소비처* 책임 — 부품(HE/ObjectCard)은 onClick만 노출하고 상세에 뭐가 들었는지 모른다(헌법 1).
-      //  데모에선 onClick에 상세 Modal 열기를 배선해 카드/목록 항목이 interactive함을 보인다(액션 케밥은 별개).
+      // 제품 클릭 → 상세(Modal)는 *소비처* 책임 — 부품(HE/ObjectCard)은 onClick만 노출하고 상세에 뭐가 들었는지 모른다(헌법 1).
+      //  데모에선 onClick에 상세 Modal 열기를 배선해 목록 항목이 interactive함을 보인다(액션 케밥은 별개).
+      //  · 부자재(d1) 선택 시 하위 분류 타일 + 직속 제품 목록이 함께 보인다(잎/폴더 이분법 없음).
+      //  · 추가는 우측 ＋ 드롭다운(제품/분류) → 종류만 정하고 이름 입력은 소비처 모달이 받는다(완전 위임).
       const withDetail = (objs: HierarchyObject[]) => objs.map((o) => ({ ...o, onClick: () => setHxDetail(o) }));
+      const doAdd = () => {
+        const name = addName.trim();
+        if (!name || !treeSel) { setAddKind(null); return; }
+        if (addKind === 'dir') {
+          const id = `${treeSel} > ${name}`;
+          setHxNodes((ns) => addChildNode(ns, treeSel, { id, label: name }));
+          setTreeExp((e) => (e.includes(treeSel) ? e : [...e, treeSel]));
+        } else {
+          const id = `${treeSel}#p-${name}`;
+          setHxObjMap((m) => ({ ...m, [treeSel]: [...(m[treeSel] ?? []), { id, title: name, icon: 'package', headline: { label: '단가', value: '견적 필요', type: 'text' } }] }));
+        }
+        setAddKind(null); setAddName('');
+      };
       return (
         <>
           <HierarchyExplorer
-            title="품목 카탈로그" description="분류별 부자재 품목 등록 (kk ERP)"
-            nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp}
-            editable treeTitle="분류" selectedLabel="경첩"
-            // 잎이면 그 오브젝트, 폴더(d1·d2)면 [] → 빈상태 3갈래(하위분류/잎빈/읽기전용)가 보인다.
-            objects={withDetail((HX_DATA.find((d) => d.id === treeSel)?.objects) ?? [])}
-            onAddObject={() => {}}
-            // pagination(controlled) — 소비처가 페이지 슬라이스를 주입. 여기선 컨트롤 노출용 예시값(totalPages 4).
-            page={hxPage} totalPages={4} onPageChange={setHxPage}
-            // 전역 검색 — 입력 시 결과 모드(각 결과에 경로). 폴더 선택 후 위 검색칸에 '경첩' 입력해보면 보인다.
+            title="품목 카탈로그" description="분류별 부자재 제품 등록 (kk ERP)"
+            nodes={hxNodes} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp}
+            editable treeTitle="분류" selectedLabel="제품"
+            // 선택 디렉토리의 직속 제품(하위 분류와 공존 가능). 없으면 [] → 빈상태.
+            objects={withDetail(hxObjMap[treeSel ?? ''] ?? [])}
+            onAddObject={() => { setAddName(''); setAddKind('product'); }}
+            onAddChild={() => { setAddName(''); setAddKind('dir'); }}
+            // 전역 검색 — 입력 시 결과 모드(각 결과에 경로). 디렉토리 선택 후 위 검색칸에 '경첩' 입력해보면 보인다.
             searchQuery={hxSearch}
             onSearchChange={setHxSearch}
-            searchResults={HX_DATA.flatMap((d) => d.objects.filter((o) => o.title.includes(hxSearch)).map((o) => ({ ...o, path: d.path, onClick: () => setHxDetail(o) })))}
+            searchResults={Object.entries(hxObjMap).flatMap(([dirId, list]) => {
+              const p = pathOf(hxNodes, dirId) ?? [];
+              return list.filter((o) => o.title.includes(hxSearch)).map((o) => ({ ...o, path: p, onClick: () => setHxDetail(o) }));
+            })}
           />
-          {/* 상세 모달(소비처 조립) — 클릭한 품목의 역할 슬롯을 그대로 펼친다. */}
+          {/* 제품/분류 추가 모달(소비처 조립) — HE의 ＋ 드롭다운은 종류만 정하고, 이름 입력은 소비처 몫(헌법 1). */}
+          <Modal opened={addKind != null} onClose={() => setAddKind(null)} title={addKind === 'dir' ? '분류 추가' : '제품 추가'}
+            actions={[{ label: '취소', variant: 'ghost', onClick: () => setAddKind(null) }, { label: '추가', variant: 'primary', onClick: doAdd }]}>
+            <FormField label={addKind === 'dir' ? '분류 이름' : '제품명'}>
+              <TextInput value={addName} onChange={setAddName} placeholder={addKind === 'dir' ? '예: 특수 경첩' : '예: 스테인리스 경첩 5″'} />
+            </FormField>
+          </Modal>
+          {/* 상세 모달(소비처 조립) — 클릭한 제품의 역할 슬롯을 그대로 펼친다. 수정·삭제는 *여기서* 한다(목록 케밥 폐기). */}
           <Modal opened={hxDetail != null} onClose={() => setHxDetail(null)} title={hxDetail?.title ?? ''}
-            actions={[{ label: '닫기', variant: 'ghost', onClick: () => setHxDetail(null) }]}>
+            actions={[
+              { label: '닫기', variant: 'ghost', onClick: () => setHxDetail(null) },
+              { label: '수정', icon: 'edit', onClick: () => notify.info('수정 — 소비처 폼에 연결') },
+              { label: '삭제', variant: 'danger', icon: 'trash', onClick: () => {
+                if (!hxDetail) return;
+                setHxObjMap((m) => Object.fromEntries(Object.entries(m).map(([k, list]) => [k, list.filter((o) => o.id !== hxDetail.id)])));
+                setHxDetail(null);
+              } },
+            ]}>
             <Stack gap="sm">
               {hxDetail?.subtitle && <Text variant="caption" color="secondary">{hxDetail.subtitle}</Text>}
               {hxDetail?.status && <div><Badge color={hxDetail.status.tone}>{hxDetail.status.label}</Badge></div>}

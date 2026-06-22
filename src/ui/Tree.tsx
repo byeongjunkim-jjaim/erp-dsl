@@ -1,5 +1,5 @@
 'use client';
-// Tree (유기체) — 재귀 계층 표시. 펼침/접힘 + 선택 강조 + 노드 ⋯메뉴(하위추가·이름변경·삭제) + 제자리 편집.
+// Tree (유기체) — 재귀 계층 표시. 펼침/접힘 + 선택 강조 + 노드 ⋯메뉴(이름변경·삭제) + 제자리 편집.
 //  · controlled: 선택(selectedId)·펼침(expandedIds)·쓰기(onAdd*/onRename/onDelete) 전부 콜백 위임(순수 표현).
 //  · 편집 UI(어느 노드를 제자리 입력 중인가)만 Tree 내부 ephemeral 상태. 확정/취소로 콜백 호출.
 //  · 깊이 = VS Code식 들여쓰기 가이드 직선(꺽쇠 앞 세로선). 선택 강조는 full-width지만 가이드선으로 깊이가 항상 보임.
@@ -22,8 +22,7 @@ type Props = {
   onToggle: (id: string) => void;
   title?: string;
   editable?: boolean;
-  onAddRoot?: (label: string) => void;
-  onAddChild?: (parentId: string, label: string) => void;
+  onAddRoot?: (label: string) => void;   // 최상위(level1) 디렉토리만 — 헤더 ＋. 하위(분류) 추가는 Tree 밖(예: HierarchyExplorer 우측 ＋ 드롭다운).
   onRename?: (id: string, label: string) => void;
   onDelete?: (id: string) => void;
   toolbar?: ReactNode;   // 헤더 바로 아래 슬롯(예: HierarchyExplorer 검색 바). 미지정이면 없음.
@@ -36,14 +35,13 @@ const ROW_H = 36;
 
 export function Tree({
   nodes, selectedId, expandedIds, onSelect, onToggle,
-  title, editable = false, onAddRoot, onAddChild, onRename, onDelete, toolbar,
+  title, editable = false, onAddRoot, onRename, onDelete, toolbar,
 }: Props) {
   const expanded = new Set(expandedIds);
-  const [editing, setEditing] = useState<{ mode: 'rename' | 'addChild' | 'addRoot'; id?: string } | null>(null);
+  const [editing, setEditing] = useState<{ mode: 'rename' | 'addRoot'; id?: string } | null>(null);
   const [draft, setDraft] = useState('');
 
   const startRename = (n: TreeNodeData) => { setEditing({ mode: 'rename', id: n.id }); setDraft(n.label); };
-  const startAddChild = (id: string) => { setEditing({ mode: 'addChild', id }); setDraft(''); if (!expanded.has(id)) onToggle(id); };
   const startAddRoot = () => { setEditing({ mode: 'addRoot' }); setDraft(''); };
   const cancel = () => setEditing(null);
   const confirm = () => {
@@ -51,7 +49,6 @@ export function Tree({
     const v = draft.trim();
     if (v) {
       if (editing.mode === 'rename' && editing.id) onRename?.(editing.id, v);
-      else if (editing.mode === 'addChild' && editing.id) onAddChild?.(editing.id, v);
       else if (editing.mode === 'addRoot') onAddRoot?.(v);
     }
     setEditing(null);
@@ -146,7 +143,6 @@ export function Tree({
                   <Menu
                     trigger={<IconButton icon="dots-vertical" label="메뉴" variant="ghost" size="sm" />}
                     items={[
-                      { label: '하위 디렉토리 추가', icon: 'plus', onClick: () => startAddChild(node.id) },
                       { label: '이름 변경', icon: 'edit', onClick: () => startRename(node) },
                       { label: '삭제', icon: 'trash', variant: 'danger', onClick: () => onDelete?.(node.id) },
                     ]}
@@ -155,8 +151,6 @@ export function Tree({
               )}
             </div>
           )}
-          {/* 하위 추가 입력은 부모 바로 밑 첫 자식으로(아래 누적 아님). */}
-          {editing?.mode === 'addChild' && editing.id === node.id && renderInline(depth + 1)}
           {isOpen && hasChildren && renderNodes(node.children!, depth + 1)}
         </Fragment>
       );

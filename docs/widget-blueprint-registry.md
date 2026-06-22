@@ -186,7 +186,7 @@
 ### Pagination — 보유:✅ · 합의 8/8
 - 해부: 이전/다음 화살표 · 번호열(축약 …) · 현재 강조
 - 표준 props: total · value/onChange. 페이지 크기 선택은 별도
-- → DSL: `Pagination` 직매핑. DataTable·HierarchyExplorer가 page/totalPages로 내장 연결
+- → DSL: `Pagination` 직매핑. DataTable이 page/totalPages로 내장 연결(HierarchyExplorer는 페이지네이션 없이 목록 스크롤)
 - 판단: ☐
 
 ### Filters/SearchToolbar — 보유:🟡(ListPage toolbar) · 합의 6/8 · **목록 화면 핵심**

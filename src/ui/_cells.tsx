@@ -22,7 +22,7 @@ dayjs.extend(relativeTime); // relative-time 셀용. locale은 인스턴스(.loc
 //    secondary={primary,secondary?} / relative-time=ISO / thumbnail=src
 export type CellType =
   | 'text' | 'badge' | 'number' | 'currency' | 'date' | 'boolean' | 'actions' | 'menu'
-  | 'user' | 'tags' | 'link' | 'percent' | 'secondary' | 'relative-time' | 'thumbnail';
+  | 'user' | 'tags' | 'link' | 'percent' | 'secondary' | 'relative-time' | 'thumbnail' | 'chevron';
 export type ActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 // 행위 중심 액션은 좌측 아이콘(icon) 또는 아이콘 전용(iconOnly). 중립 액션(취소·이동)은 둘 다 생략 → 텍스트.
 export type Action = {
@@ -159,5 +159,11 @@ export function renderCell(
         </Group>
       );
     }
+    case 'chevron':
+      // 디스클로저 표시(›) — 이 행이 클릭하면 상세로 인도한다는 *시각적 장치*. 자체 동작 없음(클릭은 행 onRowClick으로 버블).
+      //  value(boolean, 기본 true)로 행별 노출 제어 — false면 비드릴 행(빈 칸).
+      return value === false
+        ? null
+        : <span style={{ display: 'inline-flex', color: 'var(--text-secondary)' }}><Icon name="chevron-right" size="sm" color="secondary" /></span>;
   }
 }

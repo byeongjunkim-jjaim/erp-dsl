@@ -169,7 +169,7 @@ type FieldSpec = {
 ### 페이지 템플릿 (5) + 폼 조립 조직 (1) — `FieldSpec[]` 구동, 도메인 0줄
 - **ListPage** `schema` `rows` `status` · 정렬·페이징·`totalCount`
 - **DetailPage** `title` `info`(DescriptionList) `form?`(FormSection) — 좌 정보 / 우 폼 2분할
-- **HierarchyExplorer** 좌 Tree(+검색 바) / 우 품목 목록(DataTable) — 계층 마스터-디테일. 검색=분류 헤더 아래, 결과=우측 목록(분류 경로 컬럼)
+- **HierarchyExplorer** 좌 Tree(+검색 바) / 우 하위 분류 타일 + 직속 제품 목록(DataTable) 공존 — 계층 마스터-디테일(한 디렉토리에 하위 분류·제품 동시). 추가=우측 ＋ 드롭다운(제품/분류). 검색=분류 헤더 아래, 결과=우측 목록(분류 경로 컬럼)
 - **LedgerPage** `period`(PeriodNavigator) `metrics`(KPI 밴드: Stat/SummaryCard) `breakdown`(SegmentedControl→DataTable→TotalRow) `detail?`(Drawer 드릴) — 돈 지표 페이지(정산·매출 등)
 - **PageGrid** 닫힌 격자(Bento): `columns` `gap` · 타일 `colSpan` `rowSpan`(고정 셀 높이)
 - **FormSection** `fields: FieldSpec[]` `values` `onChange` `columns: 1|2` `resolvers?` `errors?` — 타입→원자 매핑·FormField 감싸기를 자동 수행

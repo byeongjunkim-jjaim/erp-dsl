@@ -62,6 +62,7 @@ import { FormSection } from './FormSection';
 import { Menu } from './Menu';
 import { ObjectCard } from './ObjectCard';
 import { Tree, type TreeNodeData } from './Tree';
+import { FieldGrid } from './FieldGrid';
 import { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
 import { PeriodNavigator } from './PeriodNavigator';
 import { LedgerPage } from './LedgerPage';
@@ -221,6 +222,11 @@ export function Demo({ name }: { name: string }) {
   const [ledgerTab, setLedgerTab] = useState('item');
   const [ledgerSel, setLedgerSel] = useState<string | null>(null);
   const toggleExp = (id: string) => setTreeExp((e) => (e.includes(id) ? e.filter((x) => x !== id) : [...e, id]));
+  const [fgMode, setFgMode] = useState<'edit' | 'read'>('edit');
+  const [fgVals, setFgVals] = useState<Record<string, unknown>>({
+    site: '서울 송파구 장지동 308-204', manager: '인연지', phone: '010-8108-0626',
+    useDate: '2026-03-11', door: 'kei', usage: '주방&냉장고장&아일랜드, 화장대, 현장칠, 도어',
+  });
 
   const D: Record<string, ReactNode> = {
     Button: <Group gap="xs" wrap><Button variant="primary">저장</Button><Button variant="secondary">취소</Button><Button variant="danger">삭제</Button><Button variant="ghost">더보기</Button></Group>,
@@ -402,6 +408,36 @@ export function Demo({ name }: { name: string }) {
         values={form}
         onChange={(n, value) => setForm((s) => ({ ...s, [n]: value }))}
       />
+    ),
+    FieldGrid: (
+      // 단독(신규) — 테두리 셀 격자(장표). 작성↔확인 토글로 "같은 크기·같은 뷰" 확인(셀 박스 기하 불변, 값만 스왑).
+      <Stack gap="sm">
+        <Group justify="between" align="center">
+          <Text variant="caption" color="secondary">테두리 셀 격자(장표) — 작성/확인이 같은 크기·같은 뷰</Text>
+          <SegmentedControl size="sm" value={fgMode} onChange={(v) => setFgMode(v as 'edit' | 'read')}
+            options={[{ label: '작성', value: 'edit' }, { label: '확인', value: 'read' }]} />
+        </Group>
+        <FieldGrid
+          columns={4}
+          mode={fgMode}
+          values={fgVals}
+          onChange={(n, v) => setFgVals((s) => ({ ...s, [n]: v }))}
+          fields={[
+            { name: 'site', label: '현장주소', type: 'text' },
+            { name: 'manager', label: '발주담당자', type: 'text' },
+            { name: 'phone', label: '연락처', type: 'text', mask: 'phone' },
+            { name: 'useDate', label: '사용일', type: 'date' },
+            { name: 'door', label: '도어재작', type: 'select', options: [{ label: '케이산업', value: 'kei' }, { label: '미정', value: 'tbd' }] },
+            { name: 'usage', label: '사용용도', type: 'textarea' },
+          ]}
+          rows={[
+            [{ label: '현장주소' }, { field: 'site', colSpan: 3 }],
+            [{ label: '발주담당자' }, { field: 'manager' }, { label: '연락처' }, { field: 'phone' }],
+            [{ label: '사용일' }, { field: 'useDate' }, { label: '도어재작' }, { field: 'door' }],
+            [{ label: '사용용도' }, { field: 'usage', colSpan: 3 }],
+          ]}
+        />
+      </Stack>
     ),
     ListPage: <Anchor href="/customers">→ /customers 에서 라이브 (스키마 구동 목록)</Anchor>,
     DetailPage: <Anchor href="/customers">→ /customers/[id] 에서 라이브 (정보+폼 2분할)</Anchor>,

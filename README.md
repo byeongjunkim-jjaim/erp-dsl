@@ -54,7 +54,10 @@ radius              : sm md full
 텍스트 색 역할      : primary secondary danger        (검정/흰색은 모드가 자동 결정)
 상태색(BadgeColor)  : neutral success warning danger info
 버튼 변형(variant)  : primary secondary danger ghost
+폰트 스케일         : (기본) large xlarge             (<html data-font-scale>, 고령 접근성 전역 줌)
 ```
+
+폰트 스케일은 부품 prop이 아니라 **루트 1회 설정**이다 — `<html data-font-scale="large|xlarge">`면 타이포·간격이 비율 그대로 함께 커진다(클라이언트별). 컴포넌트는 손대지 않는다.
 
 색의 실제 hex·모드 분기는 `theme.ts`가 답한다. 너는 **역할 이름만** 부른다.
 
@@ -149,7 +152,7 @@ type FieldSpec = {
 - **SearchToolbar** `searchValue` `onSearchChange` `searchPlaceholder?` `filters?: {key,label,options,value,onChange}[]` — 목록 상단 검색+필터+활성 필터칩
 - **PeriodNavigator** `label`(포맷된 기간 문자열) `onPrev` `onNext` `disabledPrev?` `disabledNext?` — 기간 한 칸 이동(‹ 라벨 ›). 돈 화면 기간 스코프(LedgerPage)
 
-### 유기체 (13) — 화면 한 구획, 도메인은 스키마로만 주입
+### 유기체 (14) — 화면 한 구획, 도메인은 스키마로만 주입
 - **Modal** `opened` `onClose` `title` `actions` `size: sm|md|lg` · children=본문
 - **DataTable** `columns` `rows` `status: loading|empty|ready` · controlled 정렬·페이징 · `onRowClick`
 - **EmptyState** `icon` `title` `description` `action?`
@@ -157,6 +160,7 @@ type FieldSpec = {
 - **AppShell** `logo` `menuItems` `activePath` `onNavigate` `profile` `notification` · children=콘텐츠 · 반응형(데스크탑 넷바 ↔ 모바일 하단 탭, 자동)
 - **Timeline** `events: TimelineEvent[]` · **Calendar** `month` `events: CalendarEvent[]`(월 뷰 단일)
 - **Tree** `nodes` controlled 선택·펼침 · `editable`(쓰기 게이트)
+- **FieldGrid** `columns` `rows: FieldGridCell[][]`(셀=`label?`|`field?`|`image?`, `colSpan?` `rowSpan?` `align?`) `fields: FieldSpec[]` `mode: edit|read` `values` `onChange` `errors?` — 테두리 셀 격자(장표/帳票). 작성·확인 양용·**같은 기하**(셀 박스 불변, 값 렌더러만 스왑). 머리표(라벨:값)·명세표(헤더+값 행)·대분류 밴드 다 같은 모델
 - **Drawer** `opened` `onClose` `title` `actions?` `position: left|right|top|bottom` `size: sm|md|lg` — 가장자리 슬라이드 패널(뒤 맥락 유지; 차단형은 Modal)
 - **Stepper** `active`(index) `steps: {label,description?}[]` `orientation?` `onStepClick?` — 다단계 진행 표시(콘텐츠는 호출측이 active로 분기)
 - **Transfer** `items: {value,label}[]` `selected: string[]` `onChange` `titles?` — 좌·우 듀얼 리스트 대량 배정(인라인 다중은 MultiSelect)

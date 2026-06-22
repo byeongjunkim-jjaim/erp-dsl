@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useMemo, useState, type ReactNode } from 'react';
 import { CATALOG, LAYERS, INPUT_ATOMS } from '@/ui/_catalog';
-import { Tree, TextInput, type TreeNodeData } from '@/ui';
+import { Tree, TextInput, SegmentedControl, type TreeNodeData } from '@/ui';
 
 const byLabel = (a: TreeNodeData, b: TreeNodeData) => a.label.localeCompare(b.label);
 const partLeaves = (entries: { name: string }[]): TreeNodeData[] =>
@@ -79,6 +79,14 @@ export default function DevLayout({ children }: { children: ReactNode }) {
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
 
+  // 폰트 스케일(접근성) 검증 토글 — :root에 data-font-scale를 깔아 전역 줌(소비 앱은 <html>에 1회 설정).
+  const [fscale, setFscale] = useState('default');
+  const setScale = (v: string) => {
+    setFscale(v);
+    if (v === 'default') delete document.documentElement.dataset.fontScale;
+    else document.documentElement.dataset.fontScale = v;
+  };
+
   // 검색 중이면 필터 트리 + 매칭 폴더 전부 펼침, 아니면 수동 펼침 상태.
   const view = useMemo(() => (q ? filterNodes(NODES, q) : NODES), [q]);
   const expandedIds = q ? folderIds(view) : expanded;
@@ -95,6 +103,11 @@ export default function DevLayout({ children }: { children: ReactNode }) {
             ERP<span style={{ color: 'var(--mantine-color-primary-6)' }}>-DSL</span>
           </span>
         </Link>
+        {/* 폰트 스케일(접근성) 검증 — 기존/크게/아주크게. 전역 줌(타이포·간격 비율 고정). */}
+        <div style={{ marginBottom: 10 }}>
+          <SegmentedControl size="sm" fullWidth value={fscale} onChange={setScale}
+            options={[{ label: '기존', value: 'default' }, { label: '크게', value: 'large' }, { label: '아주크게', value: 'xlarge' }]} />
+        </div>
         {/* 부품 검색 — 입력 시 부품명 필터(매칭 그룹 자동 펼침). */}
         <div style={{ marginBottom: 10 }}>
           <TextInput value={query} onChange={setQuery} placeholder="부품 검색…" size="sm" />

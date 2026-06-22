@@ -85,6 +85,7 @@ export { Timeline } from './Timeline';
 export { Calendar } from './Calendar';
 export { IconButton } from './IconButton';
 export { Tree, type TreeNodeData } from './Tree';
+export { FieldGrid, type FieldGridCell } from './FieldGrid';
 
 // 템플릿 + 폼 조립 (스키마 구동)
 export { FormSection } from './FormSection';

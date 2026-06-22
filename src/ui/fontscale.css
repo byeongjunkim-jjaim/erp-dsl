@@ -1,0 +1,9 @@
+/* 폰트 스케일(접근성) — 고령 클라이언트용 전역 줌. 기존 > 크게 > 아주 크게 3단.
+   타이포·간격이 모두 rem, line-height는 단위 없는 배수라 루트 font-size 하나로
+   글자+간격+Mantine 컨트롤이 *비율 그대로* 함께 커진다(상대 비율 고정). 6단계 타이포는 손 안 댐 —
+   값(rem)이 루트에 상대적이라 자동으로 따라온다. 포털(Modal/Popover/Toast)도 :root 상속이라 같이 적용.
+   안 따라오는 건 리터럴 px뿐(radius=장식, 고정 높이 밴드는 텍스트보다 충분히 커 안 잘림).
+   소비 앱은 루트 레이아웃에서 <html data-font-scale="large"> 로 클라이언트별 1회 설정(플래시 0).
+   (격리 구역 CSS — Providers가 로드, 헌법 7) */
+:root[data-font-scale="large"]  { font-size: 112.5%; } /* 16 → 18px */
+:root[data-font-scale="xlarge"] { font-size: 125%; }   /* 16 → 20px */

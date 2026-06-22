@@ -6,7 +6,6 @@
 //  · DnD 없음 / 더블·우클릭 편집 없음(⋯ 메뉴로만) / 보기 전용 모드(editable=false → ⋯·추가 숨김).
 import { Fragment, useState, type ReactNode } from 'react';
 import { Stack } from './Stack';
-import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
 import { IconButton } from './IconButton';
 import { Menu } from './Menu';
@@ -127,8 +126,20 @@ export function Tree({
                 <span style={{ width: 16, flexShrink: 0 }} />
               )}
               {node.icon && <span style={{ display: 'inline-flex', flexShrink: 0, marginLeft: 4 }}><Icon name={node.icon} size="sm" color="secondary" /></span>}
-              <div style={{ flex: 1, minWidth: 0, marginLeft: 4 }}>
-                <Text variant={isSel ? 'body-strong' : 'body'}>{node.label}</Text>
+              {/* 라벨 = 한 줄 말줄임(…) — 길면 ROW_H(고정) 안에서 잘리고 줄바꿈 안 함(겹침 차단, VS Code식·Breadcrumb 선례).
+                  Text 원자는 truncate를 안 노출 → 격리 구역에서 role 변수로 직접(타이포 통로 동일). 전체 텍스트는 title 호버. */}
+              <div
+                title={node.label}
+                style={{
+                  flex: 1, minWidth: 0, marginLeft: 4,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  fontSize: 'var(--typo-body-size)',
+                  fontWeight: `var(${isSel ? '--typo-body-strong-weight' : '--typo-body-weight'})`,
+                  lineHeight: 'var(--typo-body-lh)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {node.label}
               </div>
               {editable && (
                 <span style={{ marginLeft: 'auto', display: 'inline-flex', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>

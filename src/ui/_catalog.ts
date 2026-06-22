@@ -733,6 +733,19 @@ export const CATALOG: CatalogEntry[] = [
       '배치 프리미티브': ['Group', 'Stack'],
       분자: ['IconButton', 'Menu(노드 ⋯)'],
     } },
+  { name: 'FieldGrid', layer: '유기체', role: '테두리 친 2D 셀 격자(장표/帳票). 고정 라벨/스키마 필드/이미지 셀을 배치, 작성(edit)·확인(read) 양용·같은 기하.',
+    props: [
+      { name: 'columns', kind: '스타일', values: 'number (격자 열 수 — raw grid, 12약수 제약 없음·명시예외)' },
+      { name: 'rows', kind: '기능', values: 'FieldGridCell[][] ({label?|field?|image?, colSpan?, rowSpan?, align?})' },
+      { name: 'fields', kind: '기능', values: 'FieldSpec[] (field 셀 정의 — 스키마 층 재사용)' },
+      { name: 'mode', kind: '스타일', values: "'edit' | 'read' (기본 edit — 박스 기하 불변, 값 렌더러만 스왑)" },
+      { name: 'values / onChange / errors', kind: '기능', values: 'controlled (FormSection 동형). 에러=--field-border danger + Tooltip(기하 보존)' },
+    ],
+    composition: {
+      토큰: ['N열 grid(fieldgrid.css 명시예외)', '라벨 셀 음영(bg-secondary)', '--field-border(에러)', 'gap', 'min-height 40(md 입력칸)'],
+      '의미 원자': ['TextInput', 'NumberInput', 'CurrencyInput', 'Textarea', 'Select', 'DatePicker', 'Checkbox', 'Image', 'Text', 'Tooltip'],
+      공유: ['_cells(renderCell)', 'fieldgrid.css', 'schema(FieldSpec)'],
+    } },
 
   // ── 템플릿 (3) + 폼 조립 조직 ────────────────────────────────────────
   { name: 'FormSection', layer: '템플릿', role: 'FieldSpec[]을 FormField + 입력 원자로 조립(조직). 도메인 무지.',

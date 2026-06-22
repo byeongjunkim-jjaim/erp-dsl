@@ -13,6 +13,7 @@ import './appshell.css';
 import './calendar.css';
 import './controls.css';
 import './squircle.css';
+import './fontscale.css';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import type { ReactNode } from 'react';

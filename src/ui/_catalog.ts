@@ -311,13 +311,13 @@ export const CATALOG: CatalogEntry[] = [
     } },
   { name: 'Accordion', layer: '분자', role: '여러 [헤더+본문] 섹션의 펼침을 조율(하나만/여럿). Collapsible 직접 쌓기를 대체.',
     props: [
-      { name: 'items', kind: '콘텐츠', values: "{ value, label, children, tone?: 'attention', color?: BadgeColor }[] (tone=틴트 행 / color=틴트 색, 기본 danger)" },
+      { name: 'items', kind: '콘텐츠', values: "{ value, label, children, tone?: 'attention', color?: BadgeColor }[] (tone='attention'=주의 행: 기본(회색+그림자)에서 틴트 채움({color}-0)+얇은 틴트 윤곽({color}-3)만 다름 / color=틴트 색, 기본 danger)" },
       { name: 'multiple', kind: '기능', values: 'boolean (여러 개 동시 펼침)' },
       { name: 'defaultOpen', kind: '값', values: 'string[] (처음 펼친 섹션 value)' },
-      { name: 'clearAttentionOnOpen', kind: '기능', values: 'boolean (펼침=봤음 → attention 틴트 페이드 해제(영구). 큐/인박스용)' },
+      { name: 'clearAttentionOnOpen', kind: '기능', values: 'boolean (펼침=봤음 → attention 채움·윤곽 페이드 해제(영구). 큐/인박스용)' },
     ],
     composition: {
-      토큰: ['radius md', '구분(separated)', 'chevron', 'attention(틴트 색 토큰 — 기본 danger 띠·틴트)'],
+      토큰: ['radius md', '구분(separated) — 전 항목 회색 카드(--bg-tertiary) + 그림자(shadow-sm), 윤곽 최소(없음)', 'chevron', 'attention(틴트 색 토큰 — 기본 danger: 채움 -0 + 얇은 윤곽 -3, 좌측 띠 폐기)'],
       '의미 원자': ['Icon'],
     } },
   { name: 'Stat', layer: '분자', role: 'KPI 지표 타일(추세형). SummaryCard 형제: 큰 값 + 추세·델타.',
@@ -737,15 +737,15 @@ export const CATALOG: CatalogEntry[] = [
   { name: 'FieldGrid', layer: '유기체', role: '테두리 친 2D 셀 격자(장표/帳票). 고정 라벨/스키마 필드/이미지 셀을 배치, 작성(edit)·확인(read) 양용·같은 기하.',
     props: [
       { name: 'columns', kind: '스타일', values: 'number (격자 열 수 — raw grid, 12약수 제약 없음·명시예외)' },
-      { name: 'rows', kind: '기능', values: 'FieldGridCell[][] ({label?|field?|image?, colSpan?, rowSpan?, align?})' },
+      { name: 'rows', kind: '기능', values: 'FieldGridCell[][] ({label?|field?|image?|node?, colSpan?, rowSpan?, align?}) — node=비표준 컨트롤 통째 슬롯(@/ui 부품, 4종 배타·mode 무관)' },
       { name: 'fields', kind: '기능', values: 'FieldSpec[] (field 셀 정의 — 스키마 층 재사용)' },
-      { name: 'mode', kind: '스타일', values: "'edit' | 'read' (기본 edit — 박스 기하 불변, 값 렌더러만 스왑)" },
+      { name: 'mode', kind: '스타일', values: "'edit' | 'read' (기본 edit — 박스 기하 불변, read는 같은 입력 원자를 inert로 재사용·편집만 차단)" },
       { name: 'values / onChange / errors', kind: '기능', values: 'controlled (FormSection 동형). 에러=--field-border danger + Tooltip(기하 보존)' },
     ],
     composition: {
       토큰: ['N열 grid(fieldgrid.css 명시예외)', '라벨 셀 음영(bg-secondary)', '--field-border(에러)', 'gap', 'min-height 40(md 입력칸)'],
       '의미 원자': ['TextInput', 'NumberInput', 'CurrencyInput', 'Textarea', 'Select', 'DatePicker', 'Checkbox', 'Image', 'Text', 'Tooltip'],
-      공유: ['_cells(renderCell)', 'fieldgrid.css', 'schema(FieldSpec)'],
+      공유: ['_masks(applyMask)', 'fieldgrid.css', 'schema(FieldSpec)'],
     } },
 
   // ── 템플릿 (3) + 폼 조립 조직 ────────────────────────────────────────

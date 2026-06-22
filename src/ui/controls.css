@@ -99,12 +99,14 @@
 }
 .erp-collapsible-header:hover { background: var(--bg-secondary); }
 
-/* Accordion attention 행 — clearAttentionOnOpen으로 펼치면(=봤음) 좌측 띠+틴트가 페이드 해제.
-   핵심: data-attn="off"면 *override를 아무것도 안 줘서* Mantine 기본 행과 완전 동일(본 뒤 접으면 일반 행과 구분 0).
-   띠는 inset box-shadow라 보더 폭 점프 없이 색만 전이. transition은 항상(base) 걸려 있어 on↔off 전환이 매끈하게 페이드. */
-.erpAccordionAttn { transition: background-color 350ms ease, box-shadow 350ms ease; }
+/* Accordion — 윤곽 최소·그림자 위주. Mantine separated는 active(열린 항목)만 칠해 닫힘이 비어 보이므로 전 항목에 직접 명시
+   (unlayered라 @layer mantine 기본값을 이긴다). 기본: 회색(bg-tertiary — bg-secondary는 흰 배경과 거의 동색이라 한 단계 진하게)+그림자, 윤곽 없음. */
+.erpAccordionItem { background: var(--bg-tertiary); border-color: transparent; box-shadow: var(--mantine-shadow-sm); }
+/* 강조: 틴트 채움({color}-0) + *얇은* 틴트 윤곽({color}-3) + 그림자(공통). 좌측 띠 폐기.
+   data-attn="off"면 override 0 → 기본 회색 행과 동일(본 뒤 접으면 일반 행과 구분 0). transition으로 on↔off 페이드. */
+.erpAccordionAttn { transition: background-color 350ms ease, border-color 350ms ease; }
 .erpAccordionAttn[data-attn="on"] {
-  background: var(--erp-attn-bg, var(--mantine-color-danger-0));      /* 색은 Accordion이 토큰 enum→역할변수로 주입(기본 danger) */
-  box-shadow: inset 3px 0 0 var(--erp-attn-band, var(--mantine-color-danger-6));
+  background: var(--erp-attn-fill, var(--mantine-color-danger-0));
+  border-color: var(--erp-attn-border, var(--mantine-color-danger-3));
 }
 @media (prefers-reduced-motion: reduce) { .erpAccordionAttn { transition: none; } }

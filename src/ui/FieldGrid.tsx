@@ -2,8 +2,8 @@
 // FieldGrid (유기체) — 테두리 친 2D 셀 격자(장표/帳票). FormSection·DataTable·DescriptionList의 형제:
 //  스키마를 받아 도메인 무지로 한 구획을 그린다. 없던 레이아웃 어휘 = "칸칸 테두리 2D 격자 + 작성/확인 양용".
 //  · 셀 = 고정 라벨 | 스키마 필드 | 이미지 | 빈 칸. 배치는 colSpan·rowSpan(닫힌 값, 임의 px 금지).
-//  · mode(edit/read): 셀 박스 기하는 모드 불변, 값 렌더러만 스왑(같은 크기·같은 뷰 — 작성한 쪽 == 받는 쪽).
-//      edit → 입력 원자(FormSection 매핑과 동형) / read → renderCell(_cells 표현 enum 공유).
+//  · mode(edit/read): 셀 박스 기하는 모드 불변(같은 크기·같은 뷰 — 작성한 쪽 == 받는 쪽). 차이는 편집 가능 여부 하나뿐.
+//      edit → 입력 원자(FormSection 매핑과 동형) / read → *같은 입력 원자를 inert로* 재사용(편집만 차단, 별도 텍스트 렌더 없음).
 //  · 에러: FormField를 쓰지 않는다(라벨이 별도 셀이라 구조가 다름). 메시지 줄이 기하를 깨지 않게
 //      --field-border=danger를 셀에 깔아 입력칸이 빨간 테두리만 그리고(역할 변수 통로 재사용),
 //      메시지는 Tooltip으로 띄운다.

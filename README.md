@@ -145,7 +145,7 @@ type FieldSpec = {
 - **ObjectCard** `title` `subtitle?` `status?` `thumbnail?`/`icon?` `headline?` `attributes?` `actions?` `onClick?` — 단일 사진 카드(역할 슬롯, 자유 render 0). 높이는 그리드 셀이 분배
 - **SectionHeader** `title|titleNode` `controls?`(좌측 도구) `actions?`(우측 액션) `divider?` · **Breadcrumb** `items: {label,onClick?}[]`(마지막=현재)
 - **Collapsible** `header`(요약 슬롯) `children`(상세) `defaultOpen?` — **단독 토글 1개**(헤더 클릭). 여러 섹션 조율(하나만/동시 열림)은 **Accordion**(직접 쌓지 않는다)
-- **Accordion** `items: {value,label,children,tone?:'attention',color?:BadgeColor}[]` `multiple?` `defaultOpen?` `clearAttentionOnOpen?` — 여러 섹션 펼침 조율(`multiple`=동시 열림). `tone:'attention'`=틴트 행(`color` 토큰, 기본 danger), `clearAttentionOnOpen`=펼치면 틴트 해제. Collapsible 쌓기 대체
+- **Accordion** `items: {value,label,children,tone?:'attention',color?:BadgeColor}[]` `multiple?` `defaultOpen?` `clearAttentionOnOpen?` — 여러 섹션 펼침 조율(`multiple`=동시 열림). 기본 회색+그림자(윤곽 최소). `tone:'attention'`=강조 행(틴트 채움+얇은 틴트 윤곽, `color` 토큰 기본 danger), `clearAttentionOnOpen`=펼치면 강조 해제. Collapsible 쌓기 대체
 - **Stat** `label` `value`(포맷된 표시값) `trend: up|down|flat` `delta?` `icon?` — 단일 지표+추세(건수/금액 요약은 SummaryCard)
 - **TreeSelect** `nodes: TreeNodeData[]` `value`(node id) — 계층 노드를 값으로 선택. **Tree(파인더/표시)와 독립**
 - **Cascader** `options: {value,label,children}[]` `value: string[]`(경로) — 순차 드롭다운 경로 선택(한 칸 고르면 다음 칸), 완료 시 브레드크럼 압축
@@ -160,7 +160,7 @@ type FieldSpec = {
 - **AppShell** `logo` `menuItems` `activePath` `onNavigate` `profile` `notification` · children=콘텐츠 · 반응형(데스크탑 넷바 ↔ 모바일 하단 탭, 자동)
 - **Timeline** `events: TimelineEvent[]` · **Calendar** `month` `events: CalendarEvent[]`(월 뷰 단일)
 - **Tree** `nodes` controlled 선택·펼침 · `editable`(쓰기 게이트)
-- **FieldGrid** `columns` `rows: FieldGridCell[][]`(셀=`label?`|`field?`|`image?`, `colSpan?` `rowSpan?` `align?`) `fields: FieldSpec[]` `mode: edit|read` `values` `onChange` `errors?` — 테두리 셀 격자(장표/帳票). 작성·확인 양용·**같은 기하**(셀 박스 불변, 값 렌더러만 스왑). 머리표(라벨:값)·명세표(헤더+값 행)·대분류 밴드 다 같은 모델
+- **FieldGrid** `columns` `rows: FieldGridCell[][]`(셀=`label?`|`field?`|`image?`|`node?`, `colSpan?` `rowSpan?` `align?`) `fields: FieldSpec[]` `mode: edit|read` `values` `onChange` `errors?` — 테두리 셀 격자(장표/帳票). 작성·확인 양용·**같은 기하**(셀 박스 불변, read=같은 입력 원자 inert 재사용). `node`=비표준 컨트롤 통째 슬롯(4종 배타·mode 무관). 머리표(라벨:값)·명세표(헤더+값 행)·대분류 밴드 다 같은 모델
 - **Drawer** `opened` `onClose` `title` `actions?` `position: left|right|top|bottom` `size: sm|md|lg` — 가장자리 슬라이드 패널(뒤 맥락 유지; 차단형은 Modal)
 - **Stepper** `active`(index) `steps: {label,description?}[]` `orientation?` `onStepClick?` — 다단계 진행 표시(콘텐츠는 호출측이 active로 분기)
 - **Transfer** `items: {value,label}[]` `selected: string[]` `onChange` `titles?` — 좌·우 듀얼 리스트 대량 배정(인라인 다중은 MultiSelect)

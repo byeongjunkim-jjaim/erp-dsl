@@ -359,27 +359,16 @@ export function Demo({ name }: { name: string }) {
       </div>
     ),
     Accordion: (
-      // 정형화 비교 — 기존: Collapsible 직접 쌓기(서로 조율 안 됨, 여러 개 동시 열림).
-      //  수정안: Accordion 한 부품이 펼침 조율(하나만 열림). 같은 섹션 묶음을 단일 부품이 관리.
-      <div style={{ width: 640 }}>
-        <BeforeAfter
-          before={
-            <Stack gap="sm">
-              <Collapsible defaultOpen header={<StatusRow label="기본 정보" icon="file-text" status={{ label: '필수', tone: 'info' }} />}><Text variant="body">상호 · 사업자번호 · 대표자</Text></Collapsible>
-              <Collapsible header={<StatusRow label="담당자" icon="user" status={{ label: '선택', tone: 'neutral' }} />}><Text variant="body">이름 · 연락처 · 이메일</Text></Collapsible>
-              <Collapsible header={<StatusRow label="환경설정" icon="settings" status={{ label: '선택', tone: 'neutral' }} />}><Text variant="body">여신한도 · 결제일</Text></Collapsible>
-            </Stack>
-          }
-          after={
-            <Accordion
-              clearAttentionOnOpen
-              items={[
-                { value: 'basic', label: <StatusRow label="기본 정보" icon="file-text" status={{ label: '필수', tone: 'info' }} />, children: <Text variant="body">상호 · 사업자번호 · 대표자</Text>, tone: 'attention' },
-                { value: 'owner', label: <StatusRow label="담당자" icon="user" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">이름 · 연락처 · 이메일</Text> },
-                { value: 'config', label: <StatusRow label="환경설정" icon="settings" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">여신한도 · 결제일</Text> },
-              ]}
-            />
-          }
+      // 윤곽 최소·그림자 위주. 기본=회색(bg-tertiary)+그림자, 강조(첫 행)=틴트 채움+얇은 틴트 윤곽+그림자(좌측 띠 없음).
+      //  clearAttentionOnOpen: 강조 행을 펼치면(=봤음) 기본 회색으로 페이드 해제. 펼침 조율은 하나만 열림(multiple 아님).
+      <div style={{ width: 440 }}>
+        <Accordion
+          clearAttentionOnOpen
+          items={[
+            { value: 'basic', label: <StatusRow label="기본 정보" icon="file-text" status={{ label: '필수', tone: 'info' }} />, children: <Text variant="body">상호 · 사업자번호 · 대표자</Text>, tone: 'attention' },
+            { value: 'owner', label: <StatusRow label="담당자" icon="user" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">이름 · 연락처 · 이메일</Text> },
+            { value: 'config', label: <StatusRow label="환경설정" icon="settings" status={{ label: '선택', tone: 'neutral' }} />, children: <Text variant="body">여신한도 · 결제일</Text> },
+          ]}
         />
       </div>
     ),
@@ -491,6 +480,8 @@ export function Demo({ name }: { name: string }) {
             [{ label: '발주담당자' }, { field: 'manager' }, { label: '연락처' }, { field: 'phone' }],
             [{ label: '사용일' }, { field: 'useDate' }, { label: '도어재작' }, { field: 'door' }],
             [{ label: '사용용도' }, { field: 'usage', colSpan: 3 }],
+            // node 셀 — 스키마 필드로 안 떨어지는 비표준 컨트롤(여기선 Cascader)을 통째로 한 칸에. label/field/image와 배타, mode 무관 그대로 렌더.
+            [{ label: '지역' }, { node: <Cascader options={CASC_OPTS} value={casc} onChange={setCasc} placeholder="지역 선택" />, colSpan: 3 }],
           ]}
         />
       </Stack>

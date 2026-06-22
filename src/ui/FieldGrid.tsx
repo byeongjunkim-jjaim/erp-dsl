@@ -18,10 +18,16 @@ import { Select } from './Select';
 import { DatePicker } from './DatePicker';
 import { Checkbox } from './Checkbox';
 import { Image } from './Image';
-import { Text } from './Text';
 import { Tooltip } from './Tooltip';
 import { applyMask } from './_masks';
 import type { FieldSpec } from '../schema';
+
+// size별 행 단위·세로패딩·타이포 한 세트(닫힌 3단). 타이포 키우면 행 단위도 같이 커진다(동적 행 높이).
+const FG_SIZE: Record<'sm' | 'md' | 'lg', CSSProperties> = {
+  sm: { ['--fg-row']: '32px', ['--fg-pad-y']: '4px', ['--fg-typo-size']: 'var(--typo-caption-size)', ['--fg-typo-lh']: 'var(--typo-caption-lh)' } as CSSProperties,
+  md: { ['--fg-row']: '40px', ['--fg-pad-y']: 'var(--mantine-spacing-xs)', ['--fg-typo-size']: 'var(--typo-body-size)', ['--fg-typo-lh']: 'var(--typo-body-lh)' } as CSSProperties,
+  lg: { ['--fg-row']: '52px', ['--fg-pad-y']: '12px', ['--fg-typo-size']: 'var(--typo-subheading-size)', ['--fg-typo-lh']: 'var(--typo-subheading-lh)' } as CSSProperties,
+};
 
 export type FieldGridCell = {
   label?: string;       // 고정 라벨 셀(음영)
@@ -40,12 +46,13 @@ type Props = {
   rows: FieldGridCell[][];          // 행 × 셀
   fields?: FieldSpec[];             // field 셀이 가리키는 필드 정의(type·label·options)
   mode?: 'edit' | 'read';           // 기본 edit
+  size?: 'sm' | 'md' | 'lg';        // 타이포·행 단위 스케일(기본 md). 행 높이는 타이포에 맞춰 동적. 큰 부품은 rowSpan으로 병합(엑셀형 균일).
   values?: Values;
   onChange?: (name: string, value: unknown) => void;
   errors?: Record<string, string>;
 };
 
-export function FieldGrid({ columns, rows, fields, mode = 'edit', values = {}, onChange, errors }: Props) {
+export function FieldGrid({ columns, rows, fields, mode = 'edit', size = 'md', values = {}, onChange, errors }: Props) {
   const fieldMap = new Map((fields ?? []).map((f) => [f.name, f]));
 
   // edit 입력 원자 매핑(FormSection.control과 동형 — lookup은 격자 셀에선 단순 text로). controlled 전용.
@@ -105,7 +112,7 @@ export function FieldGrid({ columns, rows, fields, mode = 'edit', values = {}, o
     ].filter(Boolean).join(' ');
 
     let inner: ReactNode = null;
-    if (isLabel) inner = <Text variant="body-strong">{c.label}</Text>;
+    if (isLabel) inner = <span className="erp-fg-label">{c.label}</span>;
     else if (isImage) inner = <Image src={c.image!} alt={c.alt ?? ''} size="full" fit="contain" />;
     else if (isField) inner = fieldCell(c.field!);
     else if (isNode) inner = c.node;
@@ -114,7 +121,7 @@ export function FieldGrid({ columns, rows, fields, mode = 'edit', values = {}, o
   };
 
   return (
-    <div className="erp-fg" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+    <div className="erp-fg" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)`, ...FG_SIZE[size] }}>
       {rows.flatMap((row, r) => row.map((c, i) => renderCellBox(c, r * 1000 + i)))}
     </div>
   );

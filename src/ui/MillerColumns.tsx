@@ -90,7 +90,7 @@ export function MillerColumns({ options, value, onChange, placeholder = '선택'
   };
 
   const colView = (col: Column, depth: number) => (
-    <div key={depth} className="erpColList erpColListFill">
+    <div key={depth} className="erpColList">
       {col.options.map((o) => (
         <div
           key={o.value}
@@ -109,10 +109,11 @@ export function MillerColumns({ options, value, onChange, placeholder = '선택'
   );
 
   // 좁은 모드 = 단일 컬럼 드릴인(현재 깊이 + 뒤로 헤더). 넓은 모드 = 다단(가로 스크롤).
-  // 패널 바깥 박스를 컬럼 수와 무관하게 *상수 높이(320)*로 고정 → 컬럼 증식 시 floating-ui 재배치(이동) 없음. 컬럼은 내부 세로 스크롤.
+  // 박스 크기는 *내용에 맞춰 동적*(작은 내용엔 작게). 점프 방지는 reposition="fixed"(flip off·좌상단 앵커)가 담당 —
+  //  컬럼은 아래/오른쪽으로만 증식하고 앵커가 안 움직인다. 긴 컬럼은 .erpColList max-height 안에서 내부 스크롤.
   const dShown = Math.min(drillDepth, columns.length - 1);
   const content = narrow ? (
-    <div style={{ width: 220, height: 320, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: 220 }}>
       {dShown > 0 && (
         <div
           className="erpColBack"
@@ -125,10 +126,10 @@ export function MillerColumns({ options, value, onChange, placeholder = '선택'
           <Text variant="caption" color="secondary">{pathLabels(options, active.slice(0, dShown)).join(' › ') || '처음'}</Text>
         </div>
       )}
-      <div style={{ flex: 1, minHeight: 0 }}>{colView(columns[dShown], dShown)}</div>
+      {colView(columns[dShown], dShown)}
     </div>
   ) : (
-    <div style={{ display: 'flex', alignItems: 'stretch', overflowX: 'auto', height: 320 }}>
+    <div style={{ display: 'flex', alignItems: 'stretch', overflowX: 'auto' }}>
       {columns.map((col, depth) => colView(col, depth))}
     </div>
   );

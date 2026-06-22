@@ -6,7 +6,13 @@
 .erp-fg {
   display: grid;
   /* grid-template-columns는 columns prop으로 인라인 주입(repeat(n, 1fr)) */
-  grid-auto-rows: minmax(40px, auto); /* 셀 최소 = md 입력칸 높이(edit/read 동일 기하), 내용 넘치면 자람 */
+  /* size prop이 --fg-* 를 인라인 주입(sm/md/lg). 기본 md. 행 단위·타이포가 한 세트로 스케일 → 타이포 키우면 행도 커짐. */
+  --fg-row: 40px;
+  --fg-pad-y: var(--mantine-spacing-xs);
+  --fg-typo-size: var(--typo-body-size);
+  --fg-typo-lh: var(--typo-body-lh);
+  /* 엑셀형 균일 리듬: 행 = 고정 단위(--fg-row). 내용이 단위를 넘으면 그 행만 자람(graceful) — 큰 부품은 rowSpan으로 병합 권장. */
+  grid-auto-rows: minmax(var(--fg-row), auto);
   border-top: 1px solid var(--border-default);
   border-left: 1px solid var(--border-default);
   /* radius 없음 — 엑셀 시트 평면 형태(장표). squircle 화이트리스트 밖. */
@@ -14,7 +20,7 @@
 .erp-fg-cell {
   border-right: 1px solid var(--border-default);
   border-bottom: 1px solid var(--border-default);
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  padding: var(--fg-pad-y) var(--mantine-spacing-sm);
   display: flex;
   align-items: center;
   background: var(--bg-primary);
@@ -27,6 +33,13 @@
 .erp-fg-cell.is-image { padding: 0; }
 .erp-fg-cell.align-center { justify-content: center; }
 .erp-fg-cell.align-end { justify-content: flex-end; }
+/* 라벨 셀 텍스트 — size별 타이포(--fg-typo)로 입력칸과 같은 라인박스. body-strong 굵기 고정. */
+.erp-fg-label {
+  font-size: var(--fg-typo-size);
+  line-height: var(--fg-typo-lh);
+  font-weight: var(--typo-body-strong-weight);
+  color: var(--text-primary);
+}
 /* 값 셀 안의 입력칸/이미지는 셀 폭을 꽉 채운다 */
 .erp-fg-field { width: 100%; }
 /* 작성(edit) 입력칸을 셀 테두리에 흡수 — input 자체의 테두리·radius·box-shadow·여백을 벗겨
@@ -40,7 +53,7 @@
   min-height: 0 !important;
   height: auto !important;
   padding: 0 !important;
-  /* 본문 타이포로 못박아 모든 셀(라벨 Text body-strong 포함)이 같은 라인박스 → 행 높이 균일·고정 */
-  font-size: var(--typo-body-size) !important;
-  line-height: var(--typo-body-lh) !important;
+  /* size별 타이포 변수로 — 라벨(.erp-fg-label)과 같은 라인박스. 타이포 키우면 행도 따라 커진다(고정 잠금 해제). */
+  font-size: var(--fg-typo-size) !important;
+  line-height: var(--fg-typo-lh) !important;
 }

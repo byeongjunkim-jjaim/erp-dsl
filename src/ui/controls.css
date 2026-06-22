@@ -1,5 +1,16 @@
 /* ── 컨트롤 보조 CSS (프리미티브로 표현 못 하는 것 — calendar.css·appshell.css와 동류의 명시 예외) ── */
 
+/* PaperModal — A4 문서 뷰어의 *종이*. 종이가 자기 윤곽(테두리·그림자)을 가짐(모달 아님).
+   크기/스케일(width·height·transform)은 JS가 실측해 인라인으로 박음(aspect-ratio·max-* 안 씀 — controls.css엔 형상만).
+   .erpPaper = 소비처 print CSS 타겟 훅(@media print { .erpPaper { ... } }). 종이 안 내용은 절대 스크롤 없음. */
+.erpPaper {
+  background: var(--bg-primary);
+  border: var(--border-width) solid var(--border-default);
+  box-shadow: var(--mantine-shadow-md);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
 /* 작은 컨트롤 터치 타깃 확장: 시각 크기는 그대로, 클릭/터치 영역만 넓힌다.
    기준 — WCAG 2.5.5(AAA)·Apple 44pt·Material 48dp → 44px 채택(태블릿 현장 사용 대비).
    ::before 오버레이(absolute)라 레이아웃 무영향. input/track의 ::before 클릭은 컨트롤 토글로 등록된다. */
@@ -124,17 +135,8 @@
 /* 컬럼 = 한 레벨 목록(세로 스크롤). MillerColumns 다단은 컬럼 사이 좌측 구분선. */
 .erpColList { min-width: 180px; max-height: 280px; overflow-y: auto; padding: 4px; }
 .erpColList + .erpColList { border-left: 1px solid var(--border-default); }
-/* MillerColumns 컬럼 — 고정 높이 컨테이너(320)를 꽉 채워 컬럼 높이 균일. 항목 많으면 컬럼 내부 세로 스크롤.
-   패널 바깥 박스가 컬럼 수와 무관하게 상수(폭 600 × 높이 320)라 컬럼 증식 때 floating-ui 재배치가 안 일어난다. */
-.erpColListFill { height: 100%; max-height: none; }
 .erpColItem { display: flex; align-items: center; justify-content: space-between; gap: var(--mantine-spacing-sm); padding: 6px 8px; border-radius: 4px; cursor: pointer; }
 .erpColItem:hover { background: var(--bg-secondary); }
 .erpColItem[data-selected] { background: var(--mantine-color-primary-0); }   /* 선택 경로 강조(Tree 선택과 동형) */
 .erpColBack { display: flex; align-items: center; gap: 4px; padding: 6px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--border-default); cursor: pointer; }
 .erpColBack:hover { background: var(--bg-secondary); }
-
-/* PaperModal — 모달 본문 자체가 A4 종이(회색 backdrop 중첩 없음 → 공간 안 버림). 종이가 본문 폭을 꽉 채우고 A4 비율로 높이 derive
-   (aspect-ratio = 고정치수 명시예외, Image 비율잠금 동류). 내용이 길면 모달 본문이 스크롤. 최소 여백 = 모달 본문 패딩(md). */
-.erpPaper { width: 100%; }
-.erpPaper-portrait { aspect-ratio: 210 / 297; }
-.erpPaper-landscape { aspect-ratio: 297 / 210; }

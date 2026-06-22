@@ -73,8 +73,8 @@ export { SearchToolbar } from './SearchToolbar';
 
 // 유기체
 export { Modal } from './Modal';
-export { PaperModal } from './PaperModal';
 export { Drawer } from './Drawer';
+export { PaperModal } from './PaperModal';
 export { Stepper } from './Stepper';
 export { Transfer } from './Transfer';
 export { ToastHost } from './ToastHost';

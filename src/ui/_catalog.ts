@@ -574,7 +574,7 @@ export const CATALOG: CatalogEntry[] = [
       '배치 프리미티브': ['Group'],
     } },
 
-  // ── 유기체 (8) — 구성요소 표시 ───────────────────────────────────────
+  // ── 유기체 (9) — 구성요소 표시 ───────────────────────────────────────
   { name: 'Modal', layer: '유기체', role: '도메인 무관 껍데기. 헤더·푸터 고정 + 본문 스크롤.',
     props: [
       { name: 'opened / onClose', kind: '기능', values: 'boolean, () => void' },
@@ -606,19 +606,20 @@ export const CATALOG: CatalogEntry[] = [
       '배치 프리미티브': ['Group (헤더 직접 조립)'],
       공유: ['_cells(renderAction)'],
     } },
-  { name: 'PaperModal', layer: '유기체', role: '모달 본문 자체가 A4 한 장인 문서 모달 — 장표(거래명세서·견적서·발주서…)를 보이는 대로 작성·확인·인쇄하는 셸. 본문이 A4 비율로 폭을 꽉 채움(회색 backdrop 중첩 없음, 공간 안 버림·최소 여백=모달 패딩). 내용(children)은 소비처가 FieldGrid 등으로 채움(도메인 0). 인쇄는 소비처 위임(actions에 인쇄 버튼+window.print(), 종이 영역 .erpPaper 훅을 print CSS로 타겟).',
+  { name: 'PaperModal', layer: '유기체', role: 'A4 문서 *뷰어* 모달(보기 전용 — 거래명세서·견적서 통째 보기). 종이가 자기 윤곽을 가짐(모달 아님). 본문 실측(ResizeObserver)→fitA4로 A4 contain 박스 px 계산→표준 A4 캔버스(794×1123 @96dpi)를 transform:scale로 꽉 맞춤. aspect-ratio·max-* 안 씀. 한 화면 무스크롤. orientation=세로/가로 버전 고정. 내용=소비처 FieldGrid 장표(CANON 좌표계), 인쇄=소비처 위임(.erpPaper print 훅). Modal의 뷰어 형제(공유 Modal 불변).',
     props: [
       { name: 'opened / onClose', kind: '기능', values: 'boolean, () => void' },
       { name: 'title', kind: '콘텐츠', values: 'string' },
-      { name: 'actions', kind: '기능', values: 'Action[] (인쇄·닫기 등 — 인쇄 동작은 소비처 배선)' },
-      { name: 'orientation', kind: '스타일', values: "'portrait'(기본) | 'landscape' — A4 세로/가로 *버전*(고정, 토글 아님). 폭도 방향별(세로 lg/가로 xl)" },
+      { name: 'actions', kind: '기능', values: 'Action[] (푸터 — 소비처가 인쇄·닫기 배선. 뷰어 빌트인 없음)' },
+      { name: 'orientation', kind: '스타일', values: "'portrait' | 'landscape' (A4 세로/가로 버전 고정 — 토글 아님)" },
       { name: 'closeOnOverlayClick', kind: '스타일', values: 'boolean (기본 false)' },
-      { name: 'children', kind: '콘텐츠', values: 'ReactNode (A4 종이 안 문서 — 보통 FieldGrid)' },
+      { name: 'children', kind: '콘텐츠', values: 'ReactNode (표준 A4 캔버스 794×1123 좌표계 기준 문서 — FieldGrid 등)' },
     ],
     composition: {
-      토큰: ['A4 aspect-ratio 210/297·297/210(고정치수 명시예외, 본문 폭 100%로 높이 derive)', '여백=모달 본문 패딩', 'Modal size lg(세로)/xl(가로)'],
-      유기체: ['Modal'],
-      공유: ['controls.css(.erpPaper 인쇄 훅)'],
+      토큰: ['상한 95vw×95vh→종이 hug(모달 폭/본문 높이=종이+8px)', '데스크 패딩 8px(명시예외)', '--bg-secondary(데스크)', '.erpPaper=--bg-primary/--border-default/shadow md', 'fitA4 실측 스케일'],
+      '의미 원자': ['Title', 'Icon(x)'],
+      '배치 프리미티브': ['Group (헤더 직접 조립)'],
+      공유: ['_cells(renderAction)'],
     } },
   { name: 'Stepper', layer: '유기체', role: '다단계 진행 표시(노드+커넥터+라벨). controlled active. 등록 마법사.',
     props: [
@@ -768,12 +769,13 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'rows', kind: '기능', values: 'FieldGridCell[][] ({label?|field?|image?|node?, colSpan?, rowSpan?, align?}) — node=비표준 컨트롤 통째 슬롯(@/ui 부품, 4종 배타·mode 무관)' },
       { name: 'fields', kind: '기능', values: 'FieldSpec[] (field 셀 정의 — 스키마 층 재사용)' },
       { name: 'mode', kind: '스타일', values: "'edit' | 'read' (기본 edit — 박스 기하 불변, read는 같은 입력 원자를 inert로 재사용·편집만 차단)" },
+      { name: 'size', kind: '스타일', values: "'sm' | 'md'(기본) | 'lg' — 타이포·행 단위·세로패딩 한 세트 스케일. 행 높이는 타이포 따라 동적, 큰 부품은 rowSpan으로 병합(엑셀형 균일)" },
       { name: 'values / onChange / errors', kind: '기능', values: 'controlled (FormSection 동형). 에러=--field-border danger + Tooltip(기하 보존)' },
     ],
     composition: {
-      토큰: ['N열 grid(fieldgrid.css 명시예외)', '라벨 셀 음영(bg-secondary)', '--field-border(에러)', 'gap', 'min-height 40(md 입력칸)'],
-      '의미 원자': ['TextInput', 'NumberInput', 'CurrencyInput', 'Textarea', 'Select', 'DatePicker', 'Checkbox', 'Image', 'Text', 'Tooltip'],
-      공유: ['_masks(applyMask)', 'fieldgrid.css', 'schema(FieldSpec)'],
+      토큰: ['N열 grid(fieldgrid.css 명시예외)', '라벨 셀 음영(bg-secondary)', '--field-border(에러)', 'size별 --fg-row/--fg-typo/--fg-pad-y(행 높이 동적·균일 단위)'],
+      '의미 원자': ['TextInput', 'NumberInput', 'CurrencyInput', 'Textarea', 'Select', 'DatePicker', 'Checkbox', 'Image', 'Tooltip'],
+      공유: ['_masks(applyMask)', 'fieldgrid.css(라벨 raw 타이포)', 'schema(FieldSpec)'],
     } },
 
   // ── 템플릿 (3) + 폼 조립 조직 ────────────────────────────────────────

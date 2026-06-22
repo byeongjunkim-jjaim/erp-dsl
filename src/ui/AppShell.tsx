@@ -8,8 +8,11 @@
 //  · 프로필: 셸이 형식 고정(좌 avatar / 중 이름·직책 / 우 caret). menu(Action[]) 주면 Popover 메뉴, 없으면 onMenuClick 폴백(배타 경로).
 //  · 알림: bell 버튼 + 안 읽음 점. content 주면 Popover 목록, 없으면 onClick 폴백(배타 경로).
 // 구조(모바일, 좁은 화면) — 넷바(서랍) 대신 모바일 앱처럼 재구성:
-//  · 상단바: 좌측에 로고(데스크탑은 넷바가 소유 → 모바일에선 헤더로) + 우측 [알림][프로필](공통).
+//  · 상단바: 좌측에 로고(데스크탑은 넷바가 소유 → 모바일에선 헤더로) + 우측 [알림][프로필].
+//    프로필은 모바일에선 *아바타-only*(이름·직책·caret은 visibleFrom=sm로 데스크탑만 — 좁은 헤더 줄바꿈 방지. 탭→메뉴 헤더에 이름 노출).
 //  · 하단 탭 내비: 메뉴 항목을 아이콘+라벨 탭으로. 같은 menuItems/activePath/onNavigate 재사용(새 prop 0).
+//  · 네이티브 앱 스크롤(appshell.css 모바일 미디어쿼리): 헤더·하단탭 고정, 본문만 내부 스크롤(짧으면 0·길면 그만큼,
+//    끝에서 바운스 없이 멈춤). 페이지(body) 스크롤은 잠가 고무줄 바운스·잉여 스크롤 제거. 데스크탑은 문서 스크롤 그대로.
 //  · 셸 골격(M.Header/Navbar/Main/Footer 슬롯·바 정렬·safe-area)은 우리 콘텐츠 프리미티브가 노출 안 한
 //    탈출구라 격리 구역 내 raw Mantine/CSS(헌법 7) — Modal raw flex·Calendar raw grid와 같은 명시 예외 범주.
 //    단 슬롯 *안의 콘텐츠*(탭 타일·메뉴 행)는 우리 Stack/Group/Icon/Text로 조립한다(도그푸드).
@@ -169,11 +172,15 @@ export function AppShell({
               const inner = (
                 <>
                   <Avatar src={profile.avatarSrc} size="md">{profile.name.slice(0, 1)}</Avatar>
-                  <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-                    <Text variant="body-strong">{profile.name}</Text>
-                    {profile.role && <Text variant="caption" color="secondary">{profile.role}</Text>}
-                  </span>
-                  <Icon name="chevron-down" size="sm" color="secondary" />
+                  {/* 이름·직책·caret = 데스크탑만(visibleFrom sm). 모바일은 아바타-only(좁은 헤더에서 이름 줄바꿈 방지).
+                      모바일은 아바타 탭 → 메뉴 헤더에 이름·이메일이 이미 노출되어 정보 손실 0. */}
+                  <Box visibleFrom="sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--mantine-spacing-sm)' }}>
+                    <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+                      <Text variant="body-strong">{profile.name}</Text>
+                      {profile.role && <Text variant="caption" color="secondary">{profile.role}</Text>}
+                    </span>
+                    <Icon name="chevron-down" size="sm" color="secondary" />
+                  </Box>
                 </>
               );
               // menu 있으면 Menu 분자(신원 헤더 슬롯 + 액션), 없으면 onMenuClick 폴백(배타 경로).
@@ -256,7 +263,8 @@ export function AppShell({
         </M.Section>
       </M.Navbar>
 
-      <M.Main style={{ background: 'var(--bg-tertiary)', minHeight: '100vh' }}>
+      {/* 데스크탑: minHeight 100vh로 문서 스크롤(기존). 모바일: appshell.css가 본문만 내부 스크롤(고정 헤더·하단탭 사이) — 바운스·잉여 스크롤 제거. */}
+      <M.Main className="erp-appshell-main" style={{ background: 'var(--bg-tertiary)', minHeight: '100vh' }}>
         {children}
       </M.Main>
 

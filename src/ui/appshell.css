@@ -86,3 +86,23 @@
 }
 .erp-more-row:hover,
 .erp-more-row[data-active='true'] { background: var(--bg-secondary); }
+
+/* 모바일(< sm=48em) 네이티브 앱 스크롤 — 데스크탑 무관(미디어쿼리 밖). em은 브라우저 기본 16px 기준이라
+   font-scale(html font-size)에 안 흔들리고 Mantine breakpoint sm과 정합.
+   ① 페이지(body) 스크롤 잠금 → 화면 끝 고무줄 바운스·뒤배경 노출 차단.
+   ② 본문(.erp-appshell-main)만 고정 헤더·하단탭 사이에서 내부 스크롤 — 짧으면 스크롤 0(딱 한 화면),
+      길면 그만큼만(끝에서 바운스 없이 멈춤). 인라인 minHeight:100vh를 무효화해 잉여 스크롤 제거. */
+@media (max-width: 47.99em) {
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  .erp-appshell-main {
+    height: 100vh !important;    /* 구형 폴백 */
+    height: 100dvh !important;   /* 동적 뷰포트(주소창 수축 반영). Mantine이 헤더·하단탭 높이만큼 패딩으로 오프셋. */
+    min-height: 0 !important;    /* 인라인 minHeight:100vh 무효화 → 잉여 스크롤 제거 */
+    overflow-y: auto;
+    overscroll-behavior: none;   /* 끝에서 바운스 없이 멈춤 + 부모 전파 차단 */
+  }
+}

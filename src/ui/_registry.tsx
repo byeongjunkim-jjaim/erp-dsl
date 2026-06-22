@@ -52,6 +52,7 @@ import { SummaryCard } from './SummaryCard';
 import { TotalRow } from './TotalRow';
 import { Collapsible } from './Collapsible';
 import { Modal } from './Modal';
+import { PaperModal } from './PaperModal';
 import { DataTable } from './DataTable';
 import { EmptyState } from './EmptyState';
 import { PageHeader } from './PageHeader';
@@ -263,6 +264,8 @@ export function Demo({ name }: { name: string }) {
   const [tsel, setTsel] = useState<string | null>(null);
   const [casc, setCasc] = useState<string[]>([]);
   const [mcol, setMcol] = useState<string[]>([]);
+  const [pmOpen, setPmOpen] = useState(false);
+  const [pmOrient, setPmOrient] = useState<'portrait' | 'landscape'>('portrait');
   const [stbSearch, setStbSearch] = useState('');
   const [stbStatus, setStbStatus] = useState<string | null>(null);
   const [month, setMonth] = useState('2026-06');
@@ -381,6 +384,44 @@ export function Demo({ name }: { name: string }) {
           <Text variant="body">본문(children)에 도메인 폼이 온다. Modal은 그게 뭔지 모른다.</Text>
         </Modal>
       </>
+    ),
+    PaperModal: (
+      // 모달 본문 자체가 A4 — 본문(종이) = FieldGrid 장표(소비처). 세로/가로는 *버전*(고정), 인쇄는 소비처 위임(여기선 안내).
+      <Stack gap="xs">
+        <Text variant="caption" color="secondary">모달 자체가 거의 A4 한 장(작성·확인 양용). 세로/가로 버전, 인쇄는 소비처 window.print()+print.css(.erpPaper).</Text>
+        <Group gap="xs" wrap>
+          <Button variant="secondary" leftIcon={<Icon name="receipt" size="sm" />} onClick={() => { setPmOrient('portrait'); setPmOpen(true); }}>세로(거래명세서)</Button>
+          <Button variant="secondary" leftIcon={<Icon name="table" size="sm" />} onClick={() => { setPmOrient('landscape'); setPmOpen(true); }}>가로(집계표)</Button>
+        </Group>
+        <PaperModal
+          opened={pmOpen}
+          onClose={() => setPmOpen(false)}
+          title={pmOrient === 'landscape' ? '집계표' : '거래명세서'}
+          orientation={pmOrient}
+          actions={[
+            { label: '닫기', variant: 'ghost', onClick: () => setPmOpen(false) },
+            { label: '인쇄', variant: 'primary', icon: 'print', onClick: () => notify.info('인쇄 — 소비처가 window.print()+print.css로 .erpPaper만 출력') },
+          ]}
+        >
+          <FieldGrid
+            columns={4}
+            mode="read"
+            values={fgVals}
+            onChange={() => {}}
+            fields={[
+              { name: 'site', label: '현장주소', type: 'text' },
+              { name: 'manager', label: '발주담당자', type: 'text' },
+              { name: 'phone', label: '연락처', type: 'text' },
+              { name: 'useDate', label: '사용일', type: 'date' },
+            ]}
+            rows={[
+              [{ label: '현장주소' }, { field: 'site', colSpan: 3 }],
+              [{ label: '발주담당자' }, { field: 'manager' }, { label: '연락처' }, { field: 'phone' }],
+              [{ label: '사용일' }, { field: 'useDate', colSpan: 3 }],
+            ]}
+          />
+        </PaperModal>
+      </Stack>
     ),
     Drawer: (
       // 단독 부품(신규, 기존 대체 아님). 기준: 뒤 화면이 보여야 하면 Drawer / 가려도 되면(차단) Modal.

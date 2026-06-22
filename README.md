@@ -109,7 +109,7 @@ type FieldSpec = {
 - **Avatar** `src` · children=이니셜 · `size`
 - **Image** `src` `alt` `fallbackSrc` · `fit: cover|contain` · `radius: sm|md|full` · `size: sm|md|lg|full|fill`(full=컨테이너 폭 4:3 잠금 / fill=부모 박스 cover)
 - **Tooltip** `label` · children
-- **Popover** `content`(부품 슬롯) · `opened` `onChange` · `position: top|bottom|left|right` · `align: start|center|end`(start=드롭다운형 좌측정렬) · `width: sm|md|lg|xl`(xl=다단 패널·MillerColumns 컬럼용)
+- **Popover** `content`(부품 슬롯) · `opened` `onChange` · `position: top|bottom|left|right` · `align: start|center|end`(start=드롭다운형 좌측정렬) · `reposition: flip|fixed`(fixed=위치 고정, 다단 컬럼용) · `width: sm|md|lg|xl`(xl=다단 패널·MillerColumns 컬럼용)
 - **Spinner** `size`
 - **Skeleton** `variant: text|block|circle` · `lines`(text) · `size: sm|md|lg` · `radius: sm|md` — 로드 전 자리표시(레이아웃 부품 안에 박아 형태 보존; 비결정형 점은 Spinner)
 - **Progress** `value: 0~100` · `tone: primary|success|warning|danger` · `size` — 결정형 진행률(끝 모르는 로딩은 Spinner)
@@ -163,6 +163,7 @@ type FieldSpec = {
 - **Tree** `nodes` controlled 선택·펼침 · `editable`(쓰기 게이트)
 - **FieldGrid** `columns` `rows: FieldGridCell[][]`(셀=`label?`|`field?`|`image?`|`node?`, `colSpan?` `rowSpan?` `align?`) `fields: FieldSpec[]` `mode: edit|read` `values` `onChange` `errors?` — 테두리 셀 격자(장표/帳票). 작성·확인 양용·**같은 기하**(셀 박스 불변, read=같은 입력 원자 inert 재사용). `node`=비표준 컨트롤 통째 슬롯(4종 배타·mode 무관). 머리표(라벨:값)·명세표(헤더+값 행)·대분류 밴드 다 같은 모델
 - **Drawer** `opened` `onClose` `title` `actions?` `position: left|right|top|bottom` `size: sm|md|lg|xl|full`(full=축 95%) — 가장자리 슬라이드 패널(뒤 맥락 유지; 차단형은 Modal)
+- **PaperModal** `opened` `onClose` `title` `actions?` `orientation: portrait|landscape`(세로/가로 *버전* 고정) · children=A4 종이 안 문서 — **모달 본문 자체가 A4 한 장**(장표 작성·확인·인쇄, 공간 안 버림·최소 여백). 내용은 소비처(보통 FieldGrid), 인쇄는 소비처 위임(`.erpPaper` 영역 print)
 - **Stepper** `active`(index) `steps: {label,description?}[]` `orientation?` `onStepClick?` — 다단계 진행 표시(콘텐츠는 호출측이 active로 분기)
 - **Transfer** `items: {value,label}[]` `selected: string[]` `onChange` `titles?` — 좌·우 듀얼 리스트 대량 배정(인라인 다중은 MultiSelect)
 - **ToastHost** (props 없음) — 토스트 호스트(위치·지속·스택 단일 관리). 트리거는 `notify.*`, 앱 셸에 1회 배치

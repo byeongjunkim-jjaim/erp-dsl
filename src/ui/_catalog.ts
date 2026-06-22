@@ -139,6 +139,7 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'onChange', kind: '기능', values: '(opened: boolean) => void' },
       { name: 'position', kind: '스타일', values: "'top' | 'bottom' | 'left' | 'right'" },
       { name: 'align', kind: '스타일', values: "'start' | 'center'(기본) | 'end' (start=트리거 시작모서리 정렬, 드롭다운형)" },
+      { name: 'reposition', kind: '스타일', values: "'flip'(기본) | 'fixed' (fixed=flip 끔·shift만 → content 크기 변해도 위치 고정, 다단 컬럼용)" },
       { name: 'width', kind: '값', values: "'sm' | 'md' | 'lg' | 'xl' (xl=다단 패널·MillerColumns 컬럼용)" },
     ] },
   { name: 'Spinner', layer: '의미 원자', role: '영역/페이지 로딩(Button loading과 별개).',
@@ -604,6 +605,20 @@ export const CATALOG: CatalogEntry[] = [
       '의미 원자': ['Title', 'Icon(x)'],
       '배치 프리미티브': ['Group (헤더 직접 조립)'],
       공유: ['_cells(renderAction)'],
+    } },
+  { name: 'PaperModal', layer: '유기체', role: '모달 본문 자체가 A4 한 장인 문서 모달 — 장표(거래명세서·견적서·발주서…)를 보이는 대로 작성·확인·인쇄하는 셸. 본문이 A4 비율로 폭을 꽉 채움(회색 backdrop 중첩 없음, 공간 안 버림·최소 여백=모달 패딩). 내용(children)은 소비처가 FieldGrid 등으로 채움(도메인 0). 인쇄는 소비처 위임(actions에 인쇄 버튼+window.print(), 종이 영역 .erpPaper 훅을 print CSS로 타겟).',
+    props: [
+      { name: 'opened / onClose', kind: '기능', values: 'boolean, () => void' },
+      { name: 'title', kind: '콘텐츠', values: 'string' },
+      { name: 'actions', kind: '기능', values: 'Action[] (인쇄·닫기 등 — 인쇄 동작은 소비처 배선)' },
+      { name: 'orientation', kind: '스타일', values: "'portrait'(기본) | 'landscape' — A4 세로/가로 *버전*(고정, 토글 아님). 폭도 방향별(세로 lg/가로 xl)" },
+      { name: 'closeOnOverlayClick', kind: '스타일', values: 'boolean (기본 false)' },
+      { name: 'children', kind: '콘텐츠', values: 'ReactNode (A4 종이 안 문서 — 보통 FieldGrid)' },
+    ],
+    composition: {
+      토큰: ['A4 aspect-ratio 210/297·297/210(고정치수 명시예외, 본문 폭 100%로 높이 derive)', '여백=모달 본문 패딩', 'Modal size lg(세로)/xl(가로)'],
+      유기체: ['Modal'],
+      공유: ['controls.css(.erpPaper 인쇄 훅)'],
     } },
   { name: 'Stepper', layer: '유기체', role: '다단계 진행 표시(노드+커넥터+라벨). controlled active. 등록 마법사.',
     props: [

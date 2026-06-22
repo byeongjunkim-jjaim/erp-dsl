@@ -22,21 +22,26 @@ type PopoverProps = {
   position?: Position;          // 기본 bottom
   align?: Align;                // 축 위 정렬(기본 center). start=트리거 시작모서리에 맞춤(드롭다운형: bottom-start)
   width?: Width;                // 기본 md
+  // 재배치 정책(기본 flip). 'fixed'=flip 끄고 shift만 → content 크기가 변해도(예: 다단 컬럼 증식) 한 번 잡은 위치에서 안 흔들림.
+  reposition?: 'flip' | 'fixed';
 };
 
 // width 토큰 → px(잠정값, 화면 검증에서 조정). Container SIZE와 같은 구조. xl=다단 패널(Cascader Miller 컬럼)용.
 const WIDTH_PX: Record<Width, number> = { sm: 200, md: 280, lg: 360, xl: 600 };
 
 export function Popover({
-  children, content, opened, onChange, position = 'bottom', align = 'center', width = 'md',
+  children, content, opened, onChange, position = 'bottom', align = 'center', width = 'md', reposition = 'flip',
 }: PopoverProps) {
   // align=center면 측면 그대로(bottom), 아니면 '{측면}-{정렬}'(bottom-start 등) — 드롭다운형은 start로 시작모서리 정렬.
   const mPos = (align === 'center' ? position : `${position}-${align}`) as FloatingPosition;
+  // fixed=flip 끔(shift만 유지) → content 크기 변해도 위치 고정. 기본은 Mantine 기본(flip+shift).
+  const middlewares = reposition === 'fixed' ? { flip: false, shift: true } : undefined;
   return (
     <M
       opened={opened}
       onChange={onChange}
       position={mPos}
+      middlewares={middlewares}
       width={WIDTH_PX[width]}
       withArrow
       shadow="md"

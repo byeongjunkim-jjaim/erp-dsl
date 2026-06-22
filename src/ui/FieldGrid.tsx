@@ -28,6 +28,7 @@ export type FieldGridCell = {
   field?: string;       // 스키마 필드 셀 — fields[]에서 정의를 찾는다(name)
   image?: string;       // 이미지 셀(도면·로고 등) src
   alt?: string;         // image 셀 접근성
+  node?: ReactNode;     // 커스텀 셀(cascader/팔레트 등 비표준 컨트롤 통째). label/field/image와 배타. mode 무관 그대로 렌더
   colSpan?: number;     // 가로 점유 칸(기본 1)
   rowSpan?: number;     // 세로 점유 칸(기본 1) — 병합 표현
   align?: 'start' | 'center' | 'end'; // 셀 내용 가로 정렬(기본 start)
@@ -93,11 +94,13 @@ export function FieldGrid({ columns, rows, fields, mode = 'edit', values = {}, o
     const isLabel = c.label != null;
     const isImage = c.image != null;
     const isField = c.field != null;
+    const isNode = c.node != null;
     const cls = [
       'erp-fg-cell',
       isLabel ? 'is-label' : '',
       isImage ? 'is-image' : '',
-      !isLabel && !isImage && !isField ? 'is-empty' : '',
+      isNode ? 'is-node' : '',
+      !isLabel && !isImage && !isField && !isNode ? 'is-empty' : '',
       c.align === 'center' ? 'align-center' : c.align === 'end' ? 'align-end' : '',
     ].filter(Boolean).join(' ');
 
@@ -105,6 +108,7 @@ export function FieldGrid({ columns, rows, fields, mode = 'edit', values = {}, o
     if (isLabel) inner = <Text variant="body-strong">{c.label}</Text>;
     else if (isImage) inner = <Image src={c.image!} alt={c.alt ?? ''} size="full" fit="contain" />;
     else if (isField) inner = fieldCell(c.field!);
+    else if (isNode) inner = c.node;
 
     return <div key={key} className={cls} style={span}>{inner}</div>;
   };

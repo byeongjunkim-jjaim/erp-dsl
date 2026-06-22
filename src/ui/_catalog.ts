@@ -141,6 +141,7 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'align', kind: '스타일', values: "'start' | 'center'(기본) | 'end' (start=트리거 시작모서리 정렬, 드롭다운형)" },
       { name: 'reposition', kind: '스타일', values: "'flip'(기본) | 'fixed'(flip off·shift만 → 화면 안 유지) | 'anchored'(flip·shift 둘 다 off → 좌상단 앵커 완전 고정, 오른쪽·아래로만 성장·점프 0, 다단 컬럼용)" },
       { name: 'width', kind: '값', values: "'sm' | 'md' | 'lg' | 'xl' | 'auto' (auto=내용폭 — 컬럼 수 따라 동적, MillerColumns 다단용)" },
+      { name: 'block', kind: '스타일', values: 'boolean (기본 false=inline-flex. true=트리거 width:100%·min-width:0 → 소비처 폭에 맞춰 줄어듦, 트리거 안 말줄임용)' },
     ] },
   { name: 'Spinner', layer: '의미 원자', role: '영역/페이지 로딩(Button loading과 별개).',
     props: [{ name: 'size', kind: '스타일', values: SIZE3 }] },

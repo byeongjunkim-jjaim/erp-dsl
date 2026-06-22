@@ -7,9 +7,7 @@
 import { useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { Popover } from './Popover';
-import { Group } from './Group';
 import { Text } from './Text';
-import { Button } from './Button';
 import { Icon } from './Icon';
 import './controls.css';
 
@@ -143,14 +141,28 @@ export function MillerColumns({ options, value, onChange, placeholder = '선택'
       align="start"
       reposition="anchored"
       width="auto"
+      block                       // 트리거가 소비처 셀 폭에 맞춰 줄어듦 → 완료 브레드크럼 말줄임 작동
       content={content}
     >
       {complete ? (
-        // 완료 — 박스 안에 가두지 말고 Cascader처럼 브레드크럼으로 밖에 표시(+변경). 클릭=팝오버 재오픈.
-        <Group gap="xs" align="center" wrap={false}>
-          <Text variant="body">{labels.join(' › ')}</Text>
-          <Button variant="ghost" size="sm">변경</Button>
-        </Group>
+        // 완료 — Cascader처럼 브레드크럼으로 표시. 경로가 깊어도 폭 무관하게 안 깨지게:
+        //  브레드크럼은 말줄임(min-width:0+nowrap+ellipsis, 전체경로는 title hover). 트리거 전체가 클릭=재오픈이라
+        //  변경 어포던스는 풀 버튼(자체 높이로 행을 키움) 대신 chevron-down 아이콘 — placeholder('선택 ⌄')와 동일 글리프로
+        //  굵고 선명, 높이 중립(flex-shrink:0로 항상 노출). "이 트리거는 다시 열린다"는 의미도 placeholder와 통일.
+        //  (Text 원자는 truncate 미노출 → 격리구역 raw span + typo 토큰. HE folderTile·Tree 라벨 선례 동형.)
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--mantine-spacing-xs)', minWidth: 0, width: '100%' }}>
+          <span
+            title={labels.join(' › ')}
+            style={{
+              flex: 1, minWidth: 0,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              fontSize: 'var(--typo-body-size)', lineHeight: 'var(--typo-body-lh)', color: 'var(--text-primary)',
+            }}
+          >
+            {labels.join(' › ')}
+          </span>
+          <span title="변경" style={{ flexShrink: 0, display: 'inline-flex' }}><Icon name="chevron-down" size="sm" color="secondary" /></span>
+        </div>
       ) : (
         <div className="erpColTrigger">
           <Text variant="body" color="secondary">{placeholder}</Text>

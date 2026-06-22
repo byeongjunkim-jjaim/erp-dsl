@@ -98,6 +98,21 @@ const CASC_OPTS = [
   ] },
   { value: 'gyeonggi', label: '경기', children: [{ value: 'seongnam', label: '성남시', children: [{ value: 'pangyo', label: '판교' }] }] },
 ];
+// 깊은 경로(완료 브레드크럼 말줄임 검증용) — kk 철물 도메인 6단 체인. 좁은 셀에 넣어 잘림 처리를 본다.
+const MCOL_DEEP = [
+  { value: 'furn', label: '가구철물', children: [
+    { value: 'handle', label: '손잡이', children: [
+      { value: 'bar', label: '바형 손잡이', children: [
+        { value: 'sus', label: '스테인리스', children: [
+          { value: 'nickel', label: '니켈무광', children: [
+            { value: 'spec1', label: '349 * 2150' },
+            { value: 'spec2', label: '288 * 1800' },
+          ] },
+        ] },
+      ] },
+    ] },
+  ] },
+];
 const XFER_ITEMS = [
   { value: 'plywood', label: '합판' }, { value: 'mdf', label: 'MDF' }, { value: 'glulam', label: '집성목' },
   { value: 'veneer', label: '베니어' }, { value: 'osb', label: 'OSB' },
@@ -265,6 +280,7 @@ export function Demo({ name }: { name: string }) {
   const [tsel, setTsel] = useState<string | null>(null);
   const [casc, setCasc] = useState<string[]>([]);
   const [mcol, setMcol] = useState<string[]>([]);
+  const [mcolDeep, setMcolDeep] = useState<string[]>(['furn', 'handle', 'bar', 'sus', 'nickel', 'spec1']);  // 깊은 경로 완료 상태(말줄임 데모)
   const [stbSearch, setStbSearch] = useState('');
   const [stbStatus, setStbStatus] = useState<string | null>(null);
   const [month, setMonth] = useState('2026-06');
@@ -606,9 +622,19 @@ export function Demo({ name }: { name: string }) {
     ),
     MillerColumns: (
       // 트리거 1개 → 팝오버 다단 컬럼(좌→우, 부모 클릭=다음 컬럼). 좁은 화면(≤600px)은 단일 컬럼 드릴인 폴백. 페이지 발자국 최소.
-      <Stack gap="xxs">
-        <Text variant="caption" color="secondary">트리거 1개 → 팝오버에서 좌→우 컬럼으로 좁혀 경로 선택(Finder·Ant Cascader 패턴). 브라우저 폭 ≤600px면 단일 컬럼 드릴인.</Text>
-        <MillerColumns options={CASC_OPTS} value={mcol} onChange={setMcol} placeholder="지역 선택" />
+      <Stack gap="md">
+        <Stack gap="xxs">
+          <Text variant="caption" color="secondary">트리거 1개 → 팝오버에서 좌→우 컬럼으로 좁혀 경로 선택(Finder·Ant Cascader 패턴). 브라우저 폭 ≤600px면 단일 컬럼 드릴인.</Text>
+          <MillerColumns options={CASC_OPTS} value={mcol} onChange={setMcol} placeholder="지역 선택" />
+        </Stack>
+        {/* 완료 브레드크럼 말줄임 검증 — 깊은 경로(6단)를 좁은 셀(240px)에 넣었다. 브레드크럼은 말줄임(전체경로는 hover),
+            변경 버튼은 flex-shrink:0로 항상 노출. 트리거 클릭=재오픈. 폭을 더 줄여도 안 깨진다. */}
+        <Stack gap="xxs">
+          <Text variant="caption" color="secondary">좁은 셀(240px) + 깊은 경로 → 브레드크럼 말줄임(…전체경로 hover) · 변경 항상 노출. 폭 무관 안 깨짐.</Text>
+          <div style={{ width: 240, border: '1px solid var(--border-default)', borderRadius: 'var(--mantine-radius-sm)', padding: '6px 8px', overflow: 'hidden' }}>
+            <MillerColumns options={MCOL_DEEP} value={mcolDeep} onChange={setMcolDeep} placeholder="분류 선택" />
+          </div>
+        </Stack>
       </Stack>
     ),
     SearchToolbar: (

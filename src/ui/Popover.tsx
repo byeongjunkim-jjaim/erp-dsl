@@ -25,13 +25,16 @@ type PopoverProps = {
   // 재배치 정책(기본 flip). 'fixed'=flip 끄고 shift만(화면 안 유지) → content 크기 변해도 화면 밖으로 안 나감.
   //  'anchored'=flip·shift 둘 다 끔 → 좌상단 앵커가 *완전 고정*, 내용은 오른쪽·아래로만 성장(점프 0). 다단 컬럼 증식용.
   reposition?: 'flip' | 'fixed' | 'anchored';
+  // 트리거 폭. 기본 false=inline-flex(내용폭). true=block(width:100%·min-width:0) → 소비처 컨테이너 폭에 맞춰
+  //  줄어들어 트리거 안 말줄임이 작동(예: MillerColumns 완료 브레드크럼). 다른 소비처는 기본값이라 불변.
+  block?: boolean;
 };
 
 // width 토큰 → px(잠정값, 화면 검증에서 조정). Container SIZE와 같은 구조. auto는 내용폭(undefined → Mantine이 content 크기로).
 const WIDTH_PX: Record<Exclude<Width, 'auto'>, number> = { sm: 200, md: 280, lg: 360, xl: 600 };
 
 export function Popover({
-  children, content, opened, onChange, position = 'bottom', align = 'center', width = 'md', reposition = 'flip',
+  children, content, opened, onChange, position = 'bottom', align = 'center', width = 'md', reposition = 'flip', block = false,
 }: PopoverProps) {
   // align=center면 측면 그대로(bottom), 아니면 '{측면}-{정렬}'(bottom-start 등) — 드롭다운형은 start로 시작모서리 정렬.
   const mPos = (align === 'center' ? position : `${position}-${align}`) as FloatingPosition;
@@ -60,7 +63,9 @@ export function Popover({
         <span
           role="button"
           onClick={() => onChange(!opened)}
-          style={{ display: 'inline-flex', cursor: 'pointer' }}
+          style={block
+            ? { display: 'flex', width: '100%', minWidth: 0, cursor: 'pointer' }   // 소비처 폭에 맞춰 줄어듦(트리거 말줄임용)
+            : { display: 'inline-flex', cursor: 'pointer' }}
         >
           {children}
         </span>

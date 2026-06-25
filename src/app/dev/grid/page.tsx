@@ -1,7 +1,7 @@
 'use client';
-// 위젯 그리드 시범 — 페이지를 PageGrid 닫힌 격자로 두고 위젯(요약 타일·표 위젯)이 정수 칸 점유.
+// 위젯 그리드 시범 — 페이지를 Bento 닫힌 격자로 두고 위젯(요약 타일·표 위젯)이 정수 칸 점유.
 // "작게 시작" 한 화면 검증용. 크기 변주(요약=좁게, 표=넓게)가 위계를 만든다(Bento).
-import { PageGrid, SummaryCard, Card, DataTable, Title, Text, Stack } from '@/ui';
+import { Bento, SummaryCard, Card, DataTable, Title, Text, Stack } from '@/ui';
 
 export default function GridDemo() {
   return (
@@ -10,11 +10,11 @@ export default function GridDemo() {
         <Title variant="display">위젯 그리드 시범</Title>
         <Text variant="body" color="secondary">페이지 = 닫힌 격자(columns 6). 위젯이 colSpan으로 칸을 점유 — 요약 타일(2)·표 위젯(6).</Text>
       </Stack>
-      <PageGrid columns={6} gap="lg">
-        <PageGrid.Tile colSpan={2}><SummaryCard label="승인 대기" icon="clock" tone="warning" count={12} amount={3400000} /></PageGrid.Tile>
-        <PageGrid.Tile colSpan={2}><SummaryCard label="확정" icon="check-circle" tone="success" count={48} amount={18200000} /></PageGrid.Tile>
-        <PageGrid.Tile colSpan={2}><SummaryCard label="반려" icon="x-circle" tone="danger" count={3} /></PageGrid.Tile>
-        <PageGrid.Tile colSpan={6} rowSpan={3}>
+      <Bento columns={6} gap="lg">
+        <Bento.Tile colSpan={2}><SummaryCard label="승인 대기" icon="clock" tone="warning" count={12} amount={3400000} /></Bento.Tile>
+        <Bento.Tile colSpan={2}><SummaryCard label="확정" icon="check-circle" tone="success" count={48} amount={18200000} /></Bento.Tile>
+        <Bento.Tile colSpan={2}><SummaryCard label="반려" icon="x-circle" tone="danger" count={3} /></Bento.Tile>
+        <Bento.Tile colSpan={6} rowSpan={3}>
           <Card variant="elevated" padding="none" fill>
            <div style={{ height: '100%', overflowY: 'auto' }}>
             <DataTable
@@ -32,8 +32,8 @@ export default function GridDemo() {
             />
            </div>
           </Card>
-        </PageGrid.Tile>
-      </PageGrid>
+        </Bento.Tile>
+      </Bento>
     </Stack>
   );
 }

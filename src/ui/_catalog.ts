@@ -298,6 +298,13 @@ export const CATALOG: CatalogEntry[] = [
       { name: 'equalRows', kind: '스타일', values: 'boolean (행 높이 균등)' },
       { name: 'Grid.Col span', kind: '값', values: '1~12' },
     ] },
+  { name: 'Bento', layer: '배치 프리미티브', role: '페이지 본문 격자 — 위젯이 정수 칸 점유(iOS 홈/Bento). 셀 고정(가변 높이 불허)·크기 변주가 위계.',
+    props: [
+      { name: 'columns', kind: '값', values: '2 | 3 | 4 | 6 | 12 (닫힌 열 수)' },
+      { name: 'gap', kind: '값', values: "'sm' | 'md' | 'lg'" },
+      { name: 'Bento.Tile colSpan', kind: '값', values: '1..columns (위젯 가로 칸)' },
+      { name: 'Bento.Tile rowSpan', kind: '값', values: '1 | 2 | 3 (고정 타일 세로 칸)' },
+    ] },
 
   // ── 분자 (11) — 구성요소 표시 ────────────────────────────────────────
   { name: 'FormField', layer: '분자', role: '입력 원자에서 벗긴 장식·에러의 수령자(방식 A).',
@@ -871,16 +878,6 @@ export const CATALOG: CatalogEntry[] = [
       '의미 원자': ['SegmentedControl'],
       분자: ['PeriodNavigator', 'Stat', 'SummaryCard', 'TotalRow'],
       유기체: ['PageHeader', 'DataTable', 'Drawer'],
-    } },
-  { name: 'PageGrid', layer: '템플릿', role: '페이지 공간을 닫힌 격자로 — 위젯이 정수 칸 점유(iOS 홈/Bento). 크기 변주가 위계.',
-    props: [
-      { name: 'columns', kind: '값', values: '2 | 3 | 4 | 6 | 12 (닫힌 열 수)' },
-      { name: 'gap', kind: '값', values: "'sm' | 'md' | 'lg'" },
-      { name: 'PageGrid.Tile colSpan', kind: '값', values: '1..columns (위젯 가로 칸)' },
-      { name: 'PageGrid.Tile rowSpan', kind: '값', values: '1 | 2 | 3 (고정 타일 세로 칸)' },
-    ],
-    composition: {
-      토큰: ['닫힌 columns', '고정 셀 140px(가변 높이 불허)', 'gap 토큰', 'raw CSS grid(명시 예외)'],
     } },
 ];
 

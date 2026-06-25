@@ -46,6 +46,7 @@ export { Container } from './Container';
 export { Stack } from './Stack';
 export { Group } from './Group';
 export { Grid } from './Grid';
+export { Bento } from './Bento';   // 페이지 본문 격자(전 PageGrid) — 위젯 타일 배치
 
 // 분자 6
 export { FormField } from './FormField';
@@ -96,7 +97,6 @@ export { ListPage } from './ListPage';
 export { DetailPage } from './DetailPage';
 export { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
 export { LedgerPage, type LedgerMetric, type LedgerBreakdown, type LedgerDetail } from './LedgerPage';
-export { PageGrid } from './PageGrid';
 export { buildHierarchyFromRows, type HierarchyImport } from './hierarchyImport';
 export type { DataTableColumn, DataTableRow, DataTableSort } from './DataTable';
 

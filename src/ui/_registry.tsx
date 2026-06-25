@@ -69,7 +69,7 @@ import { PeriodNavigator } from './PeriodNavigator';
 import { LedgerPage } from './LedgerPage';
 import { SectionHeader } from './SectionHeader';
 import { Breadcrumb } from './Breadcrumb';
-import { PageGrid } from './PageGrid';
+import { Bento } from './Bento';
 import { Accordion } from './Accordion';
 import { Drawer } from './Drawer';
 import { PaperModal } from './PaperModal';
@@ -803,16 +803,16 @@ export function Demo({ name }: { name: string }) {
         />
       );
     })(),
-    PageGrid: (() => {
+    Bento: (() => {
       // 고정 셀을 보이게 가득 채우는 데모 타일.
       const cell = (t: string) => <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--mantine-color-primary-1)', color: 'var(--text-primary)', borderRadius: 'var(--mantine-radius-xs)', fontSize: 13 }}>{t}</div>;
       return (
-        <PageGrid columns={4} gap="md">
-          <PageGrid.Tile colSpan={1}>{cell('1×1')}</PageGrid.Tile>
-          <PageGrid.Tile colSpan={2}>{cell('colSpan 2')}</PageGrid.Tile>
-          <PageGrid.Tile colSpan={1} rowSpan={2}>{cell('1×2')}</PageGrid.Tile>
-          <PageGrid.Tile colSpan={3}>{cell('colSpan 3')}</PageGrid.Tile>
-        </PageGrid>
+        <Bento columns={4} gap="md">
+          <Bento.Tile colSpan={1}>{cell('1×1')}</Bento.Tile>
+          <Bento.Tile colSpan={2}>{cell('colSpan 2')}</Bento.Tile>
+          <Bento.Tile colSpan={1} rowSpan={2}>{cell('1×2')}</Bento.Tile>
+          <Bento.Tile colSpan={3}>{cell('colSpan 3')}</Bento.Tile>
+        </Bento>
       );
     })(),
   };

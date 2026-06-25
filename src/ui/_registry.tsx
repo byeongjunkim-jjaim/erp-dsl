@@ -54,6 +54,7 @@ import { TotalRow } from './TotalRow';
 import { Collapsible } from './Collapsible';
 import { Modal } from './Modal';
 import { DataTable } from './DataTable';
+import { LineItemList, type LineItem } from './LineItemList';
 import { EmptyState } from './EmptyState';
 import { PageHeader } from './PageHeader';
 import { DescriptionList } from './DescriptionList';
@@ -65,6 +66,7 @@ import { ObjectCard } from './ObjectCard';
 import { Tree, type TreeNodeData } from './Tree';
 import { FieldGrid } from './FieldGrid';
 import { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
+import { HierarchyCollector, type CollectorCartItem } from './HierarchyCollector';
 import { PeriodNavigator } from './PeriodNavigator';
 import { LedgerPage } from './LedgerPage';
 import { SectionHeader } from './SectionHeader';
@@ -90,6 +92,45 @@ const opts = [
   { label: '합판', value: 'plywood' },
   { label: 'MDF', value: 'mdf' },
   { label: '집성목', value: 'glulam' },
+];
+
+// HierarchyCollector 데모 데이터(kk 철물) — 6 카탈로그(칩 넘침 디버그) · 2~3층 트리(depth 디버그) · 다수 제품(스크롤 디버그).
+const COLLECTOR_CATALOGS = [
+  { id: 'sub', label: '부자재', tree: [
+    { id: 'hinge', label: '경첩', children: [{ id: 'spring', label: '스프링' }, { id: 'slide', label: '슬라이드' }, { id: 'damper', label: '댐퍼' }] },
+    { id: 'handle', label: '손잡이', children: [{ id: 'lever', label: '레버' }, { id: 'bar', label: '바' }, { id: 'knob', label: '노브' }] },
+    { id: 'rail', label: '레일', children: [{ id: 'ball', label: '볼레일' }, { id: 'under', label: '언더레일' }] },
+  ] },
+  { id: 'raw', label: '원자재', tree: [{ id: 'ply', label: '합판' }, { id: 'mdf', label: 'MDF' }, { id: 'glulam', label: '집성목' }] },
+  { id: 'tool', label: '공구', tree: [{ id: 'power', label: '전동공구' }, { id: 'hand', label: '수공구' }] },
+  { id: 'fin', label: '완제품', tree: [{ id: 'door', label: '도어' }, { id: 'drawer', label: '서랍장' }] },
+  { id: 'cons', label: '소모품', tree: [{ id: 'sand', label: '사포' }, { id: 'bond', label: '본드' }] },
+  { id: 'pack', label: '포장재', tree: [{ id: 'box', label: '박스' }, { id: 'cushion', label: '완충재' }] },
+];
+const COLLECTOR_PRODUCTS = [
+  // 부자재 › 경첩 (p1~p4 = depth-2 path, p5~p9 = 경첩 직속) — 9개로 목록 스크롤 디버그
+  { id: 'p1', catalog: 'sub', path: ['hinge', 'spring'], group: '경첩', label: '스프링경첩 35mm', sublabel: '경첩 › 스프링 · 105°', amount: 800 },
+  { id: 'p2', catalog: 'sub', path: ['hinge', 'spring'], group: '경첩', label: '스프링경첩 40mm', sublabel: '경첩 › 스프링 · 90°', amount: 900 },
+  { id: 'p3', catalog: 'sub', path: ['hinge', 'slide'], group: '경첩', label: '슬라이드경첩 35mm', sublabel: '경첩 › 슬라이드 · 풀오버레이', amount: 1500 },
+  { id: 'p4', catalog: 'sub', path: ['hinge', 'damper'], group: '경첩', label: '댐퍼경첩', sublabel: '경첩 › 댐퍼 · 소프트클로즈', amount: 3200 },
+  { id: 'p5', catalog: 'sub', path: ['hinge'], group: '경첩', label: '헤비듀티경첩 50mm', sublabel: '경첩 · 내하중 STS', amount: 2400 },
+  { id: 'p6', catalog: 'sub', path: ['hinge'], group: '경첩', label: '평경첩 소', sublabel: '경첩 · 64mm 황동', amount: 600 },
+  { id: 'p7', catalog: 'sub', path: ['hinge'], group: '경첩', label: '평경첩 대', sublabel: '경첩 · 89mm 황동', amount: 900 },
+  { id: 'p8', catalog: 'sub', path: ['hinge'], group: '경첩', label: '유리경첩', sublabel: '경첩 · 무타공', amount: 2800 },
+  { id: 'p9', catalog: 'sub', path: ['hinge'], group: '경첩', label: '피아노경첩', sublabel: '경첩 · 1.8m', amount: 5400 },
+  // 부자재 › 손잡이 / 레일 (다중 그룹 — 카트 그룹 헤더 디버그)
+  { id: 'p10', catalog: 'sub', path: ['handle', 'lever'], group: '손잡이', label: '레버 손잡이', sublabel: '손잡이 › 레버 · 알루미늄', amount: 4500 },
+  { id: 'p11', catalog: 'sub', path: ['handle', 'bar'], group: '손잡이', label: '바 손잡이 320', sublabel: '손잡이 › 바 · 320mm STS', amount: 3800 },
+  { id: 'p12', catalog: 'sub', path: ['handle', 'knob'], group: '손잡이', label: '노브 손잡이', sublabel: '손잡이 › 노브', amount: 1200 },
+  { id: 'p13', catalog: 'sub', path: ['rail', 'ball'], group: '레일', label: '볼레일 450', sublabel: '레일 › 볼 · 풀확장', amount: 6200 },
+  { id: 'p14', catalog: 'sub', path: ['rail', 'under'], group: '레일', label: '언더레일 400', sublabel: '레일 › 언더 · 소프트', amount: 7400 },
+  // 다른 카탈로그(카트 카탈로그 토글 디버그)
+  { id: 'p15', catalog: 'raw', path: ['ply'], group: '합판', label: '합판 18T', sublabel: '합판 · 1220×2440', amount: 28000 },
+  { id: 'p16', catalog: 'raw', path: ['ply'], group: '합판', label: '합판 15T', sublabel: '합판 · 1220×2440', amount: 24000 },
+  { id: 'p17', catalog: 'raw', path: ['mdf'], group: 'MDF', label: 'MDF 15T', sublabel: 'MDF · 1220×2440', amount: 13000 },
+  { id: 'p18', catalog: 'tool', path: ['power'], group: '전동공구', label: '충전 드릴 18V', sublabel: '전동공구 · 브러시리스', amount: 89000 },
+  { id: 'p19', catalog: 'tool', path: ['hand'], group: '수공구', label: '고무망치', sublabel: '수공구', amount: 7000 },
+  { id: 'p20', catalog: 'cons', path: ['sand'], group: '사포', label: '사포 #220', sublabel: '소모품 · 10매', amount: 3000 },
 ];
 
 const CASC_OPTS = [
@@ -255,6 +296,12 @@ export function Demo({ name }: { name: string }) {
   const [num, setNum] = useState<number | string>('');
   const [cur, setCur] = useState<number | string>(3200);
   const [qty, setQty] = useState(3);
+  const [colCart, setColCart] = useState<CollectorCartItem[]>([]);
+  const [cart, setCart] = useState<LineItem[]>([
+    { id: 'a', label: '슬라이드경첩 35mm', sublabel: '경첩 › 슬라이드', group: '경첩', unitAmount: 1500, quantity: 8 },
+    { id: 'b', label: '댐퍼경첩', sublabel: '경첩 › 댐퍼', group: '경첩', unitAmount: 3200, quantity: 3 },
+    { id: 'c', label: '레버 손잡이', sublabel: '손잡이 › 레버', group: '손잡이', unitAmount: 4500, quantity: 5 },
+  ]);
   const [area, setArea] = useState('');
   const [sel, setSel] = useState<string | null>(null);
   const [date, setDate] = useState<string | null>(null);
@@ -508,6 +555,16 @@ export function Demo({ name }: { name: string }) {
         }
       />
     ),
+    LineItemList: (
+      <div style={{ maxWidth: 360 }}>
+        <LineItemList
+          items={cart}
+          onQuantityChange={(id, q) => setCart((c) => c.map((it) => (it.id === id ? { ...it, quantity: q } : it)))}
+          onRemove={(id) => setCart((c) => c.filter((it) => it.id !== id))}
+          showAmount
+        />
+      </div>
+    ),
     EmptyState: <EmptyState icon="box" title="등록된 발주가 없습니다" description="신규 발주를 만들어 시작하세요." action={{ label: '신규 발주', variant: 'primary', onClick: () => {} }} />,
     PageHeader: <PageHeader title="고객 관리" description="유입경로 · 2026-05-02 등록" status={{ label: '활성', tone: 'success' }} actions={[{ label: '신규 고객', variant: 'primary', icon: 'user', onClick: () => {} }]} />,
     DescriptionList: <DescriptionList columns={2} items={[{ label: '거래처명', value: '가구상사', type: 'text' }, { label: '상태', value: '확정', type: 'badge', badgeColors: { 확정: 'success' } }, { label: '담당자', value: '김병준', type: 'text' }, { label: '계약일', value: '2026-05-02', type: 'date' }]} />,
@@ -666,6 +723,19 @@ export function Demo({ name }: { name: string }) {
     Menu: <Menu trigger={<IconButton icon="dots-vertical" label="메뉴" variant="secondary" />} items={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '복제', icon: 'copy', onClick: () => {} }, { label: '삭제', icon: 'trash', variant: 'danger', onClick: () => {} }]} />,
     ObjectCard: <div style={{ width: 260, height: 300 }}><ObjectCard title="스테인리스 자유경첩 4″" subtitle="HG-SS-4F" thumbnail={IMG_SRC} status={{ label: '판매중', tone: 'success' }} headline={{ label: '단가', value: won(3200, '개'), type: 'text', note: { label: '변경요청중', tone: 'warning' } }} attributes={[{ label: '규격', value: '4″', type: 'text' }, { label: '재질', value: 'STS304', type: 'text' }]} actions={[{ label: '수정', icon: 'edit', onClick: () => {} }, { label: '삭제', variant: 'danger', icon: 'trash', onClick: () => {} }]} /></div>,
     Tree: <div style={{ width: 300 }}><Tree nodes={SAMPLE_TREE} selectedId={treeSel} expandedIds={treeExp} onSelect={setTreeSel} onToggle={toggleExp} title="디렉토리" editable onAddRoot={() => {}} onRename={() => {}} onDelete={() => {}} /></div>,
+    HierarchyCollector: (
+      <HierarchyCollector
+        title="발주 작성"
+        description="분류를 횡단하며 담고, 우측에서 분류별로 편집 · 발주는 하단"
+        actions={[{ label: '임시저장', variant: 'ghost', onClick: () => {} }, { label: '발주', variant: 'primary', onClick: () => {} }]}
+        catalogs={COLLECTOR_CATALOGS}
+        products={COLLECTOR_PRODUCTS}
+        cart={colCart}
+        onCartChange={setColCart}
+        showAmount
+        onProductClick={() => {}}
+      />
+    ),
     HierarchyExplorer: (() => {
       // 제품 클릭 → 상세(Modal)는 *소비처* 책임 — 부품(HE/ObjectCard)은 onClick만 노출하고 상세에 뭐가 들었는지 모른다(헌법 1).
       //  데모에선 onClick에 상세 Modal 열기를 배선해 목록 항목이 interactive함을 보인다(액션 케밥은 별개).

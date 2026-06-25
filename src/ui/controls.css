@@ -50,10 +50,18 @@
 }
 .erpNumStepperBtn:hover { background: var(--border-default); }
 .erpNumStepperBtn:disabled { color: var(--text-disabled); cursor: default; background: transparent; }
-.erpNumStepper-sm .erpNumStepperBtn { width: 26px; height: 26px; }
+.erpNumStepper-sm .erpNumStepperBtn { width: 24px; height: 24px; }
 .erpNumStepperInput { width: 44px; }
 .erpNumStepperInput input { text-align: center; font-weight: 600; padding: 0 2px; }
-.erpNumStepper-sm .erpNumStepperInput { width: 36px; }
+.erpNumStepper-sm .erpNumStepperInput { width: 30px; }
+
+/* LineItemList 컴팩트 빼기 ✕ (IconButton sm=36px는 좁은 카트에서 과대 — 품목명 폭 확보). */
+.erpLineItemDel {
+  border: 0; background: transparent; color: var(--text-secondary); cursor: pointer; flex: none;
+  padding: 0; margin: 0; line-height: 0;   /* 아이콘 크기만(16px) — 박스 없음 */
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.erpLineItemDel:hover { color: var(--text-danger); }   /* 색만 — hover 박스 없음 */
 
 /* 작은 컨트롤 터치 타깃 확장: 시각 크기는 그대로, 클릭/터치 영역만 넓힌다.
    기준 — WCAG 2.5.5(AAA)·Apple 44pt·Material 48dp → 44px 채택(태블릿 현장 사용 대비).

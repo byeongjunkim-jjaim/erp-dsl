@@ -1,0 +1,169 @@
+/* ─────────────────────────────────────────────────────────────
+   HierarchyCollector (템플릿) — 계층 카탈로그에서 수량과 함께 골라 담는 작성 면. HierarchyExplorer의 짝.
+   윤곽→음영 2축(02 elevation): 위젯 *전체만* raised(그림자 1개), 내부 nav/목록=flush, 카트=sunken well.
+   탭(책갈피)은 좌측 브라우즈 컬럼에만 스코프(카트 위로 안 걸침 — Material 규칙·ARIA). 검색은 우측 앵커(cascader 못 밀게).
+   격리 구역 보조 CSS — 프리미티브로 못 만드는 구조(appshell.css·calendar.css 동류 명시 예외).
+   ───────────────────────────────────────────────────────────── */
+
+/* 위젯 전체 = 페이지 위 유일한 떠 있는 타일(raised + 그림자) */
+.erpCollectorWidget {
+  background: var(--surface-raised);
+  border-radius: var(--mantine-radius-md);
+  box-shadow: var(--elevation-raised);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;   /* 반응형 기준 = 뷰포트가 아니라 *위젯 자기 폭*(소비처 레이아웃·넷바 무관). */
+}
+
+/* 본문 = [좌 브라우즈(flush) | 우 카트(sunken well)] — 뷰포트 높이 채움(행 수 동적·점프 없음) */
+.erpCollectorBody { display: flex; height: calc(100vh - 220px); min-height: 440px; }
+.erpCollectorBrowse { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.erpCollectorWell {
+  flex: 0 0 320px; width: 320px;
+  background: var(--surface-sunken);
+  border-left: var(--border-width) solid var(--border-default);
+  display: flex; flex-direction: column;
+}
+
+/* 좌측: 책갈피 밴드 + nav(cascader + 검색) + 목록. 탭 밴드 아래 divider 없음(cascader로 자연히 흐름 — 윤곽 최소). */
+.erpCollectorTabs { padding: 0 var(--mantine-spacing-sm); }
+.erpCollectorNav {
+  display: flex; align-items: center; gap: var(--mantine-spacing-sm);
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  border-bottom: var(--border-width) solid var(--border-default);
+  flex-wrap: wrap;
+}
+.erpCollectorCasc { display: inline-flex; align-items: center; gap: var(--mantine-spacing-xs); flex-wrap: wrap; }
+.erpCollectorSep { color: var(--text-secondary); opacity: .6; }
+.erpCollectorSearch { flex: 1 1 300px; min-width: 240px; }   /* 우측 앵커 — cascader 깊어져도 못 밀림 */
+
+.erpCollectorList { flex: 1; overflow-y: auto; }
+.erpCollectorRow {
+  display: flex; align-items: center; gap: var(--mantine-spacing-md);
+  padding: 11px var(--mantine-spacing-md);
+  border-bottom: var(--border-width) solid var(--border-default);
+  cursor: pointer;
+}
+.erpCollectorRow:last-child { border-bottom: 0; }
+.erpCollectorRow:hover { background: var(--bg-secondary); }
+/* 담긴 행: 큐 2개만(조사) — ① 은은한 틴트(스캔용) + ② 썸네일 코너 체크-서클(명시·접근성). 띠·볼드·숫자색은 과잉이라 드롭. */
+.erpCollectorRow[data-in="true"] { background: var(--mantine-color-success-0); }
+.erpCollectorThumb {
+  position: relative;
+  width: 44px; height: 44px; flex: none;
+  border-radius: var(--mantine-radius-sm);
+  background: var(--bg-secondary);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font-size: var(--typo-caption-size);
+}
+/* 담김 형태 큐 — 색-단독(1.4.1) 회피 + "확신 있는" 명시 신호. 스테퍼(0≠)가 0번째 신호로 항상 깔림. */
+.erpCollectorCheck {
+  position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px; border-radius: var(--mantine-radius-full);
+  background: var(--mantine-color-success-6); color: var(--mantine-color-white);
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 1.5px var(--surface-default);   /* 썸네일과 분리 링 */
+}
+.erpCollectorInfo { flex: 1; min-width: 0; }
+.erpClampLine { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.erpCollectorRowName { font-size: var(--typo-body-size); font-weight: var(--typo-body-weight); color: var(--text-primary); }
+.erpCollectorRowSub { font-size: var(--typo-caption-size); color: var(--text-secondary); }
+.erpCollectorPrice { width: 88px; text-align: right; flex: none; }
+/* 담긴 행 보강 — 이름·스테퍼 숫자 볼드(weight 큐만, 색은 안 바꿈: 절제 유지). 틴트+체크와 합쳐 명료하되 안 요란. */
+.erpCollectorRow[data-in="true"] .erpCollectorRowName { font-weight: var(--typo-body-strong-weight); }
+.erpCollectorRow[data-in="true"] .erpNumStepperInput input { font-weight: 800; }
+
+/* 우측 카트 well: 헤더 → 칩(쌓임) → LineItemList */
+.erpCollectorWellHd { padding: 11px var(--mantine-spacing-md); display: flex; align-items: center; justify-content: space-between; gap: var(--mantine-spacing-sm); border-bottom: var(--border-width) solid var(--border-default); }
+.erpCollectorWellHd .ttl { font-size: var(--typo-subheading-size); font-weight: var(--typo-subheading-weight); color: var(--text-primary); }
+/* 카트 카탈로그 선택 — 우측 ▾ 컨텍스트 셀렉터(320px·6+칩 정답, 조사). 메뉴에 per-카탈로그 카운트(한눈에 복구). */
+.erpCollectorCatSel { position: relative; border: 0; background: var(--bg-secondary); padding: 5px 8px 5px 12px; border-radius: var(--mantine-radius-sm); font: inherit; font-size: var(--typo-body-size); font-weight: 600; color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.erpCollectorCatSel:hover { background: var(--mantine-color-neutral-2); }
+.erpCollectorCatSel .dot { width: 6px; height: 6px; border-radius: var(--mantine-radius-full); background: var(--mantine-color-primary-6); }  /* 다른 카탈로그에 담김 — 닫힌 상태 요약 */
+.erpCollectorCatMenu { display: flex; flex-direction: column; gap: 2px; min-width: 160px; }
+.erpCollectorCatItem { border: 0; background: transparent; display: flex; align-items: center; justify-content: space-between; gap: var(--mantine-spacing-md); padding: 8px 10px; border-radius: var(--mantine-radius-xs); font: inherit; font-size: var(--typo-body-size); color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.erpCollectorCatItem:hover { background: var(--bg-secondary); }
+.erpCollectorCatItem[data-on="true"] { background: var(--mantine-color-primary-0); color: var(--mantine-color-primary-6); font-weight: 600; }
+.erpCollectorCatItem .cnt { font-size: var(--typo-caption-size); color: var(--text-secondary); }      /* per-카탈로그 카운트 */
+.erpCollectorCatItem[data-empty="true"] { color: var(--text-disabled); }                              /* 빈 카탈로그=회색(제거 안 함 — 정보) */
+.erpCollectorWellBody { flex: 1; overflow-y: auto; padding: var(--mantine-spacing-md); }
+/* 카트 합계 — well 하단 *고정*(품목 담아도 위치 불변, 스크롤 밖). 전역 합계(모든 카탈로그). */
+.erpCollectorWellTotal {
+  flex: none; display: flex; justify-content: space-between; align-items: baseline;
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  border-top: var(--border-width) solid var(--border-default);
+}
+.erpCollectorWellTotal .lbl { font-size: var(--typo-body-size); font-weight: var(--typo-body-strong-weight, 600); color: var(--text-primary); }
+.erpCollectorWellTotal .amt { font-size: var(--typo-caption-size); color: var(--text-secondary); margin-right: var(--mantine-spacing-xs); }
+
+/* 풋터 바(full-width) = 액션 */
+.erpCollectorFoot {
+  display: flex; justify-content: flex-end; gap: var(--mantine-spacing-xs);
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  border-top: var(--border-width) solid var(--border-default);
+}
+/* 풋터 보조 버튼 — fill(무테)로 "버튼처럼" 보이되 윤곽 없음(ghost는 풋터색과 같아 안 보였던 문제 해결).
+   primary(발주)는 공유 Button(filled navy)으로 별도. */
+.erpCollectorFootBtn {
+  border: 0; background: var(--bg-secondary); color: var(--text-primary); cursor: pointer;
+  padding: 8px 16px; border-radius: var(--mantine-radius-sm); font: inherit;
+  font-size: var(--typo-body-size); font-weight: 600;
+}
+.erpCollectorFootBtn:hover { background: var(--mantine-color-neutral-2); }
+
+/* 카탈로그 책갈피 — 템플릿 내부 탭(담은내역 헤더와 동급 위계 subheading). Select/TabBar 아톰은 width·크기를
+   못 닫아(전폭·고정 크기) 이 템플릿 종속 컨트롤로 둔다(목업 충실 + 윤곽 없음). */
+.erpCollectorTab {
+  border: 0; background: transparent; padding: 10px 12px 11px; font: inherit;
+  font-size: var(--typo-subheading-size); font-weight: var(--typo-subheading-weight);
+  color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+}
+.erpCollectorTab:hover { color: var(--text-primary); }
+.erpCollectorTab[data-on="true"] { color: var(--mantine-color-primary-6); border-bottom-color: var(--mantine-color-primary-6); }
+
+/* 영속 cascader — 컴팩트 fill 알약(무테). 드롭다운은 Popover(overlay·그림자). */
+.erpCollectorCascTrig {
+  border: 0; background: var(--bg-secondary); padding: 6px 10px; border-radius: var(--mantine-radius-sm);
+  font: inherit; font-size: var(--typo-body-size); font-weight: 600; color: var(--text-primary);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.erpCollectorCascTrig:hover { background: var(--mantine-color-neutral-2); }
+.erpCollectorCascTrig[data-ph="true"] { color: var(--text-secondary); font-weight: 500; }
+.erpCollectorCascMenu { display: flex; flex-direction: column; gap: 2px; min-width: 140px; }
+.erpCollectorCascItem {
+  border: 0; background: transparent; text-align: left; padding: 8px 10px; border-radius: var(--mantine-radius-xs);
+  font: inherit; font-size: var(--typo-body-size); color: var(--text-secondary); cursor: pointer; white-space: nowrap;
+}
+.erpCollectorCascItem:hover { background: var(--bg-secondary); }
+.erpCollectorCascItem[data-on="true"] { background: var(--mantine-color-primary-0); color: var(--mantine-color-primary-6); font-weight: 600; }
+
+/* 검색 — fill(무테) */
+.erpCollectorSearchInput {
+  width: 100%; border: 0; background: var(--bg-secondary); border-radius: var(--mantine-radius-sm);
+  padding: 8px 12px; font: inherit; font-size: var(--typo-body-size); color: var(--text-primary); outline: none;
+}
+.erpCollectorSearchInput::placeholder { color: var(--text-secondary); }
+
+/* 카트 카탈로그 칩 — 템플릿 내부(체크 없음, 카운트 배지). 선택=흰 알약(well 위에서 톤으로 분리). */
+.erpCollectorChip {
+  border: 0; background: transparent; padding: 5px 10px; border-radius: var(--mantine-radius-full);
+  font: inherit; font-size: var(--typo-body-size); font-weight: 600; color: var(--text-secondary);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+}
+.erpCollectorChip:hover { background: var(--bg-secondary); }
+.erpCollectorChip[data-on="true"] { background: var(--surface-default); color: var(--mantine-color-primary-6); }
+.erpCollectorChipCount {
+  font-size: .6875rem; font-weight: 700; color: var(--mantine-color-white); background: var(--mantine-color-primary-6);
+  border-radius: var(--mantine-radius-full); min-width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px;
+}
+
+/* 반응형(부품이 *소유*하는 계약 — 소비처 무관): 위젯 폭이 좁아지면 카트가 아래로 스택(찌그러짐·오버플로 방지).
+   @container라 *뷰포트*가 아니라 *위젯 자기 폭*에 반응 → 넷바·드로어 등 소비처 레이아웃으로 폭이 줄어도 동일 강등.
+   (목업은 풀페이지라 @media로 됐지만, 실제 소비처는 컴포넌트 폭 < 뷰포트 폭이라 컨테이너 쿼리가 정답.) */
+@container (max-width: 680px) {
+  .erpCollectorBody { flex-direction: column; height: auto; min-height: 0; }
+  .erpCollectorWell { width: auto; flex: 0 0 auto; border-left: 0; border-top: var(--border-width) solid var(--border-default); max-height: 50vh; }
+  .erpCollectorList { max-height: 48vh; }
+  .erpCollectorSearch { min-width: 0; }
+}

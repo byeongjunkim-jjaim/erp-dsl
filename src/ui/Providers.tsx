@@ -12,6 +12,7 @@ import '@mantine/notifications/styles.css';
 import './appshell.css';
 import './calendar.css';
 import './controls.css';
+import './collector.css';
 import './squircle.css';
 import './fontscale.css';
 import { MantineProvider } from '@mantine/core';

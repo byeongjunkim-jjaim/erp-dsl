@@ -3,7 +3,7 @@
 //  · 로고 형태 전환기: 텍스트가 아닌 실제 이미지 로고(가로/세로/정사각/원형)가 슬롯에 들어갔을 때의 거동 검증용.
 //    슬롯 규칙(appshell.css): 로고 박스에 종횡비대로 최대 적합 — 형태별로 폭/높이가 박스를 채우고 절대 찌그러지지 않음.
 import { useState } from 'react';
-import { AppShell, PageHeader, Card, Title, Text, Stack, SegmentedControl } from '@/ui';
+import { AppShell, PageHeader, Card, Title, Text, Stack, SegmentedControl, Anchor } from '@/ui';
 
 // 실제 로고를 흉내낸 data-URI SVG — intrinsic 크기를 크게 잡아 "최대로 박았을 때" 슬롯이 어떻게 캡하는지 본다.
 const svg = (w: number, h: number, inner: string) =>
@@ -74,7 +74,10 @@ export default function ShellDemo() {
           </Stack>
         </Card>
         <Card variant="outlined" padding="lg">
-          <Text variant="body">사이드바(로고·메뉴·프로필) + 콘텐츠. 모바일 폭에선 햄버거로 접힘. AppShell은 ‘발주’가 뭔지 모른다.</Text>
+          <Stack gap="xs">
+            <Text variant="body">사이드바(로고·메뉴·프로필) + 콘텐츠. 모바일 폭에선 하단 탭바로 재구성. AppShell은 ‘발주’가 뭔지 모른다.</Text>
+            <Text variant="caption" color="secondary">모바일 거동은 브라우저를 줄이거나 → <Anchor href="/shell/mobile">/shell/mobile</Anchor> 폰 프리뷰에서 본다.</Text>
+          </Stack>
         </Card>
       </Stack>
     </AppShell>

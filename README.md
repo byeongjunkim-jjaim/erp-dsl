@@ -109,7 +109,7 @@ type FieldSpec = {
 - **Avatar** `src` · children=이니셜 · `size`
 - **Image** `src` `alt` `fallbackSrc` · `fit: cover|contain` · `radius: sm|md|full` · `size: sm|md|lg|full|fill`(full=컨테이너 폭 4:3 잠금 / fill=부모 박스 cover)
 - **Tooltip** `label` · children
-- **Popover** `content`(부품 슬롯) · `opened` `onChange` · `position: top|bottom|left|right` · `align: start|center|end`(start=드롭다운형 좌측정렬) · `reposition: flip|fixed|anchored`(fixed=화면 안 유지, anchored=좌상단 앵커 완전 고정·오른쪽/아래로만 성장·점프 0) · `width: sm|md|lg|xl|auto`(auto=내용폭·컬럼 수 따라 동적, MillerColumns 다단용)
+- **Popover** `content`(부품 슬롯) · `opened` `onChange` · `position: top|bottom|left|right` · `align: start|center|end`(start=드롭다운형 좌측정렬) · `reposition: flip|fixed|anchored`(fixed=화면 안 유지, anchored=좌상단 앵커 완전 고정·오른쪽/아래로만 성장·점프 0) · `width: sm|md|lg|xl|auto`(auto=내용폭·컬럼 수 따라 동적, MillerColumns 다단용) · `block`(트리거를 소비처 폭에 맞춰 줄임 → 트리거 안 말줄임용)
 - **Spinner** `size`
 - **Skeleton** `variant: text|block|circle` · `lines`(text) · `size: sm|md|lg` · `radius: sm|md` — 로드 전 자리표시(레이아웃 부품 안에 박아 형태 보존; 비결정형 점은 Spinner)
 - **Progress** `value: 0~100` · `tone: primary|success|warning|danger` · `size` — 결정형 진행률(끝 모르는 로딩은 Spinner)

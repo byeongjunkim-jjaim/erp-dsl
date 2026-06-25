@@ -31,9 +31,11 @@ type ButtonProps = {
 
 // variant → 실제 스타일 매핑. 이 "정책"을 우리가 100% 소유한다.
 // 색은 hex가 아니라 토큰 역할 이름만 쓴다 (theme.ts가 실제 색을 답한다).
+// 무테 지향(지향 tenet): 분리는 톤·음영 우선, 윤곽은 최후. secondary는 *tonal fill*(light — 옅은 톤 채움·무테)로
+//  "버튼처럼 보이되 테두리 없음". 윤곽이 필요한 보조 동작은 ghost(subtle) 또는 소비처가 의도적으로.
 const VARIANT: Record<ButtonVariant, { color: string; mantineVariant: string }> = {
   primary:   { color: 'primary', mantineVariant: 'filled' },
-  secondary: { color: 'neutral', mantineVariant: 'default' },
+  secondary: { color: 'neutral', mantineVariant: 'light' },
   danger:    { color: 'danger',  mantineVariant: 'filled' },
   ghost:     { color: 'neutral', mantineVariant: 'subtle' },
 };

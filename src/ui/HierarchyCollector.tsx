@@ -13,11 +13,10 @@ import { Stack } from './Stack';
 import { Text } from './Text';
 import { Icon, type IconName } from './Icon';
 import { Popover } from './Popover';
-import { Button } from './Button';
 import { NumberStepper } from './NumberStepper';
 import { LineItemList, type LineItem } from './LineItemList';
 import { PageHeader } from './PageHeader';
-import { fmtCurrency, type Action } from './_cells';
+import { fmtCurrency, renderAction, type Action } from './_cells';
 
 export type CollectorNode = { id: string; label: string; children?: CollectorNode[] };
 export type CollectorCatalog = { id: string; label: string; tree: CollectorNode[] };
@@ -230,11 +229,7 @@ export function HierarchyCollector({
           </div>
 
           {actions && actions.length > 0 && (
-            <div className="erpCollectorFoot">
-              {actions.map((a, i) => (a.variant === 'primary'
-                ? <Button key={i} variant="primary" size="sm" onClick={a.onClick}>{a.label}</Button>
-                : <button key={i} type="button" className="erpCollectorFootBtn" onClick={a.onClick}>{a.label}</button>))}
-            </div>
+            <div className="erpCollectorFoot">{actions.map((a, i) => renderAction(a, i, 'sm'))}</div>
           )}
         </div>
       </Stack>

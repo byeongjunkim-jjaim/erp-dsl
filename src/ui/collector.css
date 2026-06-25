@@ -103,14 +103,7 @@
   padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
   border-top: var(--border-width) solid var(--border-default);
 }
-/* 풋터 보조 버튼 — fill(무테)로 "버튼처럼" 보이되 윤곽 없음(ghost는 풋터색과 같아 안 보였던 문제 해결).
-   primary(발주)는 공유 Button(filled navy)으로 별도. */
-.erpCollectorFootBtn {
-  border: 0; background: var(--bg-secondary); color: var(--text-primary); cursor: pointer;
-  padding: 8px 16px; border-radius: var(--mantine-radius-sm); font: inherit;
-  font-size: var(--typo-body-size); font-weight: 600;
-}
-.erpCollectorFootBtn:hover { background: var(--mantine-color-neutral-2); }
+/* 풋터 버튼 = 공유 Button(renderAction). secondary는 이제 tonal fill(무테)이라 raw foot 버튼 불필요 → 아톰으로 흡수. */
 
 /* 카탈로그 책갈피 — 템플릿 내부 탭(담은내역 헤더와 동급 위계 subheading). Select/TabBar 아톰은 width·크기를
    못 닫아(전폭·고정 크기) 이 템플릿 종속 컨트롤로 둔다(목업 충실 + 윤곽 없음). */

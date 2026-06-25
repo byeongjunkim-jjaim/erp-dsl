@@ -727,7 +727,7 @@ export function Demo({ name }: { name: string }) {
       <HierarchyCollector
         title="발주 작성"
         description="분류를 횡단하며 담고, 우측에서 분류별로 편집 · 발주는 하단"
-        actions={[{ label: '임시저장', variant: 'ghost', onClick: () => {} }, { label: '발주', variant: 'primary', onClick: () => {} }]}
+        actions={[{ label: '임시저장', variant: 'secondary', onClick: () => {} }, { label: '발주', variant: 'primary', onClick: () => {} }]}
         catalogs={COLLECTOR_CATALOGS}
         products={COLLECTOR_PRODUCTS}
         cart={colCart}

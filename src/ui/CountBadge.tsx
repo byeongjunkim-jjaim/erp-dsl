@@ -21,7 +21,7 @@ export function CountBadge({ count, tone = 'danger', max = 99, dot = false }: Pr
   const bg = `var(--mantine-color-${tone}-6)`;
   if (dot) {
     // rem — 폰트 스케일(접근성 줌)에 함께 커진다. 라벨은 rem인데 점만 px면 줌에서 쪼그라든다.
-    return <span aria-hidden style={{ display: 'inline-block', width: '0.5rem', height: '0.5rem', borderRadius: 999, background: bg }} />;
+    return <span aria-hidden style={{ display: 'inline-block', width: '0.5rem', height: '0.5rem', borderRadius: 'var(--mantine-radius-full)', background: bg }} />;
   }
   const label = count > max ? `${max}+` : String(count);
   return (
@@ -31,7 +31,7 @@ export function CountBadge({ count, tone = 'danger', max = 99, dot = false }: Pr
       style={{
         // 치수·폰트 전부 rem — 옆 라벨(rem)과 함께 줌(고령 클라이언트 폰트 스케일). 18px=1.125rem, 11px=0.6875rem.
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        minWidth: '1.125rem', height: '1.125rem', padding: '0 0.3125rem', borderRadius: 999,
+        minWidth: '1.125rem', height: '1.125rem', padding: '0 0.3125rem', borderRadius: 'var(--mantine-radius-full)',
         background: bg, color: 'var(--mantine-color-white)',
         fontSize: '0.6875rem', fontWeight: 700, lineHeight: 1, flexShrink: 0,
       }}

@@ -412,6 +412,17 @@ export const CATALOG: CatalogEntry[] = [
       '의미 원자': ['Text', 'Icon(어드온)'],
       '배치 프리미티브': ['Group'],
     } },
+  { name: 'NumberStepper', layer: '분자', role: '수량 − [n] + 스테퍼. NumberInput을 "증감 노출 + 타이핑"으로 고정한 형제(이름 Stepper는 다단계-진행 유기체가 선점 → NumberStepper). min/max는 검증(스키마)이 아니라 증감 버튼의 동작 경계(UI). 가운데 타이핑 가능(B2B 큰 수량).',
+    props: [
+      { name: 'value / onChange', kind: '기능', values: 'controlled, number' },
+      { name: 'min / max / step', kind: '기능', values: '증감 경계·단위 (기본 min 0, step 1)' },
+      { name: 'size', kind: '스타일', values: SIZE2 },
+      { name: 'disabled', kind: '스타일', values: 'boolean' },
+    ],
+    composition: {
+      토큰: ['bg-secondary(fill)', 'radius', 'border-default(hover)'],
+      '의미 원자': ['Icon(minus/plus)'],
+    } },
   { name: 'FileUploader', layer: '분자', role: '파일 업로드 4단계 상태(대기→진행→완료/실패). controlled.',
     props: [
       { name: 'value / onChange', kind: '기능', values: 'FileItem[](pending엔 file:File 실림 — 소비처가 FormData로 실제 업로드), (next) => void' },

@@ -35,6 +35,7 @@ declare module '@mantine/core' {
       text: Record<'primary' | 'secondary' | 'danger' | 'disabled', SemanticPair>;
       bg: Record<'primary' | 'secondary' | 'tertiary', SemanticPair>;
       border: Record<'default' | 'strong' | 'focus', SemanticPair>;
+      surface: Record<'sunken' | 'default' | 'raised' | 'overlay', SemanticPair>;
     };
     borderWidth: string;
     iconBaselineShift: string;
@@ -48,7 +49,7 @@ declare module '@mantine/core' {
       lg: string; xl: string; xxl: string;
     };
     radius: {
-      sm: string; md: string; full: string;
+      xs: string; sm: string; md: string; full: string;
     };
   }
 }

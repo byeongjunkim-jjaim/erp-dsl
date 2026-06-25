@@ -44,6 +44,7 @@ export default function MobileShellPreview() {
               width: d.w,
               height: d.h,
               border: '10px solid var(--text-primary)',
+              // eslint-disable-next-line no-restricted-syntax -- 폰 프레임 베젤 곡률(디바이스 목업), DSL UI radius 아님(스케일 밖 명시 예외)
               borderRadius: 44,
               overflow: 'hidden',
               boxShadow: 'var(--mantine-shadow-xl)',

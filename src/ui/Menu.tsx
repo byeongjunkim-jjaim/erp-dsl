@@ -38,7 +38,7 @@ export function Menu({ trigger, items, header, width = 'sm', position = 'bottom'
               className="erpMenuItem"
               onClick={() => { setOpen(false); a.onClick(); }}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(false); a.onClick(); } }}
-              style={{ display: 'flex', alignItems: 'center', gap: 'var(--mantine-spacing-xs)', padding: '6px 8px', borderRadius: 4, cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 'var(--mantine-spacing-xs)', padding: '6px 8px', borderRadius: 'var(--mantine-radius-xs)', cursor: 'pointer' }}
             >
               {a.icon && <Icon name={a.icon} size="sm" color={a.variant === 'danger' ? 'danger' : 'secondary'} />}
               <Text variant="body" color={a.variant === 'danger' ? 'danger' : 'primary'}>{a.label}</Text>

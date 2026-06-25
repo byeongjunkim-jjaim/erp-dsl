@@ -64,6 +64,28 @@ const semantic = {
     strong:  { light: neutral[3], dark: neutral[6] }, // 강조 = neutral 300
     focus:   { light: primary[6], dark: primary[4] }, // 포커스 = primary 600
   },
+  // ── surface (containment 축) — "윤곽 대신 음영·톤으로 구획" (02 elevation 2축) ──
+  // 섀도(=lift)와 분리된 별개 축이다: surface는 *톤*으로 "어디에 박혀 있나"를 말한다.
+  //  · sunken  = 우묵한 well·페이지 바닥 (한 톤 낮춤, 섀도 0)
+  //  · default = 카드·flush 본문 표면 (섀도 0 — 평면 영역)
+  //  · raised  = 페이지 위에 *떠 있는* 타일/위젯 (--elevation-raised 와 짝)
+  //  · overlay = 모달·드롭다운 (다른 UI 위에 뜬 레이어, --elevation-overlay 와 짝)
+  // 규칙(Atlassian·Carbon·Material 수렴): raised/overlay만 그림자와 짝지운다.
+  //   기본/평면/sunken엔 그림자 0. 한 위젯 내부 구획은 sunken·divider·여백으로(섀도 금지).
+  // 다크: raised일수록 표면을 *밝게*(M3 — 다크에선 섀도 대신 톤으로 깊이).
+  surface: {
+    sunken:  { light: neutral[1], dark: neutral[9] }, // 페이지·well
+    default: { light: '#FFFFFF',  dark: neutral[8] }, // 카드 본문
+    raised:  { light: '#FFFFFF',  dark: neutral[7] }, // 떠 있는 위젯(+그림자)
+    overlay: { light: '#FFFFFF',  dark: neutral[7] }, // 모달·드롭다운(+그림자)
+  },
+} as const;
+
+// elevation(lift 축) — surface.raised/overlay 와 *짝으로만* 쓴다(섞지 말 것).
+// 다층 저불투명 그림자(Tailwind·Material 패턴). flat은 키 없음(=그림자 0).
+const elevation = {
+  raised:  '0 1px 3px rgba(11, 26, 53, 0.08), 0 6px 20px rgba(11, 26, 53, 0.06)',
+  overlay: '0 10px 32px rgba(11, 26, 53, 0.16)',
 } as const;
 
 // 타이포 6단계 {크기·굵기·행간}. body-strong = body 크기 + 굵게(강조). (단일 진실 공급원)
@@ -111,7 +133,9 @@ export const theme = createTheme({
     xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.25rem', xl: '1.75rem',
   },
 
-  radius: { sm: '8px', md: '16px', full: '9999px' }, // md 키움(squircle 곡률이 보이려면 큰 반경 필요 — 8px는 안 드러남)
+  // xs(4px): sm을 4→8로 키운 squircle bump이 "작은 내부 요소(메뉴항목·컬럼항목·스테퍼 버튼 등)"가
+  // 쓸 ~4px 토큰을 고아로 만들어, 그 자리에 px 하드코딩 drift가 생겼었다. xs를 도로 열어 그 자리를 토큰으로 메운다.
+  radius: { xs: '4px', sm: '8px', md: '16px', full: '9999px' }, // md 키움(squircle 곡률이 보이려면 큰 반경 필요 — 8px는 안 드러남)
   defaultRadius: 'sm',
 
   // 그림자: none은 "안 줌"이라 키 없음. sm(카드)·md(모달)만.
@@ -163,12 +187,18 @@ export const cssVariablesResolver: CSSVariablesResolver = () => {
     '--border-default': s.border.default[mode],
     '--border-strong':  s.border.strong[mode],
     '--border-focus':   s.border.focus[mode],
+    '--surface-sunken':  s.surface.sunken[mode],
+    '--surface-default': s.surface.default[mode],
+    '--surface-raised':  s.surface.raised[mode],
+    '--surface-overlay': s.surface.overlay[mode],
   });
   return {
     variables: {
       '--border-width':        borderWidth,
       '--icon-baseline-shift': iconBaselineShift,
       '--corner-shape':        cornerShape,
+      '--elevation-raised':    elevation.raised,   // surface.raised 와 짝
+      '--elevation-overlay':   elevation.overlay,  // surface.overlay 와 짝
       ...typoVars,
     },
     light: pick('light'),

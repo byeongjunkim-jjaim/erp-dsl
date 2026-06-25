@@ -74,7 +74,7 @@ export function ObjectCard({
       )}
       {actions && actions.length > 0 && (
         <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 6, right: 6 }}>
-          <div style={{ borderRadius: '999px', background: 'var(--bg-primary)', boxShadow: 'var(--mantine-shadow-sm)', display: 'inline-flex', alignItems: 'center' }}>
+          <div style={{ borderRadius: 'var(--mantine-radius-full)', background: 'var(--bg-primary)', boxShadow: 'var(--mantine-shadow-sm)', display: 'inline-flex', alignItems: 'center' }}>
             <Menu trigger={<IconButton icon="dots-vertical" label="더보기" variant="ghost" size="sm" />} items={actions} position="bottom" />
           </div>
         </div>

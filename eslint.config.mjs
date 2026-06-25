@@ -27,11 +27,21 @@ export default tseslint.config(
           message: 'Mantine 직접 import 금지 — @/ui 배럴만 사용 (헌법 7).',
         }],
       }],
-      // 문 2 — hex 색 리터럴 차단
-      'no-restricted-syntax': ['error', {
-        selector: 'Literal[value=/^#(?:[0-9a-fA-F]{3,4}){1,2}$/]',
-        message: 'hex 리터럴 금지 — 색은 theme.ts 토큰만 (헌법 3·8).',
-      }],
+      // 문 2 — 임의 값 리터럴 차단 (래퍼 *내부 구현*에서 토큰 우회를 막는다 — 닫힌 prop은 소비처만 막음)
+      'no-restricted-syntax': ['error',
+        {
+          // (a) hex 색 리터럴
+          selector: 'Literal[value=/^#(?:[0-9a-fA-F]{3,4}){1,2}$/]',
+          message: 'hex 리터럴 금지 — 색은 theme.ts 토큰만 (헌법 3·8).',
+        },
+        {
+          // (b) borderRadius 인라인 하드코딩 — var(--mantine-radius-*)·0 만 허용.
+          //     색(hex)처럼 radius도 "내부 저자가 토큰 우회"를 못 하게 막아, 토큰 갱신이 확실히 전파되게 한다.
+          //     숫자 리터럴은 [value>0](정규식은 숫자에 안 먹음), px 문자열은 [value=/px$/]로 둘 다 잡는다. var()·0은 통과.
+          selector: "Property[key.name='borderRadius'] > Literal[value>0], Property[key.name='borderRadius'] > Literal[value=/px$/]",
+          message: 'borderRadius 하드코딩 금지 — var(--mantine-radius-xs|sm|md|full) 토큰만 (헌법 8 · px도 색과 동급 강제).',
+        },
+      ],
     },
   },
 

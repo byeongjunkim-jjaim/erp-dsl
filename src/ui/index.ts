@@ -52,6 +52,7 @@ export { FormField } from './FormField';
 export { MultiSelect } from './MultiSelect';
 export { DateRangeField } from './DateRangeField';
 export { InputGroup } from './InputGroup';
+export { NumberStepper } from './NumberStepper';
 export { FileUploader, type FileItem } from './FileUploader';
 export { Pagination } from './Pagination';
 export { Callout } from './Callout';

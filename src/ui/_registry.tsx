@@ -69,6 +69,7 @@ import { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
 import { HierarchyCollector, type CollectorCartItem } from './HierarchyCollector';
 import { PeriodNavigator } from './PeriodNavigator';
 import { LedgerPage } from './LedgerPage';
+import { CalendarPage, type CalendarEncoding, type CalendarEvent } from './CalendarPage';
 import { SectionHeader } from './SectionHeader';
 import { Breadcrumb } from './Breadcrumb';
 import { Bento } from './Bento';
@@ -286,6 +287,55 @@ const HX_OBJECTS: Record<string, HierarchyObject[]> = {
 };
 
 // 부품명 → 라이브 예시. 박물관 상세가 <Demo name/>로 렌더.
+// CalendarPage 데모 — 시공 도메인은 *여기(dev)에만* 산다(부품은 0 지식). attrs+encoding만 주입.
+const CAL_ENCODING: CalendarEncoding = {
+  anchor: { attr: 'type', values: {
+    general: { color: 'primary', label: '일반' },
+    urgent:  { color: 'warning', icon: 'alert-triangle', label: '긴급' },
+    as:      { color: 'info', icon: 'tool', label: 'AS' },
+    redo:    { color: 'success', icon: 'refresh', label: '재마감' },
+  } },
+  status: { attr: 'status', values: {
+    confirmed: { emphasis: 'solid', label: '확정' },
+    requested: { emphasis: 'dashed', label: '요청' },
+  } },
+  person: { attr: 'designer', values: {
+    kim:  { initial: '김', label: '김지수', color: 'primary' },
+    lee:  { initial: '이', label: '이도윤', color: 'success' },
+    park: { initial: '박', label: '박서연', color: 'danger' },
+    choi: { initial: '최', label: '최민준', color: 'warning' },
+    jung: { initial: '정', label: '정유진', color: 'info' },
+  } },
+  rowAxes: [{ attr: 'designer', label: '담당자' }, { attr: 'type', label: '타입' }, { attr: 'status', label: '상태' }],
+};
+// 2026 대한민국 공휴일(데모 주입 — 부품은 달력 모름). 근로자의날(5/1) 포함.
+const CAL_HOLIDAYS = [
+  { date: '2026-01-01', name: '신정' },
+  { date: '2026-02-16', name: '설날' }, { date: '2026-02-17', name: '설날' }, { date: '2026-02-18', name: '설날' },
+  { date: '2026-03-01', name: '삼일절' }, { date: '2026-03-02', name: '대체공휴일' },
+  { date: '2026-05-01', name: '근로자의날' }, { date: '2026-05-05', name: '어린이날' },
+  { date: '2026-05-24', name: '부처님오신날' }, { date: '2026-05-25', name: '대체공휴일' },
+  { date: '2026-06-03', name: '지방선거일' }, { date: '2026-06-06', name: '현충일' },
+  { date: '2026-08-15', name: '광복절' }, { date: '2026-08-17', name: '대체공휴일' },
+  { date: '2026-09-24', name: '추석' }, { date: '2026-09-25', name: '추석' }, { date: '2026-09-26', name: '추석' },
+  { date: '2026-10-03', name: '개천절' }, { date: '2026-10-05', name: '대체공휴일' }, { date: '2026-10-09', name: '한글날' },
+  { date: '2026-12-25', name: '성탄절' },
+];
+const CAL_EVENTS: CalendarEvent[] = (() => {
+  const T = ['강남 래미안 아파트', '판교 알파돔 오피스', '역삼 센터필드 카페', '분당 정자동 단독주택', '마포 메세나폴리스 상가', '성수 갤러리아 쇼룸', '잠실 롯데캐슬 보수', '한남 더힐 빌라 201', '위례 자이 단독주택', '서초 삼성타운 오피스', '논현 헤리티지 빌라', '대치 은마 아파트', '방배 래미안 주택', '이태원 경리단 카페', '청담 네이처 쇼룸'];
+  const DK = ['kim', 'lee', 'park', 'choi', 'jung']; const TW = ['general', 'general', 'urgent', 'as', 'redo', 'urgent', 'redo'];
+  const out: CalendarEvent[] = []; let id = 0;
+  for (let d = 1; d <= 30; d++) {
+    const n = 3 + ((d * 3) % 6);
+    for (let i = 0; i < n; i++) {
+      const k = d * 10 + i; const span = ((k * 5) % 10 < 3) ? 1 + (k % 3) : 1; const e = Math.min(30, d + span - 1);
+      out.push({ id: String(++id), start: `2026-06-${String(d).padStart(2, '0')}`, end: `2026-06-${String(e).padStart(2, '0')}`,
+        label: T[(k * 11) % T.length], attrs: { type: TW[(d * 3 + i * 2) % TW.length], status: ((d + i) % 3 === 0) ? 'requested' : 'confirmed', designer: DK[(d + i * 2) % DK.length] } });
+    }
+  }
+  return out;
+})();
+
 export function Demo({ name }: { name: string }) {
   const [chip, setChip] = useState(true);
   const [pop, setPop] = useState(false);
@@ -885,6 +935,17 @@ export function Demo({ name }: { name: string }) {
         </Bento>
       );
     })(),
+    CalendarPage: (
+      <CalendarPage
+        title="시공 일정"
+        description="현장 시공 — 타입 / 확정·요청 / 담당 디자이너 · 일 6~10건"
+        events={CAL_EVENTS}
+        encoding={CAL_ENCODING}
+        holidays={CAL_HOLIDAYS}
+        createLabel="새 시공"
+        onCreate={() => {}}
+      />
+    ),
   };
 
   return <>{D[name] ?? <Text variant="caption" color="secondary">예시 준비 중</Text>}</>;

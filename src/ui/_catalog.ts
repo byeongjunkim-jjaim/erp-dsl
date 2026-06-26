@@ -914,6 +914,22 @@ export const CATALOG: CatalogEntry[] = [
       분자: ['PeriodNavigator', 'Stat', 'SummaryCard', 'TotalRow'],
       유기체: ['PageHeader', 'DataTable', 'Drawer'],
     } },
+  { name: 'CalendarPage', layer: '템플릿', role: '자원×시간 스케줄 골격 — 리소스 타임라인(행=기준축, 1·2주)/월 그리드. 데이터(attrs)·표현(encoding) 분리, 도메인 0줄. 날짜/이벤트 클릭→Drawer.',
+    props: [
+      { name: 'events', kind: '기능', values: 'CalendarEvent[] = { id, start, end?, label, attrs(임의 차원) }' },
+      { name: 'encoding', kind: '기능', values: 'anchor(색+아이콘) · status(채움/점선) · person(아바타·행축) · rowAxes' },
+      { name: 'range(내부)', kind: '값', values: "'week'(기본) | 'biweek' | 'month'(그리드)" },
+      { name: 'onCreate / onSelectEvent', kind: '기능', values: '() / (event)' },
+      { name: 'renderEventDetail', kind: '기능', values: '(event)=>ReactNode — 상세 Drawer content 슬롯' },
+      { name: 'rowMiniBar', kind: '스타일', values: 'boolean — 행 헤더 분류-구성 미니막대(기본 true, 소비처 결정)' },
+    ],
+    composition: {
+      토큰: ['6역할 팔레트(앵커 색)', 'surface/elevation', 'raw CSS grid(명시 예외)'],
+      '의미 원자': ['Text', 'Icon', 'SegmentedControl', 'Button'],
+      '배치 프리미티브': ['Stack', 'Group'],
+      분자: ['IconButton'],
+      유기체: ['PageHeader', 'Drawer', 'EmptyState'],
+    } },
 ];
 
 // ── 그래프 헬퍼 (박물관 하이퍼링크·역참조) ──

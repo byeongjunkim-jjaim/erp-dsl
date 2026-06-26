@@ -9,7 +9,7 @@ export type IconName =
   | 'search' | 'plus' | 'minus' | 'calendar' | 'upload' | 'trash' | 'refresh'
   | 'eye' | 'eye-off' | 'alert-circle' | 'alert-triangle' | 'info' | 'dots' | 'edit' | 'arrow-left' | 'filter' | 'bell'
   // ── ERP 큐레이션 확장 (헌법 4 — Tabler 원본 path, 함수별 선별. kk 요구 home·users·building·store·book·package·database 포함) ──
-  | 'home' | 'dashboard' | 'menu' | 'settings' | 'logout' | 'user' | 'users' | 'building' | 'store' | 'arrow-right' | 'external-link' | 'help' | 'download' | 'save' | 'copy' | 'print' | 'send' | 'dots-vertical' | 'adjustments' | 'history' | 'check-circle' | 'x-circle' | 'clock' | 'ban' | 'lock' | 'lock-open' | 'file' | 'file-text' | 'file-invoice' | 'files' | 'folder' | 'clipboard' | 'receipt' | 'report' | 'book' | 'package' | 'box' | 'truck' | 'warehouse' | 'barcode' | 'cart' | 'database' | 'coin' | 'won' | 'credit-card' | 'calculator' | 'tag' | 'discount' | 'chart-bar' | 'chart-line' | 'wallet' | 'phone' | 'mail' | 'map-pin' | 'id-card' | 'paperclip' | 'link' | 'star' | 'list' | 'table' | 'sort-asc' | 'sort-desc';
+  | 'home' | 'dashboard' | 'menu' | 'settings' | 'logout' | 'user' | 'users' | 'building' | 'store' | 'arrow-right' | 'external-link' | 'help' | 'download' | 'save' | 'copy' | 'print' | 'send' | 'dots-vertical' | 'adjustments' | 'history' | 'check-circle' | 'x-circle' | 'clock' | 'ban' | 'lock' | 'lock-open' | 'file' | 'file-text' | 'file-invoice' | 'files' | 'folder' | 'clipboard' | 'receipt' | 'report' | 'book' | 'package' | 'box' | 'truck' | 'warehouse' | 'barcode' | 'cart' | 'database' | 'coin' | 'won' | 'credit-card' | 'calculator' | 'tag' | 'discount' | 'chart-bar' | 'chart-line' | 'wallet' | 'phone' | 'mail' | 'map-pin' | 'id-card' | 'paperclip' | 'link' | 'star' | 'list' | 'table' | 'sort-asc' | 'sort-desc' | 'tool';
 
 // 24x24 viewBox, stroke=currentColor 기반(outline). path만 정의(색·정렬은 래퍼가).
 const PATHS: Record<IconName, string> = {
@@ -99,6 +99,8 @@ const PATHS: Record<IconName, string> = {
   'table': 'M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14 M3 10h18 M10 3v18',
   'sort-asc': 'M4 6l7 0 M4 12l7 0 M4 18l9 0 M15 9l3 -3l3 3 M18 6l0 12',
   'sort-desc': 'M4 6l9 0 M4 12l7 0 M4 18l7 0 M15 15l3 3l3 -3 M18 6l0 12',
+  // 수리·정비(AS) — 렌치. ERP 큐레이션(헌법 4): 톱니(settings)가 AS에 부정확해 추가.
+  'tool': 'M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5',
 };
 
 const SIZE_PX: Record<'sm' | 'md' | 'lg', number> = { sm: 16, md: 20, lg: 24 };

@@ -99,6 +99,7 @@ export { DetailPage } from './DetailPage';
 export { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
 export { HierarchyCollector, type CollectorCatalog, type CollectorProduct, type CollectorCartItem } from './HierarchyCollector';
 export { LedgerPage, type LedgerMetric, type LedgerBreakdown, type LedgerDetail } from './LedgerPage';
+export { CalendarPage, type CalendarEvent, type CalendarEncoding, type CalendarColorRole } from './CalendarPage';
 export { buildHierarchyFromRows, type HierarchyImport } from './hierarchyImport';
 export type { DataTableColumn, DataTableRow, DataTableSort } from './DataTable';
 

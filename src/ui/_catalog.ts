@@ -918,6 +918,8 @@ export const CATALOG: CatalogEntry[] = [
     props: [
       { name: 'events', kind: '기능', values: 'CalendarEvent[] = { id, start, end?, label, attrs(임의 차원) }' },
       { name: 'encoding', kind: '기능', values: 'anchor(색+아이콘) · status(채움/점선) · person(아바타·행축) · rowAxes' },
+      { name: 'annotations', kind: '기능', values: 'CalendarAnnotation[]{start,end,label,tone,display} — 태그(기간 표식). 배경=색+윤곽/배너, 라벨은 접힘 범례+hover 툴팁' },
+      { name: 'holidays', kind: '기능', values: 'CalendarHoliday[]{date,name} — 로케일 주입(달력 무지). 주말 토파랑·일빨강은 자체' },
       { name: 'range(내부)', kind: '값', values: "'week'(기본) | 'biweek' | 'month'(그리드)" },
       { name: 'onCreate / onSelectEvent', kind: '기능', values: '() / (event)' },
       { name: 'renderEventDetail', kind: '기능', values: '(event)=>ReactNode — 상세 Drawer content 슬롯' },

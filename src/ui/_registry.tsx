@@ -69,7 +69,7 @@ import { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
 import { HierarchyCollector, type CollectorCartItem } from './HierarchyCollector';
 import { PeriodNavigator } from './PeriodNavigator';
 import { LedgerPage } from './LedgerPage';
-import { CalendarPage, type CalendarEncoding, type CalendarEvent } from './CalendarPage';
+import { CalendarPage, type CalendarEncoding, type CalendarEvent, type CalendarAnnotation, type CalendarColorRole } from './CalendarPage';
 import { BoardList, type BoardPost } from './BoardList';
 import { BoardView, type BoardComment } from './BoardView';
 import { BoardWrite, type AudienceNode } from './BoardWrite';
@@ -488,6 +488,36 @@ const CAL_EVENTS: CalendarEvent[] = (() => {
   }
   return out;
 })();
+// 태그(기간 표식) — 배경형(환경 조건) 위주 + 배너형 1개. 색=역할 팔레트. 소비처 주입(부품은 의미 0지식).
+const CAL_ANNOTATIONS: CalendarAnnotation[] = [
+  { id: 't1', start: '2026-06-09', end: '2026-06-12', label: '자재 입고 지연', tone: 'danger', display: 'background' },
+  { id: 't2', start: '2026-06-18', end: '2026-06-23', label: '고객 검수기간', tone: 'info', display: 'background' },
+  { id: 't3', start: '2026-06-15', end: '2026-06-16', label: '본사 워크샵(휴무)', tone: 'neutral', display: 'banner' },
+  { id: 't4', start: '2026-06-29', end: '2026-07-03', label: '하절기 단축근무', tone: 'warning', display: 'background' },
+];
+// 선택→태그 저작 데모 — 부품은 콜백만 쏘고, *소비처(여기)*가 annotations 상태를 관리(도메인 무지 유지).
+const CAL_TONES: CalendarColorRole[] = ['warning', 'success', 'info', 'danger', 'primary'];
+function CalDemo() {
+  const [annos, setAnnos] = useState<CalendarAnnotation[]>(CAL_ANNOTATIONS);
+  return (
+    <CalendarPage
+      title="시공 일정"
+      description="현장 시공 — 타입 / 확정·요청 / 담당 디자이너 · 일 6~10건. 날짜 드래그→태그/일정."
+      events={CAL_EVENTS}
+      encoding={CAL_ENCODING}
+      annotations={annos}
+      holidays={CAL_HOLIDAYS}
+      createLabel="새 시공"
+      viewToggle
+      onCreate={() => {}}
+      onTagRange={(a, b) => {
+        const label = window.prompt(`태그 (${a} ~ ${b})`, '새 태그');
+        if (label) setAnnos((p) => [...p, { id: 'u' + p.length, start: a, end: b, label, tone: CAL_TONES[p.length % CAL_TONES.length], display: 'background' }]);
+      }}
+      onCreateRange={(a, b) => { window.alert(`일정 생성: ${a} ~ ${b}`); }}
+    />
+  );
+}
 
 export function Demo({ name }: { name: string }) {
   const [chip, setChip] = useState(true);
@@ -1088,17 +1118,7 @@ export function Demo({ name }: { name: string }) {
         </Bento>
       );
     })(),
-    CalendarPage: (
-      <CalendarPage
-        title="시공 일정"
-        description="현장 시공 — 타입 / 확정·요청 / 담당 디자이너 · 일 6~10건"
-        events={CAL_EVENTS}
-        encoding={CAL_ENCODING}
-        holidays={CAL_HOLIDAYS}
-        createLabel="새 시공"
-        onCreate={() => {}}
-      />
-    ),
+    CalendarPage: <CalDemo />,
     BoardList: <BoardListDemo />,
     BoardView: <BoardViewDemo />,
     BoardWrite: <BoardWriteDemo />,

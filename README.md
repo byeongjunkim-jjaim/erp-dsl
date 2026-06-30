@@ -105,7 +105,7 @@ type FieldSpec = {
 - **Title** `variant: display|heading|subheading`
 - **Label** `htmlFor` (타이포·색 고정)
 - **Anchor** `href`
-- **Icon** `name: IconName`(85종, `Icon.tsx` 참조) · `size: sm|md|lg` · `color`(텍스트 역할)
+- **Icon** `name: IconName`(91종, `Icon.tsx` 참조) · `size: sm|md|lg` · `color`(텍스트 역할)
 - **Avatar** `src` · children=이니셜 · `size`
 - **Image** `src` `alt` `fallbackSrc` · `fit: cover|contain` · `radius: sm|md|full` · `size: sm|md|lg|full|fill`(full=컨테이너 폭 4:3 잠금 / fill=부모 박스 cover)
 - **Tooltip** `label` · children
@@ -127,15 +127,16 @@ type FieldSpec = {
 - **Combobox** `options` `value`(단일) `clearable?` — 검색되는 Select(대용량 옵션 타이핑 필터)
 - **TimePicker** `value: "HH:MM"` — 시각 입력(날짜는 DatePicker)
 
-### 레이아웃 원자 (3) · 배치 프리미티브 (3)
+### 레이아웃 원자 (3) · 배치 프리미티브 (4)
 - **Card** `variant: elevated|outlined|flat` · `padding: none|sm|md|lg`
 - **Divider** `orientation: horizontal|vertical`
 - **Container** `maxWidth: narrow|default|wide`  ← 폭의 천장은 여기 하나뿐
 - **Stack**(세로) `gap`(토큰) · `align: start|center|end|stretch` · `justify: start|center|end|between`
 - **Group**(가로) `gap` · `align: start|center|end` · `justify: …|between` · `wrap`
 - **Grid** `columns: 1|2|3|4|6|12` · `gap` · 자식 `Grid.Col span: 1~12`
+- **Bento**(페이지 본문 격자, 전 PageGrid) `columns: 2|3|4|6|12` · `gap: sm|md|lg` · 타일 `Bento.Tile colSpan` `rowSpan: 1|2|3` — 고정 셀 높이(가변 높이 불허·iOS 홈식)
 
-### 분자 (22) — 원자를 결합·일부 상태 고정
+### 분자 (26) — 원자를 결합·일부 상태 고정
 - **FormField** — 입력 컨트롤을 children으로 받아 `label`·`withAsterisk`·`error`(메시지+빨간 테두리)를 두름. **모든 입력칸은 이걸로 감싼다.**
 - **MultiSelect** `options` `value: string[]` · **DateRangeField** `value: {start,end}`
 - **InputGroup** `leftAddon`/`rightAddon: string|<Icon>` · **FileUploader** `value: FileItem[]`
@@ -152,8 +153,11 @@ type FieldSpec = {
 - **MillerColumns** `options: {value,label,children}[]` `value: string[]`(경로) — **트리거 1개 → 팝오버 다단 컬럼**(좌→우, Finder·Ant Cascader 패턴). 좁은 화면(≤600px)은 단일 컬럼 드릴인 폴백. 페이지 발자국 최소. Cascader의 형제(같은 박스, 다른 배치). 대용량 검색은 Combobox 위임
 - **SearchToolbar** `searchValue` `onSearchChange` `searchPlaceholder?` `filters?: {key,label,options,value,onChange}[]` — 목록 상단 검색+필터+활성 필터칩
 - **PeriodNavigator** `label`(포맷된 기간 문자열) `onPrev` `onNext` `disabledPrev?` `disabledNext?` — 기간 한 칸 이동(‹ 라벨 ›). 돈 화면 기간 스코프(LedgerPage)
+- **NumberStepper** `value` `onChange` `min?` `max?` `step?` `size?` — 수량 −[n]+ 스테퍼(타이핑 가능, B2B 대량). min/max는 UI 조작 한계(검증은 스키마)
+- **Editor** `value`(HTML) `onChange` `features?: ('bold'|'italic'|'heading'|'bulletList'|'orderedList'|'quote'|'link'|'image'|'table'|'divider')[]` `placeholder?` `name?` — 리치 텍스트 작성기. **TipTap(헤드리스 엔진) 흡수**, 툴바·서식은 우리 토큰(무테). `features` 닫힌 세트로 소비처가 기능 선택. 출력 HTML
+- **RichText** `html` — 저장된 리치 텍스트(HTML) 읽기 뷰어. **Editor의 짝**(같은 TipTap 스키마 → 새니타이즈). BoardView 본문 등에서 작성물 그대로 렌더
 
-### 유기체 (15) — 화면 한 구획, 도메인은 스키마로만 주입
+### 유기체 (16) — 화면 한 구획, 도메인은 스키마로만 주입
 - **Modal** `opened` `onClose` `title` `actions` `size: sm|md|lg|xl|full`(full=95vw·90vh, 풀스크린 아님) · children=본문
 - **DataTable** `columns` `rows` `status: loading|empty|ready` · controlled 정렬·페이징 · `onRowClick`
 - **EmptyState** `icon` `title` `description` `action?`
@@ -167,13 +171,18 @@ type FieldSpec = {
 - **Stepper** `active`(index) `steps: {label,description?}[]` `orientation?` `onStepClick?` — 다단계 진행 표시(콘텐츠는 호출측이 active로 분기)
 - **Transfer** `items: {value,label}[]` `selected: string[]` `onChange` `titles?` — 좌·우 듀얼 리스트 대량 배정(인라인 다중은 MultiSelect)
 - **ToastHost** (props 없음) — 토스트 호스트(위치·지속·스택 단일 관리). 트리거는 `notify.*`, 앱 셸에 1회 배치
+- **LineItemList** `items: LineItem[]` `onQuantityChange` `onRemove?` `showTotal?` `showAmount?` `unit?` — 그룹·소계·합계·컴팩트 ✕ 라인아이템(수량=NumberStepper). 자체 surface 없음(소비처가 well에 담음)
 
-### 페이지 템플릿 (5) + 폼 조립 조직 (1) — `FieldSpec[]` 구동, 도메인 0줄
+### 페이지 템플릿 (9) + 폼 조립 조직 (1) — `FieldSpec[]`·스키마 구동, 도메인 0줄
 - **ListPage** `schema` `rows` `status` · 정렬·페이징·`totalCount`
 - **DetailPage** `title` `info`(DescriptionList) `form?`(FormSection) — 좌 정보 / 우 폼 2분할
 - **HierarchyExplorer** 좌 Tree(+검색 바) / 우 하위 분류 타일 + 직속 제품 목록(DataTable) 공존 — 계층 마스터-디테일(한 디렉토리에 하위 분류·제품 동시). 추가=우측 ＋ 드롭다운(제품/분류). 검색=분류 헤더 아래, 결과=우측 목록(분류 경로 컬럼)
+- **HierarchyCollector** `catalogs` `products` `cart` `onCartChange` `showAmount?` `onProductClick?` — 계층에서 *수집*(HE의 짝). 좌 브라우즈 / 우 카트 well, 책갈피 횡단·수량 누적·고정 합계. `@container` 반응형
 - **LedgerPage** `period`(PeriodNavigator) `metrics`(KPI 밴드: Stat/SummaryCard) `breakdown`(SegmentedControl→DataTable→TotalRow) `detail?`(Drawer 드릴) — 돈 지표 페이지(정산·매출 등)
-- **PageGrid** 닫힌 격자(Bento): `columns` `gap` · 타일 `colSpan` `rowSpan`(고정 셀 높이)
+- **CalendarPage** `events: CalendarEvent[]`(attrs 임의 차원) `encoding`(anchor 색·status 채움·person 아바타) `holidays?` `onCreate?` — 자원×시간 스케줄(리소스 타임라인 1·2주 / 월 그리드). 데이터·표현 분리, 날짜/이벤트 클릭→Drawer
+- **BoardList** `posts: BoardPost[]` `categories?`(말머리 탭) `searchQuery?`/`onSearchChange?` `onCreate?` `onSelectPost?` · 페이징·`totalCount` — 사내 게시판 목록(밀도형 행 + 상단 고정 공지 밴드 + 필독/안읽음 강조)
+- **BoardView** `title` `author` `content`(ReactNode 본문 슬롯, 보통 RichText) `notice?`/`mustRead?`+`readState?`(읽음확인) `attachments?` `prev?`/`next?` `comments?` `actions?` `onBack?` — 게시판 글 보기(발행물형 + 읽음확인·이전다음·댓글)
+- **BoardWrite** `categories`+`category` `postTitle` `body`(HTML)+`bodyFeatures?` `audiences?`(칩+조직도 드릴, 안 C) `files?` `notice?`/`mustRead?`/`commentsAllowed?` `onSubmit?` — 게시판 작성(본문=**Editor**, 수신자=칩+조직도)
 - **FormSection** `fields: FieldSpec[]` `values` `onChange` `columns: 1|2` `resolvers?` `errors?` — 타입→원자 매핑·FormField 감싸기를 자동 수행
 
 ### 공유 어휘 타입
@@ -233,8 +242,9 @@ const schema = buildZodSchema(fields);
 
 ```bash
 npm i @byeongjunkim-jjaim/erp-dsl
-# peer 의존성(소비 앱이 직접 설치) — React 19+, Mantine v8, zod v4
+# peer 의존성(소비 앱이 직접 설치) — React 19+, Mantine v8, zod v4, TipTap v3(리치 에디터 Editor/RichText용)
 npm i @mantine/core @mantine/dates @mantine/hooks @mantine/notifications dayjs zod react react-dom
+npm i @tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/extension-image @tiptap/extension-table @tiptap/extension-placeholder
 ```
 
 ```ts
@@ -261,8 +271,6 @@ import { Providers, ColorSchemeScript, mantineHtmlProps } from '@byeongjunkim-jj
 - [`docs/02_토큰과구현.md`](docs/02_토큰과구현.md) — 토큰 값·전체 부품 prop 규격·스키마 층·패키지/배포
 - [`docs/03_로드맵과미해결.md`](docs/03_로드맵과미해결.md) — 진행 상황·미해결 지점
 - [`docs/04_확장전략과청사진.md`](docs/04_확장전략과청사진.md) — 위젯 확장(v0.11) · 청사진 수확 → DSL 조립 · json-render/A2UI 활용 여지 · 정형화 백로그
-- [`docs/widget-blueprint-registry.md`](docs/widget-blueprint-registry.md) — 검증된 디자인시스템(Carbon·Fluent·Polaris·Ant·MUI·Mantine·Radix) 위젯 청사진 ↔ 우리 DSL 조립 대조표
-
 ---
 
 ## 경계 (헌법 요약)

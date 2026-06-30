@@ -72,6 +72,8 @@ export { TreeSelect } from './TreeSelect';
 export { Cascader, type CascaderOption } from './Cascader';
 export { MillerColumns, type MillerOption } from './MillerColumns';
 export { SearchToolbar } from './SearchToolbar';
+export { Editor, type EditorFeature } from './Editor';   // 리치 텍스트 작성기(TipTap 흡수)
+export { RichText } from './RichText';                    // 작성물(HTML) 읽기 뷰어 — Editor의 짝
 
 // 유기체
 export { Modal } from './Modal';
@@ -100,6 +102,9 @@ export { HierarchyExplorer, type HierarchyObject } from './HierarchyExplorer';
 export { HierarchyCollector, type CollectorCatalog, type CollectorProduct, type CollectorCartItem } from './HierarchyCollector';
 export { LedgerPage, type LedgerMetric, type LedgerBreakdown, type LedgerDetail } from './LedgerPage';
 export { CalendarPage, type CalendarEvent, type CalendarEncoding, type CalendarColorRole } from './CalendarPage';
+export { BoardList, type BoardPost } from './BoardList';
+export { BoardView, type BoardComment, type BoardAttachment } from './BoardView';
+export { BoardWrite, type AudienceNode } from './BoardWrite';
 export { buildHierarchyFromRows, type HierarchyImport } from './hierarchyImport';
 export type { DataTableColumn, DataTableRow, DataTableSort } from './DataTable';
 

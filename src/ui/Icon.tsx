@@ -9,11 +9,17 @@ export type IconName =
   | 'search' | 'plus' | 'minus' | 'calendar' | 'upload' | 'trash' | 'refresh'
   | 'eye' | 'eye-off' | 'alert-circle' | 'alert-triangle' | 'info' | 'dots' | 'edit' | 'arrow-left' | 'filter' | 'bell'
   // ── ERP 큐레이션 확장 (헌법 4 — Tabler 원본 path, 함수별 선별. kk 요구 home·users·building·store·book·package·database 포함) ──
-  | 'home' | 'dashboard' | 'menu' | 'settings' | 'logout' | 'user' | 'users' | 'building' | 'store' | 'arrow-right' | 'external-link' | 'help' | 'download' | 'save' | 'copy' | 'print' | 'send' | 'dots-vertical' | 'adjustments' | 'history' | 'check-circle' | 'x-circle' | 'clock' | 'ban' | 'lock' | 'lock-open' | 'file' | 'file-text' | 'file-invoice' | 'files' | 'folder' | 'clipboard' | 'receipt' | 'report' | 'book' | 'package' | 'box' | 'truck' | 'warehouse' | 'barcode' | 'cart' | 'database' | 'coin' | 'won' | 'credit-card' | 'calculator' | 'tag' | 'discount' | 'chart-bar' | 'chart-line' | 'wallet' | 'phone' | 'mail' | 'map-pin' | 'id-card' | 'paperclip' | 'link' | 'star' | 'list' | 'table' | 'sort-asc' | 'sort-desc' | 'tool';
+  | 'home' | 'dashboard' | 'menu' | 'settings' | 'logout' | 'user' | 'users' | 'building' | 'store' | 'arrow-right' | 'external-link' | 'help' | 'download' | 'save' | 'copy' | 'print' | 'send' | 'dots-vertical' | 'adjustments' | 'history' | 'check-circle' | 'x-circle' | 'clock' | 'ban' | 'lock' | 'lock-open' | 'file' | 'file-text' | 'file-invoice' | 'files' | 'folder' | 'clipboard' | 'receipt' | 'report' | 'book' | 'package' | 'box' | 'truck' | 'warehouse' | 'barcode' | 'cart' | 'database' | 'coin' | 'won' | 'credit-card' | 'calculator' | 'tag' | 'discount' | 'chart-bar' | 'chart-line' | 'wallet' | 'phone' | 'mail' | 'map-pin' | 'id-card' | 'paperclip' | 'link' | 'star' | 'list' | 'table' | 'sort-asc' | 'sort-desc' | 'tool' | 'message' | 'arrow-back-up'
+  | 'quote' | 'list-numbers' | 'photo';
 
 // 24x24 viewBox, stroke=currentColor 기반(outline). path만 정의(색·정렬은 래퍼가).
 const PATHS: Record<IconName, string> = {
   'check': 'M5 12l5 5L20 7',
+  'message': 'M8 9h8 M8 13h6 M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z',
+  'arrow-back-up': 'M9 14l-4 -4l4 -4 M5 10h11a4 4 0 1 1 0 8h-1',
+  'quote': 'M10 11h-4a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v6c0 2.667 -1.333 4.333 -4 5 M19 11h-4a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v6c0 2.667 -1.333 4.333 -4 5',
+  'list-numbers': 'M11 6h9 M11 12h9 M12 18h8 M4 16a2 2 0 1 1 4 0c0 .591 -.417 1.092 -1 1.5l-3 2.5h4 M6 10v-6l-2 2',
+  'photo': 'M15 8h.01 M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5 M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3',
   'x': 'M6 6l12 12M18 6L6 18',
   'chevron-down': 'M6 9l6 6 6-6',
   'chevron-up': 'M6 15l6-6 6 6',

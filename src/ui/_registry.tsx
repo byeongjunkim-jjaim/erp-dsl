@@ -70,6 +70,11 @@ import { HierarchyCollector, type CollectorCartItem } from './HierarchyCollector
 import { PeriodNavigator } from './PeriodNavigator';
 import { LedgerPage } from './LedgerPage';
 import { CalendarPage, type CalendarEncoding, type CalendarEvent } from './CalendarPage';
+import { BoardList, type BoardPost } from './BoardList';
+import { BoardView, type BoardComment } from './BoardView';
+import { BoardWrite, type AudienceNode } from './BoardWrite';
+import { Editor } from './Editor';
+import { RichText } from './RichText';
 import { SectionHeader } from './SectionHeader';
 import { Breadcrumb } from './Breadcrumb';
 import { Bento } from './Bento';
@@ -285,6 +290,154 @@ const HX_OBJECTS: Record<string, HierarchyObject[]> = {
   'd3-3': genProducts('d3-3', 'MT', '측정공구', 6),
   'd4-1': genProducts('d4-1', 'SL', '실란트', 5),
 };
+
+// BoardList 데모 — 게시판 도메인은 dev에만 산다(부품은 0 지식). posts/categories만 주입.
+const BOARD_CATEGORIES = [
+  { value: 'all', label: '전체' }, { value: 'notice', label: '공지' },
+  { value: 'work', label: '업무 안내' }, { value: 'docs', label: '자료실' }, { value: 'free', label: '자유' },
+];
+const BOARD_POSTS: BoardPost[] = [
+  { id: '1', pinned: true, mustRead: true, category: '공지', title: '2026년 하계 휴가 신청 및 근태 처리 안내 — 7/15까지 제출', author: { name: '김서연', dept: '인사' }, date: '06.24', views: 412, attachments: 2, unread: true },
+  { id: '2', pinned: true, category: '공지', title: '사내 보안 정책 개정 — VPN 2차 인증 의무화 (8/1 시행)', author: { name: '박지훈', dept: 'IT' }, date: '06.20', views: 388, comments: 7 },
+  { id: '3', category: '자료실', title: '2026년 거래처 단가표 v3 배포 (엑셀 첨부)', author: { name: '박상우', dept: '구매' }, date: '06.25', views: 96, attachments: 1, unread: true, isNew: true },
+  { id: '4', category: '업무 안내', title: '7월 발주 마감 일정 조정 건 — 각 팀 확인 요망', author: { name: '이지은', dept: '생산' }, date: '06.25', views: 73, comments: 4, unread: true },
+  { id: '5', category: '업무 안내', title: '신규 입고 검수 절차 변경 안내', author: { name: '정민호', dept: '물류' }, date: '06.23', views: 154, comments: 2 },
+  { id: '6', category: '자료실', title: '제품 카탈로그 PDF 2026 상반기판', author: { name: '한소희', dept: '마케' }, date: '06.22', views: 201, attachments: 3 },
+  { id: '7', category: '자유', title: '탕비실 커피머신 교체 관련 의견 받습니다', author: { name: '최유진', dept: '총무' }, date: '06.21', views: 267, comments: 18 },
+  { id: '8', category: '업무 안내', title: '월말 재고 실사 일정 공유 (창고 A/B동)', author: { name: '정민호', dept: '물류' }, date: '06.19', views: 88 },
+];
+function BoardListDemo() {
+  const [cat, setCat] = useState('all');
+  const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
+  const catLabel: Record<string, string> = { work: '업무 안내', docs: '자료실', free: '자유' };
+  const filtered = BOARD_POSTS.filter((p) => {
+    const okCat = cat === 'all' || (cat === 'notice' ? !!p.pinned : p.category === catLabel[cat]);
+    const okQ = !q || p.title.includes(q) || p.author.name.includes(q);
+    return okCat && okQ;
+  });
+  return (
+    <BoardList
+      title="공지사항"
+      description="사내 공지·업무 안내를 확인하고, 필독 항목은 읽음 확인이 필요합니다."
+      posts={filtered}
+      categories={BOARD_CATEGORIES}
+      category={cat}
+      onCategoryChange={(v) => { setCat(v); setPage(1); }}
+      searchQuery={q}
+      onSearchChange={(v) => { setQ(v); setPage(1); }}
+      createLabel="글쓰기"
+      onCreate={() => {}}
+      onSelectPost={() => {}}
+      page={page}
+      onPageChange={setPage}
+      totalPages={4}
+      totalCount={147}
+    />
+  );
+}
+
+// BoardView 데모 — 본문(content)은 소비처가 DSL 부품으로 조립(도그푸드). 댓글·읽음확인은 상태.
+const BOARD_COMMENTS: BoardComment[] = [
+  { id: 'c1', author: { name: '박상우', dept: '구매' }, date: '06.24 15:02', body: '반차도 이 기간에 같이 신청해야 하나요? 아니면 평소처럼 수시 신청이 가능한가요?' },
+  { id: 'c2', author: { name: '김서연', dept: '인사' }, date: '06.24 15:20', body: '반차는 본 하계 휴가와 무관하게 평소처럼 수시 신청 가능합니다. 본 공지는 연차(종일) 일정 취합용입니다.', isAuthor: true, reply: true },
+  { id: 'c3', author: { name: '정민호', dept: '물류' }, date: '06.24 16:40', body: '확인했습니다. 창고 인원 일정 조율해서 팀 취합 후 제출하겠습니다.' },
+];
+// 작성물(HTML) — 작성(Editor)→저장→보기(RichText) 한 짝의 산출물 예시.
+const POST_HTML = `
+<h2>1. 신청 기간 및 방법</h2>
+<p>신청 기간: <strong>2026년 7월 1일 ~ 7월 15일 18:00</strong>까지. 신청 방법: 전자결재 &gt; 휴가신청서.</p>
+<ul><li>승인: 팀장 1차 → 인사팀 최종</li><li>반차·반반차는 휴가신청서에서 선택</li></ul>
+<blockquote>기한 내 미신청 시 부서별 기본 휴가 일정으로 자동 배정됩니다.</blockquote>
+<p>문의: 인사팀(내선 1234).</p>
+`;
+function BoardViewDemo() {
+  const [ack, setAck] = useState(false);
+  const [comment, setComment] = useState('');
+  return (
+    <BoardView
+      notice
+      mustRead
+      category="공지"
+      title="2026년 하계 휴가 신청 및 근태 처리 안내"
+      author={{ name: '김서연', dept: '인사팀', role: '책임' }}
+      date="2026.06.24 14:20"
+      views={412}
+      content={<RichText html={POST_HTML} />}
+      attachments={[
+        { id: 'a1', name: '2026_하계휴가_신청서.xlsx', size: '24 KB' },
+        { id: 'a2', name: '휴가규정_개정본.pdf', size: '180 KB' },
+      ]}
+      readState={{ read: ack ? 33 : 32, total: 48, acknowledged: ack, onAcknowledge: () => setAck(true) }}
+      actions={[
+        { label: '인쇄', variant: 'ghost', icon: 'print', onClick: () => {} },
+        { label: '수정', variant: 'secondary', icon: 'edit', onClick: () => {} },
+        { label: '삭제', variant: 'danger', icon: 'trash', onClick: () => {} },
+      ]}
+      onBack={() => {}}
+      prev={{ title: '사내 보안 정책 개정 — VPN 2차 인증 의무화 (8/1 시행)', date: '06.20', onClick: () => {} }}
+      next={{ title: '2026년 거래처 단가표 v3 배포 (엑셀 첨부)', date: '06.25', onClick: () => {} }}
+      comments={BOARD_COMMENTS}
+      commentValue={comment}
+      onCommentChange={setComment}
+      onCommentSubmit={() => setComment('')}
+      onReply={() => {}}
+    />
+  );
+}
+
+// BoardWrite 데모 — 분류·수신자·옵션 값은 상태. 수신자(안 C) audiences는 조직 데이터(소비처).
+const BOARD_AUDIENCES: AudienceNode[] = [
+  { id: 'all', label: '전체', exclusive: true },
+  { id: 'design', label: '디자이너', children: [
+    { id: 'design.ui', label: 'UI팀', members: [{ id: 'u.kim', name: '김민지', dept: 'UI' }, { id: 'u.lee', name: '이서준', dept: 'UI' }] },
+    { id: 'design.gfx', label: '그래픽팀', members: [{ id: 'g.han', name: '한지후', dept: 'GFX' }] },
+  ] },
+  { id: 'dev', label: '개발' },
+  { id: 'sales', label: '영업' },
+  { id: 'mgmt', label: '경영지원' },
+];
+function BoardWriteDemo() {
+  const [cat, setCat] = useState<string | null>('work');
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('<p>안녕하세요, 인사팀입니다. 아래 내용을 안내드립니다.</p>');
+  const [aud, setAud] = useState<string[]>(['design', 'design.ui']);
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [notice, setNotice] = useState(false);
+  const [must, setMust] = useState(false);
+  const [allowComments, setAllowComments] = useState(true);
+  return (
+    <BoardWrite
+      categories={BOARD_CATEGORIES.filter((c) => c.value !== 'all')}
+      category={cat}
+      onCategoryChange={setCat}
+      postTitle={title}
+      onPostTitleChange={setTitle}
+      body={body}
+      onBodyChange={setBody}
+      audiences={BOARD_AUDIENCES}
+      selectedAudiences={aud}
+      onAudiencesChange={setAud}
+      files={files}
+      onFilesChange={setFiles}
+      notice={notice}
+      onNoticeChange={setNotice}
+      mustRead={must}
+      onMustReadChange={setMust}
+      commentsAllowed={allowComments}
+      onCommentsAllowedChange={setAllowComments}
+      onCancel={() => {}}
+      onSaveDraft={() => {}}
+      onSubmit={() => {}}
+    />
+  );
+}
+
+function EditorDemo() {
+  const [html, setHtml] = useState('<h2>리치 텍스트</h2><p>굵게·<em>기울임</em>·목록·인용·링크·표·이미지·구분선을 지원합니다. 출력은 <strong>HTML</strong>.</p><ul><li>TipTap(헤드리스) 엔진 흡수</li><li>스킨은 우리 토큰(무테)</li></ul>');
+  return <Editor value={html} onChange={setHtml} />;
+}
+function RichTextDemo() { return <RichText html={POST_HTML} />; }
 
 // 부품명 → 라이브 예시. 박물관 상세가 <Demo name/>로 렌더.
 // CalendarPage 데모 — 시공 도메인은 *여기(dev)에만* 산다(부품은 0 지식). attrs+encoding만 주입.
@@ -946,6 +1099,11 @@ export function Demo({ name }: { name: string }) {
         onCreate={() => {}}
       />
     ),
+    BoardList: <BoardListDemo />,
+    BoardView: <BoardViewDemo />,
+    BoardWrite: <BoardWriteDemo />,
+    Editor: <EditorDemo />,
+    RichText: <RichTextDemo />,
   };
 
   return <>{D[name] ?? <Text variant="caption" color="secondary">예시 준비 중</Text>}</>;
